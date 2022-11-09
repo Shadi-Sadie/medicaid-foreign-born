@@ -9,13 +9,24 @@ For this purpos I divided this repo into 4 chunks, data, text, presentation, and
  
 ## Table of content
 
-[Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#data)  
-[Codes](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#codes)  
-[Text](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#text)  
-[Presentation](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#presentation)  
+- [Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#data) 
+   - [Raw Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#raw-data)
+- [Codes](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#codes)  
+- [Text](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#text)  
+- [Presentation](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#presentation)  
 
-### Data
-### Codes
-### Text
-### Presentation
+## Data
+
+I will discuss where I gathered the data for this analysis and what the data folder consists of.
+
+### Raw Data
+
+The raw data for this analysis is derived from the American Community Survey(ACS) Public Use Microdata Sample (PUMS) for the years 2009-2020, and it is available on their [website](https://www.census.gov/programs-surveys/acs/microdata/access.html) along with detailed [documentation](https://www.census.gov/programs-surveys/acs/microdata/documentation.html). This annual raw data can be downloaded in either SAS or CSV format from their File Transfer Protocol (FTP) site. 
+
+
+ 
+## Cleaned Data 
+## Codes
+## Text
+## Presentation
  
