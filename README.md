@@ -1,4 +1,4 @@
-# Paper 1-Medicaid expansion effects on immigrants insurance gain
+# Medicaid expansion effects on immigrants insurance gain
  
 This repository contains information about my research project on the effect of Medicaid expansion on immigrant insurance coverage. I aim to reach two   goals by creating this repository:
 
