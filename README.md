@@ -9,11 +9,11 @@ For this purpos I divided this repo into 4 chunks, data, text, presentation, and
  
 ## Table of content
 
-- [Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#data) 
-   - [Raw Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#raw-data)
-- [Codes](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#codes)  
-- [Text](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#text)  
-- [Presentation](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/edit/master/README.md#presentation)  
+- [Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants#data) 
+   - [Raw Data](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/#raw-data)
+- [Codes](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/#codes)  
+- [Text](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/#text)  
+- [Presentation](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/#presentation)  
 
 ## Data
 
