@@ -66,13 +66,17 @@ I will use both R and Stata for running analyses. For now, I only used R for cle
 
 ### R codes
 
-* Getting Data
-* Subsesting Based on Inclusion
-* Cleaning the Variable
-* Creating new variables
-* Whole data cleaning codes
+* Getting Data (Done) 
+* Subsesting Based on Inclusion (Mnday)
+* Cleaning the Variable (Tuesday) 
+* Creating new variables and merge (Wednsday,Thursday) 
+* Export final Data set(Wednsday)
+* Whole data cleaning codes 
+* Run the SCM to find what variable to control (Friday, Monday)
 
 ### Stata codes
+
+
 
 ## Text
 ## Figures and tables
