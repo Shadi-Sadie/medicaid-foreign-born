@@ -21,12 +21,17 @@ I will discuss where I gathered the data for this analysis and what the data fol
 
 ### Raw Data
 
-The raw data for this analysis is derived from the American Community Survey(ACS) Public Use Microdata Sample (PUMS) for the years 2009-2020, and it is available on their [website](https://www.census.gov/programs-surveys/acs/microdata/access.html) along with detailed [documentation](https://www.census.gov/programs-surveys/acs/microdata/documentation.html). This annual raw data can be downloaded in either SAS or CSV format from their File Transfer Protocol (FTP) site. 
-
-
+The raw data for this analysis can be derived from the American Community Survey(ACS) Public Use Microdata Sample (PUMS) for the years 2009-2020, and it is available on their [website](https://www.census.gov/programs-surveys/acs/microdata/access.html) along with detailed [documentation](https://www.census.gov/programs-surveys/acs/microdata/documentation.html). This annual raw data can be downloaded in either SAS or CSV format from their File Transfer Protocol (FTP) site. These data are also available via the web API( Application Programming Interface), and the R package [tidcycensus](https://walker-data.com/tidycensus/index.html) can be used to download and handle this data set more efficiently by using these APIs. In the code section I will explain how I did use the tidycensus package to dl the subset of the data I needed for this analysis.
  
 ## Cleaned Data 
-## Codes
+
+Using API and tidycensus package, I downloaded the data set with only variables I needed for each year to make the downloading faster I also only downloaded people aged between 18-65 who are eligible for Medicaid,assigend a variable year to each of them and then I merged all the annual datasets in a one single dataset by year saved it as rawdata. In the next step, using my inclusion criteria I created a subset of data, fixed the mismatch, changed the vacant values with NA a this would be the cleaneddata1. But, you will also find cleaneddata2 in the folder that would be the final data set whihch includes my created variable as well and exported it to Stata format for future use.. 
+
+I will use both R and Stata for running analyses. For now, I only used R for cleaning and preparing the data set for the main analysis in Stata.
+
+### R codes
+### Stata codes
+
 ## Text
 ## Presentation
  
