@@ -27,6 +27,7 @@ The raw data for this analysis can be derived from the American Community Survey
 Using API and tidycensus R package, I downloaded each year's dataset with only variables I needed; these included variables are as follows:
 
 * ST: State
+* TYPE: Type of unit show if individual belong to group quarters or not ( This is a temporary variable for the purpose of subseting) 
 * REGION: Region code based on 2010 Census definitions ( Northeast, Midwest, South, West, Puerto Rico ).
 * AGEP: Age a number between 0-99 (top coded).
 * CIT: Citizenship status, if borned in US, naurlized citizen or not a US citizen.
@@ -53,7 +54,7 @@ Using API and tidycensus R package, I downloaded each year's dataset with only v
 
 >In 2019 ACS introduced a new variable HIMRKS which provides estimates of the number and proportion of people with subsidized Marketplace coverage. However, since this variable in not there for the rest of the years between 2015-2019 I didn't include it for our analysis, but it would be good for future analysis, Other variable that can be used for the future study are POBP (Place of birth-- state or country) ANC1P (Recoded Detailed Ancestry - first entry) LANP(Language spoken at home--N/A if english, name of other lang coded), NOP (Nativity of parent for individual less than 17-- both parent native, mother FB, father FB, both FB)
 
-For my RAM to handle the operation, I only downloaded data for low-income ( less than 138% income/poverty) individuals aged between 18-65. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year, and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
+For my RAM to handle the operation, I only downloaded data for low-income ( less than 138% income/poverty) individuals aged between 18-65. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
 
 ### Cleaned data 
 
@@ -65,6 +66,8 @@ I will use both R and Stata for running analyses. For now, I only used R for cle
 ## Codes
 
 ### R codes
+
+GetDataTideyCensus: This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final 
 
 * Getting Data (Done) 
 * Subsesting Based on Inclusion (Mnday)
