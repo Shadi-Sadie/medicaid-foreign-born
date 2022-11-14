@@ -1,94 +1,71 @@
-## In this file I am reading the two csv files of each year. binding them in one data set called Data 
-## and subseting the variable I need from this data set and call it ACS. Finaally, I  wil change the vacant to the NA 
+
+##############################################################################################################
+## In this program I am subseting Raw Data set based on the inclusion criteria. 
+## Additonaly, I  will change the vacant to the NA and change the variable fromat from charachteer to integer
+## Updated on Nov 14, 2022
+##############################################################################################################
+                                                        #### loading the  Data set ####
 
 
+# remove the # for the  section below if you want to read the RAWACS from the internet  
 
-#### library 
+# fileUrl <- "https://www2.census.gov/programs-surveys/acs/data/pums/2018/1-Year/csv_pus.zip"
+# download.file(fileUrl, destfile= temp, method = "curl")
+# ACS<- reat.csv()
+
+
+#
+ Data<-ACS
+
+
+                                                        #### loading required library ####
 
 library(tidyverse)
 library(sqldf)          # library to allow to subset while reading the data
 
+                                
 
-                                        ### 1. Reading the data from internet 
-
-temp <- tempfile()
-temp2 <- tempfile()
-
-fileUrl <- "https://www2.census.gov/programs-surveys/acs/data/pums/2018/1-Year/csv_pus.zip"
-
-download.file(fileUrl, destfile= temp, method = "curl")
-
-unzip(zipfile = temp, exdir = temp2)
-
-Data1<-read.csv.sql(file.path(temp2, "psam_pusa.csv"),"select * from file where AGEP>24 AND AGEP<65 " ,
-                   header = TRUE, sep ="," ) 
-
-Data2<-read.csv.sql(file.path(temp2, "psam_pusb.csv"),"select * from file where AGEP>24 AND AGEP<65 " ,
-                   header = TRUE, sep =",") 
-
-unlink(c(temp, temp2))
+                                                       #### Subsetting the dataset ####
 
 
-                                        ### 2. Binding the data set
+###### 1. Subseting based on the income  #### Already subseted ####
 
-Data<-rbind(Data1,Data2)
+#Data<- Data %>% filter(POVPIP<139)   # Subset the income level only less than <139  
 
-                                        ### 3. Subseting the variable 
+###### 2. Subseting based on Age  #### Already subseted ####
 
-# Removing the institutionlized data 
-
-Data<-Data[!(Data$RELP %in% c(16,17)),] 
-
-# Choosing only var that I need for analysis
-
-varname<-colnames(Data)  # names of all variables  # 
-
-needvar<-c ("REGION","ST","AGEP", "CIT" , "ENG" , "FER", "HINS1",   # Variable I would need for the analysis
-              "HINS2", "HINS3" , "HINS4","HINS5", "HINS6", "HINS7", "LANX", 
-              "MAR", "SCHL", "SEX", "YOEP", "ANC1P","DIS","HICOV", "ESR", 
-              "LANP", "NATIVITY","HISP", "POBP", "POVPIP", "PUBCOV","PRIVCOV","RAC1P")
-
-allneedvar<-c(which(varname %in% needvar) , grep("PWGTP", varname))   # creating a vector for all variables I want to subset 
-
-Data<-Data[allneedvar]   # Subseting all the variable at once
+Data<- Data %>% filter(AGEP<65 & AGEP>25) 
 
 
-# Fixing the charachter to integer
-
-classcol<-sapply(Data, class)
-table(classcol)
-char_columns <- which(classcol=="character")   
-for (i in char_columns){
-        Data[,i] <- as.integer(Data[,i])
-}
+###### 3. Removing the institutionlized and unistitulionalized group quarters population
 
 
-# subseting the income 
-
-Data<- Data %>% filter(POVPIP<139)   # Subset the income level only less than <139  
+Data<-Data[!(Data$TYPE %in% c(2,3)),] 
 
 
-# subsetting based on years of immigration
-
-Data$YEAR<-2019  #  Creating variable year 
-
+###### 4.Subsetting based on years lived in US (for immigrants)
+ 
 Data$YLIU<-0                      # create variable YLIU year lived in US to use for removing immigrant with less than 5 years
 Data$YLIU<-Data$YEAR-Data$YOEP  
 table(Data$YLIU, exclude = NULL) # looking at the table of years living in US
+table(Data$CIT, Data$YLIU, exclude = NULL) # looking at the table of years living in US by citizenshio status. 
 
-Data$YLIU<-replace(Data$YLIU, Data$CIT %in% c(2,3),NA) # born in foreign could inter to us as well but i don't want it recode them NA
+#Data$YLIU<-replace(Data$YLIU, Data$CIT %in% c(2,3),NA) # born in foreign could inter to us as well but i don't want it recode them NA
 
 Data<-Data[!(Data$YLIU<5 & Data$CIT==5),]  # Removing the data of immigrant with less than 5 years residency
 
-# Removing the MA and OR from the data 
+
+
+###### 5. Removing the MA and OR from the data 
 
 Data<-Data[!(Data$ST %in% c(25,41)),]  # Looked up State FIPS code MA is 25 and OR is 41
 
 
-### 4. Creating the new data sample 
+
+                                                #### Creating the new data sample ####
 
 
-write.csv(Data, file = "BACS2019.csv", row.names = FALSE)
+write.csv(Data, file = "PREACS.csv", row.names = FALSE)
 
 
 
