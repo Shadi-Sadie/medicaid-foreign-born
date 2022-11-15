@@ -42,6 +42,9 @@ Data<- Data %>% filter(AGEP<65 & AGEP>25)
 
 Data<-Data[!(Data$TYPE %in% c(2,3)),] 
 
+ # variable TYPE is no longer  needed can be droped 
+
+Data<-Data[!(names(Data)=="TYPE")]
 
 ###### 4.Subsetting based on years lived in US (for immigrants)
  
@@ -54,6 +57,9 @@ table(Data$CIT, Data$YLIU, exclude = NULL) # looking at the table of years livin
 
 Data<-Data[!(Data$YLIU<5 & Data$CIT==5),]  # Removing the data of immigrant with less than 5 years residency
 
+###### 5. Removing the US citizen born outside US and those born portorico and virgin island and ..
+
+Data<-Data[!(Data$CIT %in% c(2,3) ),]  # Re
 
 
 ###### 5. Removing the MA and OR from the data 
@@ -65,7 +71,7 @@ Data<-Data[!(Data$ST %in% c(25,41)),]  # Looked up State FIPS code MA is 25 and 
                                                 #### Creating the new data sample ####
 
 
-write.csv(Data, file = "PREACS.csv", row.names = FALSE)
+# write.csv(Data, file = "PREACS.csv", row.names = FALSE)
 
 
 
