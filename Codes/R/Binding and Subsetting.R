@@ -44,7 +44,7 @@ Data<-Data[!(Data$TYPE %in% c(2,3)),]
 
  # variable TYPE is no longer  needed can be droped 
 
-Data<-Data[!(names(Data)=="TYPE")]
+# Data<-Data[!(names(Data)=="TYPE")]
 
 ###### 4.Subsetting based on years lived in US (for immigrants)
  
@@ -59,12 +59,12 @@ Data<-Data[!(Data$YLIU<5 & Data$CIT==5),]  # Removing the data of immigrant with
 
 ###### 5. Removing the US citizen born outside US and those born portorico and virgin island and ..
 
-Data<-Data[!(Data$CIT %in% c(2,3) ),]  # Re
+#Data<-Data[!(Data$CIT %in% c(2,3) ),]  # Re
 
 
-###### 5. Removing the MA and OR from the data 
+###### 5. Removing the state adopted medicaid expansion earlier
 
-Data<-Data[!(Data$ST %in% c(25,41)),]  # Looked up State FIPS code MA is 25 and OR is 41
+Data<-Data[!(Data$ST %in% c(10, 11, 25,36,50)),]  # Looked up State FIPS code MA is 25 and Delaware is 10, DC is 11 , NY it 36 and Vermont is 50 
 
 
 
