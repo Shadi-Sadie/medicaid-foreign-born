@@ -64,7 +64,11 @@ For my RAM to handle the operation, I only downloaded data for low-income ( less
 
 ### Cleaned data 
 
-In the next step, using my inclusion criteria I created a subset of data, fixed the mismatch, changed the vacant values with NA a this would be the cleaneddata1. But, you will also find cleaneddata2 in the folder that would be the final data set whihch includes my created variable as well and exported it to Stata format for future use.
+In the next step, using my inclusion criteria I created a subset of data, called PREACS with 
+
+fixed the mismatch, changed the vacant values with NA a this would be the 
+
+But, you will also find cleaneddata2 in the folder that would be the final data set whihch includes my created variable as well and exported it to Stata format for future use.
 
 I will use both R and Stata for running analyses. For now, I only used R for cleaning and preparing the data set for the main analysis in Stata.
 
@@ -73,10 +77,18 @@ I will use both R and Stata for running analyses. For now, I only used R for cle
 
 ### R codes
 
-GetDataTideyCensus: This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final 
+* **Getting Data** 
+GetDataTideyCensus.R: This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final 
 
-* Getting Data (Done) 
-* Subsesting Based on Inclusion (Mnday)
+* **Subsesting Based on Inclusion**
+
+   Binding amd Subesting.R : I created a subset of the data using my inclusion criteria. My inclusion criteria were : 
+    1. *Income below 138%* which I already applied it when I was downloading the data.
+    2. *Age being between 26 to 64*
+    3. *Removing the institutionlized and unistitulionalized group quarters population* this is because there is no reported income for these groups.
+    4. *Droping the non citizen with less than 5 years of residency* since this group are not eligible for mediacid benefit at all. 
+    5. *Removing the data for the states that have adopted policies similar to Medicaid expansion before the Medicaid expansion went into effect in      2014* these states are Delaware, Massachusetts, New York, Vermont and  District of Columbia. 
+
 * Cleaning the Variable (Tuesday) 
 * Creating new variables and merge (Wednsday,Thursday) 
 * Export final Data set(Wednsday)
