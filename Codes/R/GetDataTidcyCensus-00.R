@@ -30,7 +30,7 @@ for( i in 2009:2019)  {
                 variables = c ("REGION","AGEP", "CIT" , "ENG" , "FER","HINS1", 
                                "HINS2", "HINS3" , "HINS4","HINS5", "HINS6", "HINS7",
                                "MAR", "SCHL", "SEX", "YOEP","DIS","HICOV", "ESR", 
-                                "NATIVITY","HISP", "POVPIP", "RAC1P", "TYPE"),
+                                "NATIVITY","HISP", "POVPIP", "RAC1P", "TYPE","LANP","LANX","POBP","PUMA"),
                 state = "all",
                 year = i, 
                 variables_filter = list(
