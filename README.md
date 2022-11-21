@@ -81,8 +81,7 @@ I will use both R and Stata for running analyses. For now, I only used R for cle
 GetDataTideyCensus.R: This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final 
 
 * **Subsesting Based on Inclusion**
-
-   Binding amd Subesting.R : I created a subset of the data using my inclusion criteria. My inclusion criteria were : 
+   Binding amd Subesting.R: I created a subset of the data using my inclusion criteria as below.
     1. *Income below 138%* which I already applied it when I was downloading the data.
     2. *Age being between 26 to 64*
     3. *Removing the institutionlized and unistitulionalized group quarters population* this is because there is no reported income for these groups.
@@ -90,6 +89,15 @@ GetDataTideyCensus.R: This script includes codes for getting data set with only 
     5. *Removing the data for the states that have adopted policies similar to Medicaid expansion before the Medicaid expansion went into effect in      2014* these states are Delaware, Massachusetts, New York, Vermont and  District of Columbia. 
 
 * Cleaning the Variable (Tuesday) 
+    Some of variables such as ST,REGION, SERIALNO" "SPORDER",
+    Other variable that I cleand were 
+    AGEP I created another categorical variable called AGEG to set up diffrent age into diffrent categories. Coding for variables ENG and FER had problem 
+    I changed all the insurance variable, marige status coding to 0 and 1 to make them dummey variable with value 1 being insured/married and 0 being not.
+    There were many values for the schooling I created a new variable. SCHLG, to group the schooling year into the conventional categories. 
+
+
+
+
 * Creating new variables and merge (Wednsday,Thursday) 
 * Export final Data set(Wednsday)
 * Whole data cleaning codes 
