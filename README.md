@@ -61,7 +61,7 @@ Using API and tidycensus R package, I downloaded each year's dataset with only v
 
 >In 2019 ACS introduced a new variable HIMRKS which provides estimates of the number and proportion of people with subsidized Marketplace coverage. However, since this variable in not there for the rest of the years between 2015-2019 I didn't include it for our analysis, but it would be good for future analysis, Other variable that can be used for the future study are ANC1P (Recoded Detailed Ancestry - first entry) , NOP (Nativity of parent for individual less than 17-- both parent native, mother FB, father FB, both FB)
 
-For my RAM to handle the operation, I only downloaded data for low-income ( less than 138% income/poverty) individuals aged between 26-65. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
+For my RAM to handle the operation, I only downloaded data for low-income ( less than 138% income/poverty) individuals aged between 18-65. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
 
 ### Cleaned data 
 
