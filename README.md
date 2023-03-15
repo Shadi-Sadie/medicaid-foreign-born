@@ -56,6 +56,7 @@ Using API and tidycensus R package, I downloaded each year's dataset with only v
 * LANX:Language other than English spoken at home? ( Yes/No)
 * PUMA: Public use microdata area code (PUMA) based on 2010 Census definition
 (areas with population of 100,000 or more, use with ST for unique code)
+* POBP: Place of Birth
 
 
 >In 2019 ACS introduced a new variable HIMRKS which provides estimates of the number and proportion of people with subsidized Marketplace coverage. However, since this variable in not there for the rest of the years between 2015-2019 I didn't include it for our analysis, but it would be good for future analysis, Other variable that can be used for the future study are ANC1P (Recoded Detailed Ancestry - first entry) , NOP (Nativity of parent for individual less than 17-- both parent native, mother FB, father FB, both FB)
