@@ -89,20 +89,16 @@ GetDataTideyCensus.R: This script includes codes for getting data set with only 
     4. *Droping the non citizen with less than 5 years of residency* since this group are not eligible for mediacid benefit at all. 
     5. *Removing the data for the states that have adopted policies similar to Medicaid expansion before the Medicaid expansion went into effect in      2014* these states are Delaware, Massachusetts, New York, Vermont and  District of Columbia. 
 
-* Cleaning the Variable (Tuesday) 
-    Some of variables such as ST,REGION, SERIALNO" "SPORDER",
-    Other variable that I cleand were 
-    AGEP I created another categorical variable called AGEG to set up diffrent age into diffrent categories. Coding for variables ENG and FER had problem 
-    I changed all the insurance variable, marige status coding to 0 and 1 to make them dummey variable with value 1 being insured/married and 0 being not.
-    There were many values for the schooling I created a new variable. SCHLG, to group the schooling year into the conventional categories. 
+* **Cleaning the Variable**
+   Cleaning Data-03.R: Some variables were recoded to binary variables with 0 and 1 values instead of 1 and 2. The variables that were recoded include insurance, marriage status, disability, sex, and Hispanic. Additionally, new variables were created by recoding other variables such as age, race, education, employment, and poverty rate.
+   Coding for variables ENG and FER had problem I fixed so that the values be consistent for all years.  From AGEP I created a categorical variable called AGEG to set up diffrent age into diffrent categories. Because the variable for the schooling had many categories created a new variable SCHLG, to group the schooling year into the conventional categories. I have done a similar recoding for the employmentant,race and poverty rate  to create more manageable and meaningful variables for analysis. 
+   
+   In the next section of this script, I created additional variables that would be necessary for my analysis. These included two regional variables for categorizations for the country of origin, a variable for the percentage of life spent in the US, and a variable for expansion.
+   
+Following this section, I exported data for the IPC index, political climate, and state's unemployment rate, and then appended these data to the original data set.
 
+In the final section, I removed variables that I deemed unnecessary for my analysis. This included variables that were only used to create other variables that were necessary for my analysis. Finally, I exported the cleaned data in both CSV and DAT formats for use in the main analysis.
 
-
-
-* Creating new variables and merge (Wednsday,Thursday) 
-* Export final Data set(Wednsday)
-* Whole data cleaning codes 
-* Run the SCM to find what variable to control (Friday, Monday)
 
 ### Stata codes
 
