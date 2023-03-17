@@ -6,16 +6,15 @@
 
 
 
-                                                # loading required library# 
-
+                                                                    #### loading required library  ####
 library(labelled)
 
-                                                # Reading Dataset #
+                                                                    #### Reading Dataset   ####
 
 # Data<-read.csv("PREACS.csv", header = TRUE, sep ="," , fill = TRUE)
 
 
-                                                # Cleaning the Data #
+                                                                    #### Cleaning the Data   ####
 
 
 Varname<-colnames(Data) # Checking the names of all variable
@@ -47,16 +46,28 @@ var_label(Data$AGEG) <- "Age (years)"
 
 ### 4. CITIZENSHIP STATUS
 
-Data$CITG<-1
-Data$CITG<-replace(Data$CITG,Data$CIT==4,2) # 4. Naturalized citizen
-Data$CITG<-replace(Data$CITG,Data$CIT==5,3) # 5. Not citizen
+#Data$CITG<-1
+#Data$CITG<-replace(Data$CITG,Data$CIT==4,2) # 4. Naturalized citizen
+#Data$CITG<-replace(Data$CITG,Data$CIT==5,3) # 5. Not citizen
 
-Data$CITG<- ordered(Data$CITG, labels = c("US Born", "Naturalized-citizen", "Non-citizen" )) # labeling the values 
-var_label(Data$CITG) <- "Citizenship Status"
+#Data$CITG<- ordered(Data$CITG, labels = c("US Born", "Naturalized-citizen", "Non-citizen" )) # labeling the values 
+#var_label(Data$CITG) <- "Citizenship Status"
 
         # 1: U.S Citizen by Born 
         # 2: Naturalizaed Citizen
         # 3: Not Citizen
+
+
+
+
+Data$CIT<- ordered(Data$CIT, labels = c("US Born", "Born in US Territories","US citizen Born abroad ","Naturalized-citizen", "Non-citizen" )) # labeling the values 
+#var_label(Data$CITG) <- "Citizenship Status"
+
+# 1: U.S Citizen by Born 
+# 2: Naturalizaed Citizen
+# 3: Not Citizen
+
+
 
 ### 5. ABILITY SPEAK ENGLISH 
 
@@ -65,10 +76,10 @@ table(Data$ENG, Data$YEAR , exclude = NULL)   # NA .Speaks only english  # 1 .Ve
    # looking at the data, it is clear that there was a change in recoding by ACS. Prior to 2017, only english speaker 
         # were coded as 0 ,but after 2017 they were coded as NA. We need to frist fix this.
 
-Data$ENG<-replace(Data$ENG,is.na(Data$ENG),5) #
+Data$ENG<-replace(Data$ENG,is.na(Data$ENG),0) #
 table(Data$ENG,exclude = NULL)
 
-Data$ENG<- ordered(Data$ENG, labels = c("Very well", "Well", "Not well", "Not at all", "Only english" ))
+Data$ENG<- ordered(Data$ENG, labels = c("Only english","Very well", "Well", "Not well", "Not at all"  ))
 var_label(Data$ENG) <- "English Proficiency"
 
 
@@ -139,19 +150,20 @@ var_label(Data$MARG) <- "Married "
 Data$SCHLG<-0 # creating a school group variable
 Data$SCHLG<-ifelse(Data$SCHL>=1 & Data$SCHL< 16,1,Data$SCHLG) # 1. Less than High school 
 Data$SCHLG<-ifelse(Data$SCHL %in% c(16,17),2,Data$SCHLG) # 2. High school
-Data$SCHLG<-ifelse(Data$SCHL %in% c(18,19),3,Data$SCHLG) # 3. Some College 
-Data$SCHLG<-ifelse(Data$SCHL %in% c(20,21),4,Data$SCHLG) # 4. Associate or Bachler degree
+Data$SCHLG<-ifelse(Data$SCHL %in% c(18,19,20),3,Data$SCHLG) # 3. Some College Or Associate's degree 
+Data$SCHLG<-ifelse(Data$SCHL %in% c(21),4,Data$SCHLG) # 4. Bachler degree
 Data$SCHLG<-ifelse(Data$SCHL %in% c(22,23,24),5,Data$SCHLG) # 5. Graduate degree
 
 
 
-Data$SCHLG<- ordered(Data$SCHLG, labels = c("Less than high school", "High school", "Some college", "College", "Graduate degree" ))
+Data$SCHLG<- ordered(Data$SCHLG, labels = c("Less than high school", "High school", "Some college or Associate degree", "College degree", "Graduate and beyond" ))
 var_label(Data$SCHLG) <- "Education"
 
 
-### 11. SEX : Porbably no need for the cleaning and recoding, I only labeled the values 
-# 1. Male
-# 2. Female 
+### 11. SEX to make it easier and be consitent wit the litriture I recoded the sex so that 0 shows male and 1 shows female previousl 1 showed male and 2 showed female
+
+Data$SEX<-replace(Data$SEX,Data$SEX==1,0) # recode male from 1 to zero
+Data$SEX<-replace(Data$SEX,Data$SEX==2,1) # recode female from 2 to 1
 
 Data$SEX<- ordered(Data$SEX, labels = c("Male", "Female" ))
 var_label(Data$SEX) <- "Sex"
@@ -194,7 +206,7 @@ Data$POVPIPG<- ordered(Data$POVPIPG, labels = c("Income below 100% poverty", "In
 var_label(Data$POVPIPG) <- "Income"
 
 table(Data$POVPIP, exclude = NULL)
-table(Data$POVPIPG,Data$CITG ,exclude = NULL)
+table(Data$POVPIPG,Data$CIT ,exclude = NULL)
 
 
 ### 19. RACE  
@@ -209,6 +221,107 @@ var_label(Data$RACE) <- "Race"
 
 table(Data$RACE, exclude = NULL)
 table(Data$RAC1P, exclude = NULL)
+
+                                                                #### Creating new variables ####
+
+#####  expansion status
+
+
+#2015 Pennsylvania,  Indiana ,Alaska
+#2016, Montana, Louisiana
+#2019, Virginia, Maine
+#2020 Idaho,Utah,Nebraska
+#2021 Oklahoma
+#2022 Missouri
+# not expanded Alabama,Florida,Georgia,Kansas,Mississippi,North Carolina,South Carolina,South Dakota,Tennessee,Texas,Wisconsin,Wyoming
+
+# Create a data frame with state FIPS codes and their corresponding expansion years
+expansion_years <- data.frame(ST = c(2,4,5,6,8,9,15,17,18, 19,21,22,23,24,26,27,30,32,33,34,35,38,39,41,42,44,51,53,54),
+                       Expan_year = c(rep(2015, 1),rep(2014, 7), rep(2015, 1),rep(2014, 2), rep(2016,1), rep(2019,1), rep(2014, 3),rep(2016,1),rep(2014, 7),rep(2015, 1),rep(2014, 1),rep(2019,1),rep(2014, 2)))
+
+
+# Merge Data with expansion_years based on the STATE variable
+merged_data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
+
+# Create the expansion variable based on the year of expansion
+merged_data$expansion <- ifelse(is.na(merged_data$Expan_year), 0, ifelse(merged_data$YEAR >= merged_data$Expan_year, 1, 0))
+
+
+
+#####  percentage of life spent in the US
+
+# there is problem that might have rised beacuse the age was rounded up in the Dataset to fix that I changed YLIU as following
+Data$YLIU <- ifelse(Data$YLIU > Data$AGEP, Data$AGEP, Data$YLIU)
+
+# now that I fixed the issue with the YLIU I can create percentage life in US 
+Data$PLIU<-NA
+Data$PLIU <- floor((Data$YLIU / Data$AGEP) * 100)  # i used floor to roundup the percentage 
+
+# Country of origin
+
+### 1. Based on Geography
+# Create a new column for the geographic region (GEOR)
+Data$GEOR<-NA
+
+# Assign geographic regions based on UN sub-regions
+# Africa
+Data$GEOR[Data$POBP %in% c(400,414,430,436,451,456)] <- 1 #Northern Africa Done
+Data$GEOR[Data$POBP %in% c(400:499) & !Data$POBP %in% c(400,414,430,436,451,456)] <- 2 #Sub-Saharan Africa Done
+# America
+Data$GEOR[Data$POBP %in% c(303,310:399)] <- 3 #Latin America  Done 
+Data$GEOR[Data$POBP %in% c(300:302,304:309)] <- 4 #Northern America Done
+# Asia
+Data$GEOR[Data$POBP %in% c(218,219,246,253)] <- 5 #Centeral Asia
+Data$GEOR[Data$POBP %in% c(207,209,217,215,228,249,251)] <- 6 #Eastern Asia
+Data$GEOR[Data$POBP %in% c(206,211,223,226,205,233,236,242,247,254,240)] <- 7 #South eaastern Asia
+Data$GEOR[Data$POBP %in% c(200:203,210,229,231,238,253)] <- 8 #Southern Asia
+Data$GEOR[Data$POBP %in% c(158,159,161,212:214,216,222,224,235,239,243,245,248,208)] <- 9 #Western Asia
+#Europe
+Data$GEOR[Data$POBP %in% c(104,105,117,128,162,132,163,164,147, 148,149,155, 165,160,169)] <- 10 #Eastern Europe
+Data$GEOR[Data$POBP %in% c(106,108,118,119,156,157,127,136,138,142,140,139)] <- 11 #Northen Europe157, 160, 162:199
+Data$GEOR[Data$POBP %in% c(100,150, 151,116,120,129,168,152,154,134,167,166 )] <- 12 #Southern Europe ,1
+Data$GEOR[Data$POBP %in% c(102,103,109,110,126, 137)] <- 13 #Western Europe
+#Oceania and at Sea
+Data$GEOR[Data$POBP %in% c(060, 130, 500:554)] <- 14 #Oceania and at Sea
+
+Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa", "Latin America","Northern Americ", "Centeral Asia","Eastern Asia","South eaastern Asia","Southern Asia",
+                                          "Western Asia","Eastern Europe","Northen Europe","Southern Europe","Western Europe","Oceania and at Sea"))
+var_label(Data$GEOR) <- "Geographic region"
+
+# TO DO : maybe put cenetal Asia in another group since thera are not much observation in that group 
+table(Data$YEAR, Data$GEOR, exclude = NULL)
+
+
+### 1. Based on Culture 
+
+
+
+
+
+
+
+
+
+
+
+                                                              #### Export extra variables ####
+
+
+
+# IPC Index
+
+# Political climate 
+
+#State's unemployment rate
+
+
+
+                                                                #### Removing the extra variable  ####
+
+
+
+Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE))
+
 
 
 
