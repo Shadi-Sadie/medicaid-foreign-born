@@ -8,12 +8,17 @@
 
                                                                     #### loading required library  ####
 library(labelled)
+library(tidyr)
+library(readxl)
+library(dplyr)
+
+
 
                                                                     #### Reading Dataset   ####
 
-# Data<-read.csv("PREACS.csv", header = TRUE, sep ="," , fill = TRUE)
+ Data<-read.csv("PREACS.csv", header = TRUE, sep ="," , fill = TRUE)
 
-
+PREACS<-Data
                                                                     #### Cleaning the Data   ####
 
 
@@ -241,11 +246,10 @@ expansion_years <- data.frame(ST = c(2,4,5,6,8,9,15,17,18, 19,21,22,23,24,26,27,
 
 
 # Merge Data with expansion_years based on the STATE variable
-merged_data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
+Data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
 
 # Create the expansion variable based on the year of expansion
-merged_data$expansion <- ifelse(is.na(merged_data$Expan_year), 0, ifelse(merged_data$YEAR >= merged_data$Expan_year, 1, 0))
-
+Data$expansion <- ifelse(is.na(Data$Expan_year), 0, ifelse(merged_data$YEAR >= merged_data$Expan_year, 1, 0))
 
 
 #####  percentage of life spent in the US
@@ -271,65 +275,168 @@ Data$GEOR[Data$POBP %in% c(400:499) & !Data$POBP %in% c(400,414,430,436,451,456)
 Data$GEOR[Data$POBP %in% c(303,310:399)] <- 3 #Latin America  Done 
 Data$GEOR[Data$POBP %in% c(300:302,304:309)] <- 4 #Northern America Done
 # Asia
-Data$GEOR[Data$POBP %in% c(218,219,246,253)] <- 5 #Centeral Asia
+Data$GEOR[Data$POBP %in% c(200:203,210,229,231,238,218,219,246,253)] <- 5 #South  & Centeral Asia
 Data$GEOR[Data$POBP %in% c(207,209,217,215,228,249,251)] <- 6 #Eastern Asia
 Data$GEOR[Data$POBP %in% c(206,211,223,226,205,233,236,242,247,254,240)] <- 7 #South eaastern Asia
-Data$GEOR[Data$POBP %in% c(200:203,210,229,231,238,253)] <- 8 #Southern Asia
-Data$GEOR[Data$POBP %in% c(158,159,161,212:214,216,222,224,235,239,243,245,248,208)] <- 9 #Western Asia
+Data$GEOR[Data$POBP %in% c(158,159,161,212:214,216,222,224,235,239,243,245,248,208)] <- 8 #Western Asia
 #Europe
-Data$GEOR[Data$POBP %in% c(104,105,117,128,162,132,163,164,147, 148,149,155, 165,160,169)] <- 10 #Eastern Europe
-Data$GEOR[Data$POBP %in% c(106,108,118,119,156,157,127,136,138,142,140,139)] <- 11 #Northen Europe157, 160, 162:199
-Data$GEOR[Data$POBP %in% c(100,150, 151,116,120,129,168,152,154,134,167,166 )] <- 12 #Southern Europe ,1
-Data$GEOR[Data$POBP %in% c(102,103,109,110,126, 137)] <- 13 #Western Europe
+Data$GEOR[Data$POBP %in% c(104,105,117,128,162,132,163,164,147, 148,149,155, 165,160,169)] <- 9 #Eastern Europe
+Data$GEOR[Data$POBP %in% c(106,108,118,119,156,157,127,136,138,142,140,139)] <- 10 #Northen Europe157, 160, 162:199
+Data$GEOR[Data$POBP %in% c(100,150, 151,116,120,129,168,152,154,134,167,166 )] <- 11 #Southern Europe ,1
+Data$GEOR[Data$POBP %in% c(102,103,109,110,126, 137)] <- 12 #Western Europe
 #Oceania and at Sea
-Data$GEOR[Data$POBP %in% c(060, 130, 500:554)] <- 14 #Oceania and at Sea
+Data$GEOR[Data$POBP %in% c(060, 130, 500:554)] <- 13 #Oceania and at Sea
 
-Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa", "Latin America","Northern Americ", "Centeral Asia","Eastern Asia","South eaastern Asia","Southern Asia",
+Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa", "Latin America","Northern Americ", "South  & Centeral Asia","Eastern Asia","South eaastern Asia",
                                           "Western Asia","Eastern Europe","Northen Europe","Southern Europe","Western Europe","Oceania and at Sea"))
 var_label(Data$GEOR) <- "Geographic region"
 
 # TO DO : maybe put cenetal Asia in another group since thera are not much observation in that group 
-table(Data$YEAR, Data$GEOR, exclude = NULL)
+table(Data$expansion_years, exclude = NULL)
 
 
 ### 1. Based on Culture 
 
+# English Speaking, Protestant Europe, Catholic Europe, Confucian, Orthodox ,Latin America, South Asia, Islamic,Sub-Saharan Africa
+# English-speaking, Protestant Europe,Catholic Europe, Confucian,Orthodox, Latin America, South Asian , African-Islamic, Baltic
 
+Data$CULRG<-NA
 
+Data$CULRG[Data$POBP %in% c(119,138,139,140,142,060, 500:554,300:302,304:309)] <- 1 #English-speaking countries
+Data$CULRG[Data$POBP %in% c(106,108,110,118,126,127,136,137)] <- 2 #Protestant Europe
+Data$CULRG[Data$POBP %in% c(102,103,105,109,117,120,128,129,130,134,147,148,149,151,155, 156,157)] <- 3 # Catholic Europe
+Data$CULRG[Data$POBP %in% c(104,116,132,150,152,154,158,160:169,251)] <- 4 #Orthodox
 
+Data$CULRG[Data$POBP %in% c(206,207,209,215,217,228,254,240,249 )] <- 5 # Confucian
+Data$CULRG[Data$POBP %in% c(233,303,310:399)] <- 6 #Latin America
+Data$CULRG[Data$POBP %in% c(203,208,210,211,214,223,226,236,238, 242,247,449)] <- 7 #South Asia
+Data$CULRG[Data$POBP %in% c(159,200,202,205, 100,212,213,216,218,281,219,222,224,229, 231,235,239,243,245,246,248,253,400,414,400:448,450:499)] <- 8 #Islamic,
 
+Data$CULRG<- ordered(Data$CULRG, labels = c("English-speaking", "Protestant Europe","Catholic Europe", "Orthodox", "Confucian", "Latin America", "South Asian" , "African-Islamic"))
+var_label(Data$CULRG) <- "Inglehart-Welzel cultural Cluster"
 
-
-
+table(Data$CULRG, exclude = NULL)
 
 
 
                                                               #### Export extra variables ####
 
 
+                                                    ## IPC Index##
 
-# IPC Index
+# Read an Excel file named "IPC.xlsx" from the working directory, 
+# where the sheet named "Sheet1" will be read.
 
-# Political climate 
+IPC <- read_excel("IPC.xlsx", sheet = "Sheet1")
 
-#State's unemployment rate
+# Change the format of data to make it easier to append 
+IPC <- pivot_longer(IPC, 
+                                cols = c(`2009`,`2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), 
+                                names_to = "Year", 
+                                values_to = "IPCINDX")
+#cheking the class of the variable in the dataset and change their class if needed
+sapply(IPC, class)
+
+#check the values of IPCINDX and Year
+#IPCIND and year are character. I need to change them to numeric
+# for IPCIND there is a negative sign behind some of the valuses, when converting to numeric because these value 
+# are non numeric value during the conversion values will convert to NA. The reason is that negative sign used here is not the regular ASCII hyphen "-" character. to fix this error
+# I copied the same symbol from my data, and replace it with the ASCII hyphen "-" and then did the conversion.
+IPC$IPCINDX <- as.numeric(gsub("−", "-", IPC$IPCINDX))
+IPC$Year<- as.numeric(IPC$Year)
+# droping the extra variables in this dataset and change the col names to match the names in my Dataset that I want to merge this data with
+
+#there is noting to drop
+#chaning the names
+colnames(IPC) <- c("ST", "StateN", "YEAR", "IPCINDX")
+
+## Now, I try to merge my data 
+
+Data <- merge(Data, IPC, by = c("ST", "YEAR"), all.x = TRUE)
+
+table(Data$IPCINDX,Data$YEAR,exclude=NaN)
+
+                                            ## Political climate ##
+
+# Read an Excel file named "Pol.xlsx" from the working directory, 
+
+PolClM<-read_excel("Pol.xlsx", sheet = "Sheet4")
+sapply(PolClM, class)
+
+# first I drop the extra variable
+#PolClM <- PolClM %>% select(-"STATE ABR")
+
+# then I will change the var names
+
+colnames(PolClM) <- c("YEAR", "StateN", "ST", "ADA")
+
+Data <- merge(Data, PolClM, by = c("ST", "YEAR"), all.x = TRUE)
+
+table(Data$ADA,exclude=NaN)
 
 
+#table(PolClM$Leg_Control, exclude = NaN)
+#table(PolClM$Gov_Party, exclude = NaN)
+#table(PolClM$State_Control, exclude = NaN)
+
+# values Divided and split are the same need to be replaced
+#PolClM$`Leg. Control` <- replace(df$Status, df$Status == "Split", "Divided")
+
+
+#change charachter variable to ordered factor
+#levels_order <- c("Dem", "Rep", "Divided")
+#for (var in c("Leg. Control", "Gov. Party","State Control" )) {
+ # PolClM[[var]] <- factor(PolClM[[var]], levels = levels_order, ordered = TRUE)
+#}
+
+
+
+                                        ## State's unemployment rate ##
+
+UNEMPR <- read_excel("UnempR.xlsx", sheet = "Sheet1")
+sapply(UNEMPR, class)
+
+# Drop the columns I don't want, Statae name and State ABR are not included in the original Dataset, 
+# I might need to drop them or just keep the ABR for the final dataset
+
+UNEMPR <- UNEMPR %>% select(-c(`STATE ABR` , `2020`, `2021`))
+
+# Use pivot_longer to reshape the data
+unemp_data_long <- pivot_longer(UNEMPR, 
+                                cols = c(`2009`,`2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), 
+                                names_to = "YEAR", 
+                                values_to = "UnempR")
+
+# Print the transformed data check if everything is correct
+print(unemp_data_long)
+UNEMPR<-unemp_data_long 
+rm(unemp_data_long)
+
+colnames(UNEMPR) <- c("StateN","ST", "YEAR", "UnempR")
+ #cheking the values again, year is charachter and need to be converted to numeric
+sapply(UNEMPR, class)
+UNEMPR$YEAR<- as.numeric(UNEMPR$YEAR)
+table(UNEMPR$YEAR)
+## Now, I try to merge my data 
+
+Data <- merge(Data, UNEMPR, by = c("ST", "YEAR"), all.x = TRUE)
 
                                                                 #### Removing the extra variable  ####
 
 
 
-Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE))
+Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE, StateN.x,StateN.y ))
 
 
+Varname<-colnames(Data) # Checking the names of all variable
 
+table(Data$StateN,  exclude = NaN)
 
                                                 #### Exporting the data set into the new data sample both CSV and Stata ####
 
 
 
-# write.csv(Data, file = "CLNACS.csv", row.names = FALSE)
+ write.csv(Data, file = "CLNACS.csv", row.names = FALSE)
 
-# require(foreign)
-# write.dta(Data, "CLNACS.dta")
+require(foreign)
+write.dta(Data, "CLNACS.dta")
