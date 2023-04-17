@@ -227,11 +227,8 @@ var_label(Data$RACE) <- "Race"
 table(Data$RACE, exclude = NULL)
 table(Data$RAC1P, exclude = NULL)
 
-                                                                #### Creating new variables ####
 
 #####  expansion status
-
-
 #2015 Pennsylvania,  Indiana ,Alaska
 #2016, Montana, Louisiana
 #2019, Virginia, Maine
@@ -239,17 +236,32 @@ table(Data$RAC1P, exclude = NULL)
 #2021 Oklahoma
 #2022 Missouri
 # not expanded Alabama,Florida,Georgia,Kansas,Mississippi,North Carolina,South Carolina,South Dakota,Tennessee,Texas,Wisconsin,Wyoming
-
 # Create a data frame with state FIPS codes and their corresponding expansion years
-expansion_years <- data.frame(ST = c(2,4,5,6,8,9,15,17,18, 19,21,22,23,24,26,27,30,32,33,34,35,38,39,41,42,44,51,53,54),
-                       Expan_year = c(rep(2015, 1),rep(2014, 7), rep(2015, 1),rep(2014, 2), rep(2016,1), rep(2019,1), rep(2014, 3),rep(2016,1),rep(2014, 7),rep(2015, 1),rep(2014, 1),rep(2019,1),rep(2014, 2)))
 
+#I can use the code here to create a var for expansion and expansion year but since I have the data availble
+#I'll use that instead, but if you don't want to use the data set the variable can be made using the code by removing # in the begings
 
+#expansion_years <- data.frame(ST = c(2,4,5,6,8,9,15,17,18, 19,21,22,23,24,26,27,30,32,33,34,35,38,39,41,42,44,51,53,54),
+  #                     Expan_year = c(rep(2015, 1),rep(2014, 7), rep(2015, 1),rep(2014, 2), rep(2016,1), rep(2019,1), rep(2014, 3),rep(2016,1),rep(2014, 7),rep(2015, 1),rep(2014, 1),rep(2019,1),rep(2014, 2)))
 # Merge Data with expansion_years based on the STATE variable
-Data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
-
+# Data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
 # Create the expansion variable based on the year of expansion
-Data$expansion <- ifelse(is.na(Data$Expan_year), 0, ifelse(merged_data$YEAR >= merged_data$Expan_year, 1, 0))
+# Data$expan <- ifelse(is.na(Data$Expan_year), 0, 1)
+
+## Substitue way using the excel file that is already there by KFF
+
+
+expanData <- read_excel("raw_data.xlsx", sheet = "raw_data")
+
+# checking the class of data
+sapply(expanData, class)
+
+# expansion and Expan_STS are character but they need to be factor, I will change their class next
+expanData$expansion<-as.factor(expanData$expansion)
+expanData$Expan_STS<-as.factor(expanData$Expan_STS)
+
+
+Data <- merge(Data, expanData, by = "ST", all.x = TRUE)
 
 
 #####  percentage of life spent in the US
@@ -352,7 +364,7 @@ colnames(IPC) <- c("ST", "StateN", "YEAR", "IPCINDX")
 
 ## Now, I try to merge my data 
 
-Data <- merge(Data, IPC, by = c("ST", "YEAR"), all.x = TRUE)
+Data <- merge(Data, IPC, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
 table(Data$IPCINDX,Data$YEAR,exclude=NaN)
 
@@ -370,7 +382,7 @@ sapply(PolClM, class)
 
 colnames(PolClM) <- c("YEAR", "StateN", "ST", "ADA")
 
-Data <- merge(Data, PolClM, by = c("ST", "YEAR"), all.x = TRUE)
+Data <- merge(Data, PolClM, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
 table(Data$ADA,exclude=NaN)
 
@@ -419,16 +431,17 @@ UNEMPR$YEAR<- as.numeric(UNEMPR$YEAR)
 table(UNEMPR$YEAR)
 ## Now, I try to merge my data 
 
-Data <- merge(Data, UNEMPR, by = c("ST", "YEAR"), all.x = TRUE)
+Data <- merge(Data, UNEMPR, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
                                                                 #### Removing the extra variable  ####
 
 
 
-Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE, StateN.x,StateN.y ))
+Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE ))
 
 
-Varname<-colnames(Data) # Checking the names of all variable
+
+colnames(Data) # Checking the names of all variable
 
 table(Data$StateN,  exclude = NaN)
 
@@ -440,3 +453,17 @@ table(Data$StateN,  exclude = NaN)
 
 require(foreign)
 write.dta(Data, "CLNACS.dta")
+
+
+# Divide dataset two to subset based on the nativity 
+
+NATV<- Data[Data$NATIVITY == 1, ]
+Forgn<- Data[Data$NATIVITY == 2, ]
+
+NATV <- subset(NATV, select = -c(ENG, YOEP, YLIU,PLIU,GEOR, CULRG))
+
+write.dta(NATV, "NATV.dta")
+write.dta(Forgn, "Forgn.dta")
+
+
+
