@@ -51,26 +51,21 @@ var_label(Data$AGEG) <- "Age (years)"
 
 ### 4. CITIZENSHIP STATUS
 
-#Data$CITG<-1
-#Data$CITG<-replace(Data$CITG,Data$CIT==4,2) # 4. Naturalized citizen
-#Data$CITG<-replace(Data$CITG,Data$CIT==5,3) # 5. Not citizen
+## in the data us-citizen born abroud are not included in foregin born. howerver, I wnat 
+## this groupd to be foregin born. therefore I recode it as :
 
-#Data$CITG<- ordered(Data$CITG, labels = c("US Born", "Naturalized-citizen", "Non-citizen" )) # labeling the values 
-#var_label(Data$CITG) <- "Citizenship Status"
-
-        # 1: U.S Citizen by Born 
-        # 2: Naturalizaed Citizen
-        # 3: Not Citizen
+Data$NATIVITY<-replace(Data$NATIVITY,Data$CIT==3,2) 
 
 
+# additionaly I want my cit to have lable
+Data$CIT<- ordered(Data$CIT, labels = c("Born in US states", "Born in US Territories","US-citizen Born abroad ","Naturalized-citizen", "Non-citizen" )) # labeling the values 
+var_label(Data$CIT) <- "Citizenship Status"
 
+table(Data$NATIVITY)
+#Similarly I want to have lable for nativity
 
-Data$CIT<- ordered(Data$CIT, labels = c("US Born", "Born in US Territories","US citizen Born abroad ","Naturalized-citizen", "Non-citizen" )) # labeling the values 
-#var_label(Data$CITG) <- "Citizenship Status"
-
-# 1: U.S Citizen by Born 
-# 2: Naturalizaed Citizen
-# 3: Not Citizen
+Data$NATIVITY<- ordered(Data$NATIVITY, labels = c("US-born", " Foregin-born")) # labeling the values 
+var_label(Data$NATIVITY) <- "Forign-born Status"
 
 
 
@@ -184,7 +179,7 @@ var_label(Data$DIS) <- "Disability"
 
 ### 14. ETHNICITY
 
-table(Data$HISP, exclude = NULL)
+table(Data$ETHN, exclude = NULL)
 Data$ETHN<-1 # creat ethnicity variable      # 1 : Hispanic
 Data$ETHN<-ifelse(Data$HISP == 1,0,Data$ETHN) # 0 : Not hispanic
 table(Data$ETHN,exclude = NULL) 
@@ -221,8 +216,7 @@ Data$RACE<-ifelse(Data$RAC1P %in% c(4,5),3,Data$RACE) # 4. Asian# 5. Native Hawa
 Data$RACE<-ifelse(Data$RAC1P==6,4,Data$RACE) # 6. Asian
 Data$RACE<-ifelse(Data$RAC1P %in% c(7,8,9),5,Data$RACE)  # 8.Some Other Race alone # 9.Two or More Races
 
-Data$RACE<- ordered(Data$RACE, labels = c("White", "Black", "American Indian or Alaska Native", "Asian", "Other"))
-var_label(Data$RACE) <- "Race"
+
 
 table(Data$RACE, exclude = NULL)
 table(Data$RAC1P, exclude = NULL)
