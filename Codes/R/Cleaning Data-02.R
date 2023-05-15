@@ -215,11 +215,21 @@ Data$RACE<-Data$RAC1P
 Data$RACE<-ifelse(Data$RAC1P %in% c(4,5),3,Data$RACE) # 4. Asian# 5. Native Hawaiian and Other Pacific Islander
 Data$RACE<-ifelse(Data$RAC1P==6,4,Data$RACE) # 6. Asian
 Data$RACE<-ifelse(Data$RAC1P %in% c(7,8,9),5,Data$RACE)  # 8.Some Other Race alone # 9.Two or More Races
+Data$RACE<- ordered(Data$RACE, labels = c("White", "Black", "American Indian or Alaska Native", "Asian", "Other"))
+var_label(Data$RACE) <- "Race"
 
 
+## Creating a new variable for race/ethnicity and rename it RACE1
 
-table(Data$RACE, exclude = NULL)
-table(Data$RAC1P, exclude = NULL)
+Data$RACE1<-ifelse(Data$RACE==1,4,Data$RACE1) # merge native american to other
+Data$RACE1<-ifelse(Data$ETHN==1,1,Data$RACE1) # merge ethnicity into the race
+Data$RACE1<- ordered(Data$RACE1, labels = c("Hispanic", "Asian","Black", "Other", "White"))
+var_label(Data$RACE1) <- "Race and Ethnicity"
+
+
+# Create a variable ACA to have pre and post ACA
+Data$ACA <- ifelse(Data$YEAR < 2014,1, 2)
+Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
 
 
 #####  expansion status
@@ -245,7 +255,10 @@ table(Data$RAC1P, exclude = NULL)
 ## Substitue way using the excel file that is already there by KFF
 
 
-expanData <- read_excel("raw_data.xlsx", sheet = "raw_data")
+expanData <- read_excel("expansion.xlsx", sheet = "raw_data")
+
+# this data set includes stfips code, State name, expansion if they adopted or not(treatment), the year of expansion 
+# and the Expan_STS if which has values not expanded, expanded, late expanded.
 
 # checking the class of data
 sapply(expanData, class)
