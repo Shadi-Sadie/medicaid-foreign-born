@@ -257,8 +257,8 @@ Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
 
 expanData <- read_excel("expansion.xlsx", sheet = "raw_data")
 
-# this data set includes stfips code, State name, expansion if they adopted or not(treatment), the year of expansion 
-# and the Expan_STS if which has values not expanded, expanded, late expanded.
+# this data set includes stfips code(ST), State name(StateN), expansion(expansion) if state adopted or not(treatment), the year of expansion (ExpansionY)
+# and the Expan_STS which has values not expanded, expanded, late expanded.
 
 # checking the class of data
 sapply(expanData, class)
@@ -267,8 +267,14 @@ sapply(expanData, class)
 expanData$expansion<-as.factor(expanData$expansion)
 expanData$Expan_STS<-as.factor(expanData$Expan_STS)
 
-
+# merging data to whole data set
 Data <- merge(Data, expanData, by = "ST", all.x = TRUE)
+# Expansion year for the state that didn't adopt the medicaid is 0 I like to change that to NA
+# I might later decide to change it to 0 again
+Data$ExpansionY <- ifelse(Data$ExpansionY == 0, NA, Data$ExpansionY)
+# the expansion treatment is not dynamic it only shows if the satet is among expansion or non expansion states
+# Thus I need to create another variable called treatment that is dynamice
+Data$treat<-ifelse(Data$YEAR>=Data$ExpansionY & !is.na(Data$ExpansionY) , 1,0)
 
 
 #####  percentage of life spent in the US
