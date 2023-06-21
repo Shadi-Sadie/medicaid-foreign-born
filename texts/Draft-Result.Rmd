@@ -10,11 +10,21 @@ editor_options:
   chunk_output_type: inline
 ---
 
-```{r , include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.width = 4, 
+                      fig.height = 4, 
+                      fig.path = "figures/prefix-",
+
+                      dev = "png",
+                      cache = TRUE
+                      )
+
+
 ```
 
-```{r setup, include=FALSE}
+```{r library, include=FALSE}
 library(fixest)
 library(ggpubr)
 library(ggiplot)
@@ -46,9 +56,25 @@ library(purrr)
 
 ```
 
-```{r inputseting, include=FALSE}
-ACS<-read.csv("/Users/shadi/Downloads/CLNACS.csv", header = TRUE, sep ="," , fill = TRUE)
+```{r wd-setup, include=FALSE}
 
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+
+```
+ if you want the code to show up in your knitted file without any messages or warnings, you can write message = FALSE and warning = FALSE in the chunk header:
+
+
+
+
+```{r read-data, include=FALSE}
+ACS<-read.csv(paste0(wd$data,"CLNACS.csv"), header = TRUE, sep ="," , fill = TRUE)
+Data<-ACS
+save(Data, file = paste0(wd$data,'Data.Rdata'))
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 NATV<- Data[Data$NATIVITY == "US-born", ]
 

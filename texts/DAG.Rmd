@@ -1,0 +1,410 @@
+---
+title: "DAG"
+author: "Shadi"
+date: "2023-06-20"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r wd-setup, include=FALSE}
+
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+
+```
+
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.width = 4, 
+                      fig.height = 4, 
+                      fig.path = wd$output,
+                      dev = "png",
+                      cache = TRUE,
+                      warning=FALSE 
+                      )
+```
+
+<!-- message=FALSE and/or warning=FALSE -->
+
+```{r library ,  include=FALSE}
+
+library(dplyr)  # This will also load the magrittr package
+library(pcalg)
+library(dagitty)
+library(ggdag)
+library(ggplot2)
+library(graph)
+library(brew)
+library(BiocGenerics)
+```
+
+```{r data}
+load(paste0(wd$data,"Data.Rdata"))
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+NATV<- Data[Data$NATIVITY == "US-born", ]
+
+data1 <- subset(Data, select = c(IPC,ENG,LTINU,CORIGIN, SEX,DIS,AGEP, SCHLG, MARG, ESRG, RACE1,POVPIP,treat,UnempR,ADA,CIT,HINS4))
+data2 <- subset(Forgn, select = c(IPC,ENG,LTINU,CORIGIN, SEX,DIS,AGEP, SCHLG, MARG, ESRG, RACE1,POVPIP,treat,UnempR,ADA,CIT,HINS4))
+data3 <- subset(Data, select = c(IPC,ENG,LTINU,CORIGIN, SEX,DIS,AGEP, SCHLG, MARG, ESRG, RACE1,POVPIP,treat,UnempR,ADA,CIT,UNINS))
+data4 <- subset(Forgn, select = c(IPC,ENG,LTINU,CORIGIN, SEX,DIS,AGEP, SCHLG, MARG, ESRG, RACE1,POVPIP,treat,UnempR,ADA,CIT,UNINS))
+
+variables = colnames(data1)
+variables[3] <- "ACUL" 
+variables[7] <- "AGE" 
+variables[8] <- "EDUC" 
+variables[9] <- "EMPLY" 
+variables[10] <- "RACE"
+variables[11] <- "POV" 
+variables[17] <- "INSURED" 
+
+
+
+colnames(data1) = c(1:ncol(data1))
+# Create an empty list to store the matrices
+
+```
+
+### Causal Structure Discovery
+
+I utilized causal structure discovery techniques to accurately represent
+the data generating process and unveil the underlying causal
+relationships among the variables. The causal structure discovery
+approach identifies potential causal relationships based on patterns and
+dependencies observed in the data. The resulting Directed Acyclic Graph
+(DAG) from the causal discovery is capturing the complex interplay
+between the variables, accounting for confounding factors and potential
+biases, and providing credible evidence for the causal effects of
+medicaid expansion on medicaid take-up and uninsured rate.
+
+By utilizing the DAG obtained through the causal discovery approach, I
+can conduct backdoor and front door analyses, enabling the
+identification of the minimal adjustment set. The minimal adjustment set
+represents the smallest subset of variables that must be controled for
+to obtain unbiased estimates of causal effects.
+
+In the initial phase of our analysis, a DAG , as shown in Graph 1, was
+generated using multiple constraint-based and score-based algorithms
+including GDS algorithms, Greedy Equivalence Search (GES), Peter-Clark
+(PC) algorithm, and Fast Causal Inferences (FCI). To integrate the
+information obtained from these algorithms, following Joe et al.(2023) I
+employed a majority voting approach. This involved considering each edge
+and determining its presence in the final graph based on whether it
+appeared in more than 50% of the cases, indicating agreement among the
+majority of the algorithms.
+
+```{r DAG1}
+
+
+####################
+## Identify Causal Graph
+####################
+
+
+matMajVotingList <- list()
+
+# Loop through data1 to data4
+for (i in 1:4) {
+        # Get the current data
+        currentData <- get(paste0("data", i))
+        
+        # Convert character variables to factors
+        currentData <- currentData %>% mutate_if(is.character, as.factor)
+        
+        # Convert factor variables to numeric
+        currentData <- currentData %>% mutate_if(is.factor, as.numeric)
+        
+        # 1.Perform the GES algorithm
+        score <- new("GaussL0penObsScore", currentData)
+        ges1.fit <- ges(score, fixedGaps = NULL, adaptive = "vstructures", phase = "forward", maxDegree = integer(0), verbose = FALSE)
+        
+        # Create the matrix for GES algorithm
+        p <- dim(currentData)[2]
+        matGES <- matrix(0, nrow = p, ncol = p)
+        row <- 1
+        for (list in ges1.fit$essgraph$.in.edges) {
+                for (node in list) {
+                        matGES[node, row] <- 1
+                }
+                row <- row + 1
+        }
+        
+        # 2. Perform the GDS algorithm
+        gds.fit <- gds(score, fixedGaps = NULL, adaptive = "triples", phase = "forward", maxDegree = integer(0), verbose = FALSE)
+        
+        # Create the matrix for GDS algorithm
+        matGDS <- matrix(0, nrow = p, ncol = p)
+        row <- 1
+        for (list in gds.fit$essgraph$.in.edges) {
+                for (node in list) {
+                        matGDS[node, row] <- 1
+                }
+                row <- row + 1
+        }
+        
+        # 3. Perform the PC algorithm
+        SuffStat <- list(C = cor(currentData), n = nrow(currentData))
+        result.pc <- pc(suffStat = SuffStat, indepTest = gaussCItest, labels = colnames(currentData), alpha = 0.01)
+        
+        # Create the matrix for PC algorithm
+        matPC <- matrix(0, nrow = p, ncol = p)
+        row <- 1
+        for (list in result.pc@graph@edgeL) {
+                for (node in list) {
+                        matPC[node, row] <- 1
+                }
+                row <- row + 1
+        }
+        
+        # 4.Perform the RFCI algorithm
+        result.rfci <- rfci(SuffStat, indepTest = gaussCItest, p = ncol(currentData), alpha = 0.01)
+        
+        # Create the matrix for RFCI algorithm
+        matRFCI <- matrix(0, nrow = p, ncol = p)
+        item <- 0
+        for (l in result.rfci@amat) {
+                row <- item %% p + 1
+                column <- as.integer(item / p) + 1
+                if (l == 2)
+                        matRFCI[row, column] <- 1
+                if (l == 3)
+                        matRFCI[column, row] <- 1
+                item <- item + 1
+        }
+        
+        # Majority voting of the DAG
+        matMajVoting <- matGES + matGDS + matPC + matRFCI
+        
+        # Store the matrix in the list
+        matMajVotingList[[i]] <- matMajVoting
+}
+
+# Access the matrices from the list
+matMajVoting1 <- matMajVotingList[[1]]
+matMajVoting2 <- matMajVotingList[[2]]
+matMajVoting3 <- matMajVotingList[[3]]
+matMajVoting4 <- matMajVotingList[[4]]
+
+MajVoting <- matMajVoting1 + matMajVoting2 + matMajVoting3 + matMajVoting4
+
+#MajVotingF <- matMajVoting2 + matMajVoting4
+
+# create a DAG based on majority voting 
+
+digraph <- "dag {"  # Initialize the digraph as an empty string
+
+for(i in 1:p){
+        for(j in 1:p){
+                if(MajVoting[i, j] > 8){ # change the value 2 to an appropriate value (threshold)
+                        #print(variables[i])
+                        digraph <- paste0(digraph, variables[i], "->", variables[j],";")
+                }
+        }
+}
+
+digraph <- gsub(";$", "}", digraph) # change the last ; to } to make it compatible for Dagitty function 
+
+# create DAG object
+dag <- dagitty(digraph)
+exposures(dag) <- "treat"
+outcomes(dag) <- "INSURED"
+
+# DAG representation
+# 
+# 
+# 
+ DAG1<-tidy_dagitty(dag, layout = "grid") %>% 
+     ggdag_status(edge_type="link_arc",text_size=2.7,node_size=20, check_overlap = TRUE)+guides(color = FALSE) + 
+     theme_dag_blank()
+ 
+    DAG1$layers[[3]]$mapping <- aes(colour = status)
+    DAG1 + scale_color_manual(na.value ="#222D5a" , values = c(exposure ="#A94064" , outcome = "#44AA99")) +
+            scale_fill_manual(na.value ="#222D5a", values = c(exposure ="#A94064" , outcome = "#44AA99"))
+
+
+ 
+```
+
+### Revised casual graph
+
+To enhance the accuracy of the causal relationships represented in the
+DAG, I carefully reviewed and manually edited the graph by removing
+paths that contradicted my domain knowledge or appeared implausible
+within the context. By applying these revisions, the resulting DAG,
+illustrated in graph 2, aligns more closely with my expertise in the
+field and provides a more trustworthy representation of the underlying
+causal structure in my analysis.
+
+```{r DAG2, echo=FALSE}
+findag<-dagitty('dag{
+ bb="-5.958,-4.932,7.16,5.438"
+ "Life Lived in US" [pos="-2.079,1.854"]
+ "State Political Ideology" [pos="-4.930,0.020"]
+ "Age" [pos="1.789,-1.856"]
+ "Citizenship Status" [pos="-2.079,2.842"]
+ "Disability" [pos="1.789,-2.675"]
+ "English Proficiency" [pos="-2.079,3.801"]
+ "Employment" [pos="-2.079,-3.112"]
+ "Immigration Policy Climate" [pos="-4.554,2.786"]
+ "Marital Status" [pos="1.811,-1.080"]
+ "Income-to-Poverty Ratio" [pos="-2.068,-0.657"]
+ "Race/Ethnicity" [pos="1.789,-0.107"]
+ "Cultural Grouping" [pos="-2.090,4.930"]
+ "Education" [pos="-2.046,-2.068"]
+ "Sex" [pos="1.800,-3.676"]
+ "Medicaid Take-Up" [outcome,pos="1.822,1.304"]
+ "Unemployment Rate" [pos="-3.858,0.006"]
+ "Medicaid Expansion" [exposure,pos="-4.389,1.276"]
+ "Life Lived in US" -> "English Proficiency"
+ "State Political Ideology" -> "Immigration Policy Climate"
+ "State Political Ideology" -> "Unemployment Rate"
+ "State Political Ideology" -> "Medicaid Expansion"
+ "Age" -> "Life Lived in US"
+ "Age" -> "Disability"
+ "Age" -> "Employment"
+ "Age" -> "Medicaid Take-Up"
+ "Citizenship Status" -> "State Political Ideology"
+ "Citizenship Status" -> "English Proficiency"
+ "Citizenship Status" -> "Marital Status"
+ "Citizenship Status" -> "Income-to-Poverty Ratio"
+ "Citizenship Status" -> "Education" 
+ "Citizenship Status" -> "Medicaid Take-Up"
+ "Citizenship Status" -> "Employment"
+ "Disability" -> "Employment"
+ "Disability" -> "Education" 
+ "Disability" -> "Medicaid Take-Up"
+ "English Proficiency" -> "Employment"
+ "English Proficiency" -> "Medicaid Take-Up"
+ "Employment" -> "Income-to-Poverty Ratio"
+ "Employment" -> "Medicaid Take-Up"
+ "Immigration Policy Climate"  -> "Income-to-Poverty Ratio"
+ "Immigration Policy Climate"  -> "Medicaid Take-Up"
+ "Marital Status" -> "Income-to-Poverty Ratio"
+ "Marital Status" -> "Medicaid Take-Up"
+ "Income-to-Poverty Ratio" -> "Medicaid Take-Up"
+ "Race/Ethnicity" -> "Education"  
+ "Cultural Grouping" -> "English Proficiency"
+ "Cultural Grouping" -> "Employment"
+ "Cultural Grouping" -> "Race/Ethnicity"
+ "Cultural Grouping" -> "Education" 
+ "Cultural Grouping" -> "Medicaid Take-Up"
+ "Education" -> "English Proficiency"
+ "Education" -> "Employment"
+ "Education" -> "Medicaid Take-Up"
+ "Sex" -> "Employment"
+ "Sex" -> "Medicaid Take-Up"
+ "Unemployment Rate" -> "Employment"
+ "Unemployment Rate" -> "Education"
+ "Unemployment Rate" -> "Medicaid Take-Up"
+ "Unemployment Rate" -> "Medicaid Expansion"
+ "Medicaid Expansion" -> "Medicaid Take-Up"
+}')
+
+FINDAG <- ggdag_status(findag, node_size = 10, use_labels = "name", text_size = 3, label_size = 6, text = FALSE) +
+  guides(color = "none") +  # Turn off legend
+  theme_dag() 
+
+
+FINDAG$layers[[3]]$mapping <- aes(colour = status)
+FINDAG + scale_color_manual(na.value ="#222D5a" , values = c(exposure ="#A94064" , outcome = "#44AA99")) +
+        scale_fill_manual(na.value ="#222D5a", values = c(exposure ="#A94064" , outcome = "#44AA99"))
+
+
+```
+
+### Minimal adjustment set
+
+The identified causal relationship between Medicaid expansion and
+Medicaid take-up in the revised DAG provides compelling evidence that
+changes in the treatment variable directly influence changes in the
+outcome variable. This finding suggests that interventions targeting the
+treatment variable, such as expanding Medicaid coverage, can potentially
+have a substantial impact on improving the rate of Medicaid take-up.
+
+by conducting backdoor analysis I identified the necessary adjustment
+set, revealing that variables Citizenship Status, Immigration Policy
+Climate, Unemployment Rate need to be controlled for to accurately
+estimate the causal effect between Medicaid expansion and Medicaid
+take-up.
+
+```{r DAG2Adj, echo=TRUE}
+adjustmentSets(findag)
+
+```
+
+### Simplified causal graph
+
+To enhance the clarity and interpretability of the graph, I employed a
+strategy to simplify its complexity. This involved grouping related
+variables into single nodes, such as combining 'education,' 'income,'
+and 'employment' into a unified node labeled 'Socioeconomic.' The
+streamlined representation of the underlying relationships can be
+observed in Graph 3.
+
+```{r DAG3, echo=FALSE}
+
+
+shaddag<-dagitty('dag {
+        bb="-3.828,-4.241,3.728,3.459"
+        "State Political Ideology" [pos="-3.274,-2.020"]
+         Demographics [pos="0.049,-1.978"]
+        "Medicaid Expansion" [exposure,pos="-2.803,-0.805"]
+        "Immigration Policy Climate" [pos="-2.771,0.180"]
+        "Foregin-Born" [pos="-1.294,0.128"]
+        "Socioeconomic" [pos="-1.288,-2.010"]
+        "Medicaid Take-Up" [outcome,pos="0.049,-0.763"]
+        "Unemployment Rate" [pos="-2.478,-2.020"]
+        "State Political Ideology" -> "Medicaid Expansion"
+        "State Political Ideology" -> "Immigration Policy Climate"
+        "State Political Ideology" -> "Unemployment Rate"
+        "State Political Ideology" -> "Medicaid Take-Up"
+        Demographics -> "Socioeconomic"
+        Demographics -> "Medicaid Take-Up"
+        "Medicaid Expansion" -> "Medicaid Take-Up"
+        "Immigration Policy Climate" -> "Foregin-Born"
+        "Immigration Policy Climate" -> "Medicaid Take-Up"
+        "Foregin-Born" -> "Socioeconomic"
+        "Foregin-Born" <-> "Demographics"
+        "Foregin-Born" -> "Medicaid Take-Up"
+        "Socioeconomic" -> "Medicaid Take-Up"
+        "Unemployment Rate" -> "Medicaid Expansion"
+        "Unemployment Rate" -> "Immigration Policy Climate"
+        "Unemployment Rate" -> "Socioeconomic"
+        "Unemployment Rate" -> "Medicaid Take-Up"
+}')
+
+## Create simplified  DAG
+
+DAGSHADI<-ggdag_status(shaddag,node_size = 10,use_labels = "name", text = FALSE)+
+        guides(color = FALSE) +  # Turn off legend
+        theme_dag()
+
+DAGSHADI$layers[[3]]$mapping <- aes(colour = status)
+DAGSHADI + scale_color_manual(na.value ="#222D5a" , values = c(exposure ="#A94064" , outcome = "#44AA99")) +
+        scale_fill_manual(na.value ="#222D5a", values = c( exposure ="#A94064" , outcome = "#44AA99")) # other coloer = "#ffc300",  
+
+
+```
+
+Although utilizing causal discovery algorithms has limitations, such as
+assuming the adequacy of observed variables and relying on the absence
+of unobserved confounders, efforts were made to include relevant
+variables in the analysis. However, it is possible that unmeasured
+confounders may exist, potentially introducing biases into the
+identified causal relationships. Therefore, the obtained graph may not
+precisely represent the true underlying causal structure..
+
+Due to these limitations, I do not solely rely on this graph and its
+suggested adjustment set for estimating causal effects in my analysis.
+Nonetheless, the DAG derived from the causal discovery approach serves
+as a valuable tool for generating hypotheses and guiding the modeling
+process, as well as informing the selection of control variables in my
+DID approach analysis.
