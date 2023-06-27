@@ -13,7 +13,7 @@ ACS<-read.csv("CLNACS.csv", header = TRUE, sep ="," , fill = TRUE)
 ####################
 
 
-library(tidycensus)
+# library(tidycensus)
 library(tidyverse)
 library(gtsummary)
 library(survey)
@@ -205,8 +205,9 @@ table1
   print(table2)
   
   
-################# Table 3: Uninsured rate before and after ACA for expansion and non-expansion state by characteristics*
+################# Table 3: Uninsured and Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics*
 
+  ## Uninsured Section 
 
  t1<- Data %>% 
       filter(expansion=="expansion")%>%
@@ -255,7 +256,7 @@ table1
             )
  
 # creating the merged table out of the t1 and t2
- table3<-tbl_merge(
+ tab1<-tbl_merge(
               tbls = list(t1, t2),
               tab_spanner = c("**Expansion**", "**Non-expansion**")
                  )%>%
@@ -264,15 +265,11 @@ table1
                  stat_2_2_1 = "**Post-ACA** ({style_percent(p)}%)",
                  stat_2_1_2 = "**Pre-ACA** ({style_percent(p)}%)",
                  stat_2_2_2 = "**Post-ACA** ({style_percent(p)}%)"
-                 ) %>%
-               modify_caption("**Table 3.Uninsured rate before and after ACA for expansion and non-expansion by characteristics**")
-
- 
-print(table3)
+                 ) 
 
 
- ################# Table 4: Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics*
- 
+##### Medicaid coverage section
+
  t1<- Data %>% 
    filter(expansion=="expansion")%>%
    select(HINS4, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, CORIGIN, DIS,expansion,ACA) %>%  
@@ -320,7 +317,7 @@ print(table3)
    )
  
  
- table4 <- tbl_merge(
+ tab2 <- tbl_merge(
                 tbls = list(t1, t2),
                 tab_spanner = c("**Expansion**", "**Non-expansion**")
                   )%>%
@@ -329,79 +326,104 @@ print(table3)
                         stat_2_2_1 = "**Post-ACA** ({style_percent(p)}%)",
                         stat_2_1_2 = "**Pre-ACA** ({style_percent(p)}%)",
                         stat_2_2_2 = "**Post-ACA** ({style_percent(p)}%)"
-                              ) %>%
-                 modify_caption("**Table 4. Medicaid coverage rate before/after ACA for expansion/non-expansion state by characteristics**")
- 
- print(table4)
- 
- ################# Table 5: Uninsured Rate by Socio-Demographic Factors, Across Citizenship Status
- 
-  table5<-Data %>%  select(UNINS,SEX, DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-                           CIT,LTINU,ENG, CULRG,CORIGIN ) %>%
-    tbl_strata(
-      strata = CIT,
-      .tbl_fun = ~ .x %>% 
-        tbl_summary(
-          by = UNINS,
-          missing = "no" ,
-          label = list(SEX ~ "Sex", DIS ~"Disability",
-                      ESRG~"Current employment status",
-                      SCHLG~"Education" , RACE1~"Race/ethnicity",CULRG~"Cultural clusters",
-                      POVPIPG ~ "Federal poverty",LTINU ~"Lifetime in US",
-                      ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth"
-                      ),
-          percent = "row",
-          statistic = list(all_categorical() ~ "{p}%")
-                   ) %>%
-         
-            # add_p() %>%
-            # add_significance_stars(hide_ci = TRUE, hide_p = TRUE)%>%
-            italicize_labels() %>%
-             bold_labels() %>%
-             modify_column_hide(columns = stat_1) %>%
-             modify_header(stat_2 = "{style_percent(p)}%") %>%
-             modify_spanning_header(stat_2 ~ "**Expansion**")%>%
-        
-              modify_caption("**Table 5. Uninsured Rate by Socio-Demographic Factors, Across Citizenship Status**")
-      
-      
-      #.header = "**{strata}**, N = {n}"
-    )
-  print(table5)
-  
-  ################# Table 6: Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status
-  
-  table6<-Data %>%  select(HINS4, SEX, DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-                           CIT,LTINU,ENG, CULRG,CORIGIN ) %>%
-    tbl_strata(
-      strata = CIT,
-      .tbl_fun = ~ .x %>% 
-        tbl_summary(
-          by = HINS4,
-          missing = "no" ,
-          label = list(SEX ~ "Sex", DIS ~"Disability",
-                       ESRG~"Current employment status",
-                       SCHLG~"Education" , RACE1~"Race/ethnicity",CULRG~"Cultural clusters",
-                       POVPIPG ~ "Federal poverty",LTINU ~"Lifetime in US",
-                       ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth"
-          ),
-          percent = "row",
-          statistic = list(all_categorical() ~ "{p}%")
-        ) %>%
-        
-        # add_p() %>%
-        # add_significance_stars(hide_ci = TRUE, hide_p = TRUE)%>%
-        italicize_labels() %>%
-        bold_labels() %>%
-        modify_column_hide(columns = stat_1) %>%
-        modify_header(stat_2 = "{style_percent(p)}%") %>%
-        modify_caption("**Table 6. Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status**")
-      
-      
-      #.header = "**{strata}**, N = {n}"
-    )
-  print(table6)
 
+                 )
+
+ 
+ ####  Merge Medicaid & Uninsured to create table 3
+ 
+ 
+ table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid'))
+ 
+
+ 
+ 
+ ################# Table 5: Uninsured Rate and Medicaid Coverage rate by Socio-Demographic Factors, Across Citizenship Status
+ 
+ 
+ # Create a vector of variables
+ variables <- c("UNINS", "HINS4")
+ 
+ # Create an empty list to store the tables
+ tables <- list()
+ 
+ # Iterate over the variables
+ for (var in variables) {
+   # Create an empty list to store the tables for each value of CIT
+   cit_tables <- list()
+   
+   # Get unique values of CIT
+   cit_values <- unique(Data$CIT)
+   
+   # Iterate over the values of CIT
+   for (cit_value in cit_values) {
+     # Filter the data based on CIT
+     filtered_data <- Data %>%
+       filter(CIT == cit_value) %>%
+       select({{ var }}, SEX, DIS, ESRG, MARG, SCHLG, RACE1, POVPIPG,LTINU, ENG, CULRG, CORIGIN)
+     
+     # Create the table using tbl_summary
+     table <- filtered_data %>%
+       tbl_summary(
+         by = all_of(var),
+         missing = "no",
+         label = list(
+           SEX ~ "Sex",
+           DIS ~ "Disability",
+           ESRG ~ "Current employment status",
+           SCHLG ~ "Education",
+           RACE1 ~ "Race/ethnicity",
+           CULRG ~ "Cultural clusters",
+           POVPIPG ~ "Federal poverty",
+           LTINU ~ "Lifetime in US",
+           MARG ~"Married",
+           ENG ~ "Self-rated English proficiency",
+           CORIGIN ~ "Country/Region of birth"
+         ),
+         percent = "row",
+         statistic = list(all_categorical() ~ "{p}%")
+       ) %>%
+       modify_column_hide(columns = stat_1) %>%
+       bold_labels()%>%
+     modify_footnote(update = everything() ~ NA)
+     # Modify the table header
+     if (var == "UNINS") {
+       table <- table %>%
+         modify_header(stat_2 = "Uninsured {style_percent(p)}%")
+     } else if (var == "HINS4") {
+       table <- table %>%
+         modify_header(stat_2 = "Medicaid {style_percent(p)}%")
+     }
+     
+     # Add the table to the list for the specific value of CIT
+     cit_tables[[cit_value]] <- table
+   }
+   
+   # Add the list of tables for the variable to the main list
+   tables[[var]] <- cit_tables
+ }
+ 
+ 
+ 
+ t <- list()
+ 
+ for (cit_value in cit_values) {
+   
+   t[[cit_value]]  <- tbl_merge(list(tables$UNINS[[cit_value]], tables$HINS4[[cit_value]]))
+   
+ }
+ 
+ tables<-tbl_merge(list(t$`Non-citizen`,t$`Naturalized-citizen`,t$`US-citizen Born abroad `,
+                        t$`Born in US states`,t$`Born in US Territories`),
+                   tab_spanner = c("Non-citizen","Naturalized-citizen",'Citizen born abroad',
+                                   'Born in US states','Born in territories')
+                  ) %>%
+ modify_caption("Uninsured/Medicaid Rate by Socio-Demographic Factors, Across Citizenship Status")
+ 
+ tables 
+   
+
+  
 #####################
 # Extra helpful codes
 #####################

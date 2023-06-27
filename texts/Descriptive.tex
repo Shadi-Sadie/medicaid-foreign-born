@@ -1,0 +1,410 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Descriptive},
+  pdfauthor={Shadi},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Descriptive}
+\author{Shadi}
+\date{2023-06-20}
+
+\begin{document}
+\maketitle
+
+\hypertarget{table-1-baseline-characteristics-for-states}{%
+\subsubsection{Table 1: Baseline Characteristics for
+states}\label{table-1-baseline-characteristics-for-states}}
+
+\begingroup\fontsize{6.5}{8.5}\selectfont
+
+\begin{longtable}[t]{>{}llcccc}
+\caption{\label{tab:table-1}\textbf{Table 1. Baseline Comparison of States}}\\
+\toprule
+\textbf{Group} & \textbf{Variable} & \textbf{Non Expansion} & \textbf{Expansion} & \textbf{Difference} & \textbf{p-value}\\
+\midrule
+\textbf{Pre-ACA} & State's Political Liberalism & 0.24 (0.09) & 0.45 (0.17) & 0.22 & <0.001***\\
+\textbf{} & Immigration Policy Climate & -3 (1) & -1 (2) & 2.1 & <0.001***\\
+\textbf{} & State's Unemployment Rate & 7.16 (2.02) & 8.60 (1.64) & 1.4 & <0.001***\\
+\midrule
+\textbf{Post-ACA} & State's Political Liberalism & 0.23 (0.10) & 0.47 (0.22) & 0.24 & <0.001***\\
+\textbf{} & Immigration Policy Climate & -3 (1) & 0 (3) & 2.8 & <0.001***\\
+\textbf{} & State's Unemployment Rate & 4.50 (1.15) & 5.00 (1.14) & 0.50 & <0.001***\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}\textsuperscript{1} Mean (SD)}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}\textsuperscript{2} Welch Two Sample t-test}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}\textsuperscript{3} \textit{p<0.05; \textbf{p<0.01; }}p<0.001}\\
+\end{longtable}
+\endgroup{}
+
+\hypertarget{table-2-baseline-characteristics-by-nativity}{%
+\subsubsection{Table 2: Baseline Characteristics by
+Nativity}\label{table-2-baseline-characteristics-by-nativity}}
+
+\begingroup\fontsize{6}{8}\selectfont
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{3 cm}>{\centering\arraybackslash}p{1.8cm}>{\centering\arraybackslash}p{1.8cm}>{\centering\arraybackslash}p{1.8cm}>{\centering\arraybackslash}p{1.8cm}>{\centering\arraybackslash}p{1.8cm}c}
+\caption{\label{tab:table-2}Baseline Characteristics by Nativity}\\
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{3}{c}{\textbf{Non-expansion}} & \multicolumn{3}{c}{\textbf{expansion}} \\
+\cmidrule(l{3pt}r{3pt}){2-4} \cmidrule(l{3pt}r{3pt}){5-7}
+\textbf{Characteristic} & \textbf{Foregin-born}, N = 7,113,051 & \textbf{US-born}, N = 26,041,282 & \textbf{p-value} & \textbf{Foregin-born}, N = 11,592,215 & \textbf{US-born}, N = 34,946,509 & \textbf{p-value}\\
+\midrule
+\endfirsthead
+\caption[]{Baseline Characteristics by Nativity \textit{(continued)}}\\
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{3}{c}{\textbf{Non-expansion}} & \multicolumn{3}{c}{\textbf{expansion}} \\
+\cmidrule(l{3pt}r{3pt}){2-4} \cmidrule(l{3pt}r{3pt}){5-7}
+\textbf{Characteristic} & \textbf{Foregin-born}, N = 7,113,051 & \textbf{US-born}, N = 26,041,282 & \textbf{p-value} & \textbf{Foregin-born}, N = 11,592,215 & \textbf{US-born}, N = 34,946,509 & \textbf{p-value}\\
+\midrule
+\endhead
+
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Uninsured} & 4,995,253 (70\%) & 10,833,686 (42\%) & <0.001*** & 6,473,288 (56\%) & 11,893,979 (34\%) & <0.001***\\
+\textbf{Medicaid coverage} & 871,138 (12\%) & 7,688,863 (30\%) & <0.001*** & 2,880,034 (25\%) & 13,241,734 (38\%) & <0.001***\\
+\textbf{Age} & 40 (33, 49) & 43 (33, 53) & <0.001*** & 41 (34, 50) & 43 (33, 53) & <0.001***\\
+\textbf{Sex} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Female & 3,819,350 (54\%) & 15,057,504 (58\%) &  & 6,323,790 (55\%) & 19,813,110 (57\%) & \\
+\hspace{1em}Male & 3,293,701 (46\%) & 10,983,778 (42\%) &  & 5,268,425 (45\%) & 15,133,399 (43\%) & \\
+\textbf{Disability} & 663,792 (9.3\%) & 7,060,627 (27\%) & <0.001*** & 1,136,618 (9.8\%) & 9,432,288 (27\%) & <0.001***\\
+\textbf{Current employment status} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Employed & 4,037,034 (57\%) & 10,335,124 (40\%) &  & 6,188,727 (53\%) & 13,125,180 (38\%) & \\
+\hspace{1em}Not in labor force & 2,376,172 (33\%) & 11,975,810 (46\%) &  & 4,083,199 (35\%) & 16,444,592 (47\%) & \\
+\hspace{1em}Unemployed & 699,845 (9.8\%) & 3,730,348 (14\%) &  & 1,320,289 (11\%) & 5,376,737 (15\%) & \\
+\textbf{Marital status} & 4,094,355 (58\%) & 8,063,391 (31\%) & <0.001*** & 6,457,264 (56\%) & 9,635,900 (28\%) & <0.001***\\
+\textbf{Education} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}College degree & 470,230 (6.6\%) & 1,884,546 (7.2\%) &  & 797,858 (6.9\%) & 2,860,619 (8.2\%) & \\
+\hspace{1em}Graduate and beyond & 172,679 (2.4\%) & 577,787 (2.2\%) &  & 319,853 (2.8\%) & 994,271 (2.8\%) & \\
+\hspace{1em}High school & 1,833,018 (26\%) & 9,500,208 (36\%) &  & 2,822,810 (24\%) & 12,647,283 (36\%) & \\
+\hspace{1em}Less than high school & 3,557,536 (50\%) & 5,819,385 (22\%) &  & 5,866,533 (51\%) & 6,839,940 (20\%) & \\
+\hspace{1em}Some college or Associate degree & 1,079,588 (15\%) & 8,259,356 (32\%) &  & 1,785,161 (15\%) & 11,604,396 (33\%) & \\
+\textbf{Race/ethnicity} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Asian & 518,213 (7.3\%) & 54,950 (0.2\%) &  & 1,704,788 (15\%) & 264,742 (0.8\%) & \\
+\hspace{1em}Black & 563,959 (7.9\%) & 7,362,213 (28\%) &  & 501,427 (4.3\%) & 6,817,804 (20\%) & \\
+\hspace{1em}Hispanic & 5,382,119 (76\%) & 2,731,265 (10\%) &  & 7,914,764 (68\%) & 3,998,364 (11\%) & \\
+\hspace{1em}Other & 106,083 (1.5\%) & 838,658 (3.2\%) &  & 207,897 (1.8\%) & 1,512,924 (4.3\%) & \\
+\hspace{1em}White & 542,677 (7.6\%) & 15,054,196 (58\%) &  & 1,263,339 (11\%) & 22,352,675 (64\%) & \\
+\textbf{Federal poverty} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Income\ \ 100 to 138\% poverty & 2,563,949 (36\%) & 8,447,926 (32\%) &  & 4,257,006 (37\%) & 10,820,459 (31\%) & \\
+\hspace{1em}Income below 100\% poverty & 4,549,102 (64\%) & 17,593,356 (68\%) &  & 7,335,209 (63\%) & 24,126,050 (69\%) & \\
+\textbf{Citizenship status} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Born in US states & 0 (0\%) & 25,729,677 (99\%) &  & 0 (0\%) & 34,498,962 (99\%) & \\
+\hspace{1em}Born in US Territories & 0 (0\%) & 311,605 (1.2\%) &  & 0 (0\%) & 447,547 (1.3\%) & \\
+\hspace{1em}Naturalized-citizen & 1,870,512 (26\%) & 0 (0\%) &  & 3,527,306 (30\%) & 0 (0\%) & \\
+\hspace{1em}Non-citizen & 4,975,148 (70\%) & 0 (0\%) &  & 7,709,364 (67\%) & 0 (0\%) & \\
+\hspace{1em}US-citizen Born abroad & 267,391 (3.8\%) & 0 (0\%) &  & 355,545 (3.1\%) & 0 (0\%) & \\
+\textbf{Lifetime in US} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}<25\% & 1,476,453 (21\%) & 108,020 (35\%) &  & 2,074,736 (18\%) & 104,908 (23\%) & \\
+\hspace{1em}>25\% & 5,636,598 (79\%) & 203,585 (65\%) &  & 9,517,479 (82\%) & 342,639 (77\%) & \\
+\textbf{Self-rated English proficiency} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Not at all & 1,192,569 (17\%) & 64,202 (0.2\%) &  & 1,867,518 (16\%) & 67,420 (0.2\%) & \\
+\hspace{1em}Not well & 2,211,497 (31\%) & 183,085 (0.7\%) &  & 3,749,138 (32\%) & 232,892 (0.7\%) & \\
+\hspace{1em}Only english & 758,922 (11\%) & 23,561,819 (90\%) &  & 1,047,881 (9.0\%) & 31,537,870 (90\%) & \\
+\hspace{1em}Very well & 1,436,201 (20\%) & 1,883,887 (7.2\%) &  & 2,307,127 (20\%) & 2,677,630 (7.7\%) & \\
+\hspace{1em}Well & 1,513,862 (21\%) & 348,289 (1.3\%) &  & 2,620,551 (23\%) & 430,697 (1.2\%) & \\
+\textbf{Cultural clusters} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}African-Islamic & 354,779 (5.0\%) & 0 (0\%) &  & 881,988 (7.6\%) & 0 (0\%) & \\
+\hspace{1em}Catholic Europe & 68,188 (1.0\%) & 0 (0\%) &  & 211,276 (1.8\%) & 0 (0\%) & \\
+\hspace{1em}Confucian & 172,880 (2.4\%) & 0 (0\%) &  & 719,929 (6.2\%) & 0 (0\%) & \\
+\hspace{1em}English-speaking & 118,375 (1.7\%) & 26,041,282 (100\%) &  & 228,492 (2.0\%) & 34,946,509 (100\%) & \\
+\hspace{1em}Latin America & 5,924,207 (83\%) & 0 (0\%) &  & 8,399,447 (72\%) & 0 (0\%) & \\
+\hspace{1em}Orthodox & 70,909 (1.0\%) & 0 (0\%) &  & 257,099 (2.2\%) & 0 (0\%) & \\
+\hspace{1em}Protestant Europe & 129,210 (1.8\%) & 0 (0\%) &  & 150,035 (1.3\%) & 0 (0\%) & \\
+\hspace{1em}South Asian & 274,503 (3.9\%) & 0 (0\%) &  & 743,949 (6.4\%) & 0 (0\%) & \\
+\textbf{Country/Region of birth} &  &  & <0.001*** &  &  & <0.001***\\
+\hspace{1em}Canada & 50,896 (0.7\%) & 0 (0\%) &  & 87,977 (0.8\%) & 0 (0\%) & \\
+\hspace{1em}Eastern Asia & 145,699 (2.0\%) & 0 (0\%) &  & 586,211 (5.1\%) & 0 (0\%) & \\
+\hspace{1em}Eastern Europe & 72,756 (1.0\%) & 0 (0\%) &  & 273,831 (2.4\%) & 0 (0\%) & \\
+\hspace{1em}Latin America & 5,872,570 (83\%) & 0 (0\%) &  & 8,152,177 (70\%) & 0 (0\%) & \\
+\hspace{1em}Middle East & 129,256 (1.8\%) & 0 (0\%) &  & 442,380 (3.8\%) & 0 (0\%) & \\
+\hspace{1em}Oceania and at Sea & 16,732 (0.2\%) & 0 (0\%) &  & 67,785 (0.6\%) & 0 (0\%) & \\
+\hspace{1em}South\ \ \& Centeral Asia & 138,250 (1.9\%) & 0 (0\%) &  & 307,477 (2.7\%) & 0 (0\%) & \\
+\hspace{1em}South East Asia & 279,316 (3.9\%) & 0 (0\%) &  & 954,859 (8.2\%) & 0 (0\%) & \\
+\hspace{1em}Sub-Saharan Africa & 158,722 (2.2\%) & 0 (0\%) &  & 338,734 (2.9\%) & 0 (0\%) & \\
+\hspace{1em}United States & 0 (0\%) & 26,041,282 (100\%) &  & 0 (0\%) & 34,946,509 (100\%) & \\
+\hspace{1em}Western Europe & 248,854 (3.5\%) & 0 (0\%) &  & 380,784 (3.3\%) & 0 (0\%) & \\*
+\multicolumn{7}{l}{\rule{0pt}{1em}\textsuperscript{1} n (\%); Median (IQR)}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}\textsuperscript{2} \textit{p<0.05; \textbf{p<0.01; }}p<0.001}\\
+\end{longtable}
+\endgroup{}
+
+\hypertarget{table-3-uninsured-and-medicaid-coverage-rate-before-and-after-aca-for-expansion-and-non-expansion-state-by-characteristics}{%
+\subsubsection{Table 3: Uninsured and Medicaid coverage rate before and
+after ACA for expansion and non-expansion state by
+characteristics}\label{table-3-uninsured-and-medicaid-coverage-rate-before-and-after-aca-for-expansion-and-non-expansion-state-by-characteristics}}
+
+\begingroup\fontsize{6.5}{8.5}\selectfont
+
+\begin{longtable}[t]{lllllllll}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{4}{c}{Uninsured Rate} & \multicolumn{4}{c}{Medicaid Coverage} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9}
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{Expansion} & \multicolumn{2}{c}{Non-expansion} & \multicolumn{2}{c}{Expansion} & \multicolumn{2}{c}{Non-expansion} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
+Characteristic & Pre & Post & Pre & Post & Pre & Post & Pre & Post\\
+\midrule
+\endfirsthead
+\multicolumn{9}{@{}l}{\textit{(continued)}}\\
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{4}{c}{Uninsured Rate} & \multicolumn{4}{c}{Medicaid Coverage} \\
+\cmidrule(l{3pt}r{3pt}){2-5} \cmidrule(l{3pt}r{3pt}){6-9}
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{Expansion} & \multicolumn{2}{c}{Non-expansion} & \multicolumn{2}{c}{Expansion} & \multicolumn{2}{c}{Non-expansion} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
+Characteristic & Pre & Post & Pre & Post & Pre & Post & Pre & Post\\
+\midrule
+\endhead
+
+\endfoot
+\bottomrule
+\endlastfoot
+\_Citizenship status\_ &  &  &  &  &  &  &  & \\
+Born in US states & 15\% & 33\% & 30\% & 40\% & 55\% & 38\% & 34\% & 30\%\\
+Born in US Territories & 12\% & 23\% & 27\% & 36\% & 68\% & 57\% & 39\% & 37\%\\
+Naturalized-citizen & 15\% & 35\% & 33\% & 50\% & 54\% & 35\% & 24\% & 21\%\\
+Non-citizen & 45\% & 63\% & 67\% & 76\% & 36\% & 22\% & 11\% & 9.7\%\\
+\addlinespace
+US-citizen Born abroad & 17\% & 36\% & 34\% & 45\% & 49\% & 31\% & 25\% & 23\%\\
+\_Lifetime in US\_ &  &  &  &  &  &  &  & \\
+<25\% & 31\% & 56\% & 49\% & 70\% & 45\% & 26\% & 19\% & 12\%\\
+>25\% & 32\% & 51\% & 53\% & 65\% & 44\% & 28\% & 17\% & 15\%\\
+Unknown & 88,065 & 106,526 & 127,764 & 97,425 & 316,536 & 122,694 & 145,240 & 74,807\\
+\addlinespace
+\_Race/ethnicity\_ &  &  &  &  &  &  &  & \\
+Asian & 16\% & 37\% & 30\% & 51\% & 48\% & 31\% & 19\% & 14\%\\
+Black & 15\% & 31\% & 27\% & 37\% & 60\% & 46\% & 40\% & 36\%\\
+Hispanic & 31\% & 51\% & 52\% & 64\% & 47\% & 30\% & 20\% & 18\%\\
+Other & 22\% & 37\% & 37\% & 45\% & 58\% & 43\% & 35\% & 32\%\\
+\addlinespace
+White & 15\% & 33\% & 30\% & 40\% & 53\% & 35\% & 32\% & 27\%\\
+\_Sex\_ &  &  &  &  &  &  &  & \\
+Female & 16\% & 34\% & 32\% & 42\% & 56\% & 40\% & 34\% & 30\%\\
+Male & 22\% & 42\% & 37\% & 48\% & 48\% & 30\% & 27\% & 23\%\\
+\_Current employment status\_ &  &  &  &  &  &  &  & \\
+\addlinespace
+Employed & 22\% & 43\% & 38\% & 50\% & 43\% & 23\% & 18\% & 14\%\\
+Not in labor force & 15\% & 28\% & 28\% & 34\% & 60\% & 47\% & 43\% & 41\%\\
+Unemployed & 26\% & 52\% & 50\% & 63\% & 58\% & 33\% & 29\% & 23\%\\
+\_Marital status\_ & 19\% & 37\% & 34\% & 45\% & 48\% & 31\% & 25\% & 22\%\\
+\_Education\_ &  &  &  &  &  &  &  & \\
+\addlinespace
+College degree & 14\% & 32\% & 24\% & 37\% & 39\% & 21\% & 19\% & 15\%\\
+Graduate and beyond & 13\% & 26\% & 20\% & 31\% & 32\% & 16\% & 16\% & 13\%\\
+High school & 19\% & 38\% & 35\% & 45\% & 55\% & 36\% & 32\% & 28\%\\
+Less than high school & 27\% & 44\% & 44\% & 52\% & 57\% & 41\% & 35\% & 32\%\\
+Some college or Associate degree & 15\% & 33\% & 29\% & 40\% & 54\% & 36\% & 31\% & 26\%\\
+\addlinespace
+\_Federal poverty\_ &  &  &  &  &  &  &  & \\
+Income  100 to 138\% poverty & 19\% & 37\% & 30\% & 41\% & 45\% & 27\% & 24\% & 21\%\\
+Income below 100\% poverty & 19\% & 38\% & 36\% & 46\% & 57\% & 40\% & 34\% & 31\%\\
+\_Self-rated English proficiency\_ &  &  &  &  &  &  &  & \\
+Not at all & 45\% & 62\% & 68\% & 77\% & 43\% & 28\% & 16\% & 14\%\\
+\addlinespace
+Not well & 37\% & 56\% & 61\% & 73\% & 46\% & 29\% & 16\% & 14\%\\
+Only english & 15\% & 33\% & 29\% & 39\% & 55\% & 37\% & 34\% & 30\%\\
+Very well & 21\% & 40\% & 39\% & 51\% & 51\% & 34\% & 24\% & 22\%\\
+Well & 30\% & 49\% & 49\% & 63\% & 46\% & 29\% & 19\% & 16\%\\
+\_Country/Region of birth\_ &  &  &  &  &  &  &  & \\
+\addlinespace
+Canada & 18\% & 34\% & 31\% & 42\% & 39\% & 20\% & 19\% & 16\%\\
+Eastern Asia & 18\% & 45\% & 31\% & 52\% & 44\% & 23\% & 15\% & 12\%\\
+Eastern Europe & 22\% & 42\% & 37\% & 50\% & 48\% & 31\% & 20\% & 16\%\\
+Latin America & 42\% & 61\% & 60\% & 72\% & 39\% & 24\% & 15\% & 12\%\\
+Middle East & 14\% & 33\% & 32\% & 50\% & 63\% & 44\% & 29\% & 26\%\\
+\addlinespace
+Oceania and at Sea & 18\% & 31\% & 42\% & 49\% & 43\% & 35\% & 12\% & 9.6\%\\
+South  \& Centeral Asia & 16\% & 36\% & 33\% & 57\% & 52\% & 35\% & 18\% & 13\%\\
+South East Asia & 14\% & 33\% & 29\% & 48\% & 53\% & 38\% & 23\% & 18\%\\
+Sub-Saharan Africa & 20\% & 37\% & 36\% & 51\% & 51\% & 35\% & 22\% & 16\%\\
+United States & 15\% & 33\% & 30\% & 40\% & 55\% & 38\% & 34\% & 30\%\\
+\addlinespace
+Western Europe & 17\% & 36\% & 30\% & 43\% & 44\% & 25\% & 24\% & 21\%\\
+\_Disability\_ & 8.6\% & 20\% & 20\% & 26\% & 71\% & 58\% & 53\% & 51\%\\
+\_Cultural clusters\_ &  &  &  &  &  &  &  & \\
+African-Islamic & 16\% & 35\% & 35\% & 53\% & 59\% & 42\% & 25\% & 20\%\\
+Catholic Europe & 22\% & 41\% & 30\% & 44\% & 41\% & 23\% & 19\% & 17\%\\
+\addlinespace
+Confucian & 18\% & 43\% & 32\% & 51\% & 44\% & 24\% & 15\% & 12\%\\
+English-speaking & 15\% & 33\% & 30\% & 40\% & 55\% & 38\% & 34\% & 30\%\\
+Latin America & 41\% & 60\% & 60\% & 71\% & 40\% & 24\% & 15\% & 12\%\\
+Orthodox & 17\% & 37\% & 36\% & 52\% & 55\% & 39\% & 23\% & 19\%\\
+Protestant Europe & 15\% & 35\% & 29\% & 42\% & 47\% & 28\% & 27\% & 23\%\\
+\addlinespace
+South Asian & 14\% & 33\% & 29\% & 52\% & 56\% & 41\% & 21\% & 17\%\\*
+\end{longtable}
+\endgroup{}
+
+\hypertarget{table-4-uninsuredmedicaid-coverage-rate-by-socio-demographic-factors-across-citizenship-status}{%
+\subsubsection{Table 4: Uninsured/Medicaid Coverage Rate by
+Socio-Demographic Factors, Across Citizenship
+Status}\label{table-4-uninsuredmedicaid-coverage-rate-by-socio-demographic-factors-across-citizenship-status}}
+
+\begingroup\fontsize{6}{8}\selectfont
+
+\begin{longtable}[t]{>{\raggedright\arraybackslash}p{2.8cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}>{\centering\arraybackslash}p{1cm}}
+\caption{\label{tab:table-4}Uninsured/Medicaid Rate by Socio-Demographic Factors, Across Citizenship Status}\\
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{Non-citizen} & \multicolumn{2}{c}{Naturalized-citizen} & \multicolumn{2}{c}{Citizen born abroad} & \multicolumn{2}{c}{Born in US states} & \multicolumn{2}{c}{Born in territories} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9} \cmidrule(l{3pt}r{3pt}){10-11}
+\textbf{Characteristic} & Uninsured 59\% & Medicaid 23\% & Uninsured 28\% & Medicaid 39\% & Uninsured 30\% & Medicaid 35\% & Uninsured 27\% & Medicaid 42\% & Uninsured 22\% & Medicaid 52\%\\
+\midrule
+\endfirsthead
+\caption[]{Uninsured/Medicaid Rate by Socio-Demographic Factors, Across Citizenship Status \textit{(continued)}}\\
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{Non-citizen} & \multicolumn{2}{c}{Naturalized-citizen} & \multicolumn{2}{c}{Citizen born abroad} & \multicolumn{2}{c}{Born in US states} & \multicolumn{2}{c}{Born in territories} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9} \cmidrule(l{3pt}r{3pt}){10-11}
+\textbf{Characteristic} & Uninsured 59\% & Medicaid 23\% & Uninsured 28\% & Medicaid 39\% & Uninsured 30\% & Medicaid 35\% & Uninsured 27\% & Medicaid 42\% & Uninsured 22\% & Medicaid 52\%\\
+\midrule
+\endhead
+
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Sex} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Female & 57\% & 26\% & 27\% & 41\% & 28\% & 38\% & 24\% & 45\% & 20\% & 57\%\\
+\hspace{1em}Male & 62\% & 19\% & 30\% & 37\% & 32\% & 32\% & 30\% & 37\% & 27\% & 45\%\\
+\textbf{Disability} & 42\% & 43\% & 17\% & 59\% & 19\% & 55\% & 16\% & 61\% & 11\% & 71\%\\
+\textbf{Current employment status} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Employed & 61\% & 18\% & 29\% & 33\% & 32\% & 26\% & 30\% & 29\% & 28\% & 36\%\\
+\hspace{1em}Not in labor force & 56\% & 29\% & 24\% & 47\% & 24\% & 45\% & 20\% & 52\% & 15\% & 65\%\\
+\hspace{1em}Unemployed & 64\% & 25\% & 40\% & 39\% & 45\% & 33\% & 44\% & 39\% & 37\% & 49\%\\
+\textbf{Married} & 59\% & 22\% & 27\% & 39\% & 27\% & 33\% & 24\% & 36\% & 21\% & 47\%\\
+\textbf{Education} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}College degree & 48\% & 19\% & 25\% & 32\% & 24\% & 26\% & 21\% & 27\% & 22\% & 33\%\\
+\hspace{1em}Graduate and beyond & 35\% & 15\% & 22\% & 27\% & 20\% & 21\% & 17\% & 22\% & 22\% & 28\%\\
+\hspace{1em}High school & 59\% & 22\% & 30\% & 39\% & 33\% & 37\% & 29\% & 43\% & 24\% & 52\%\\
+\hspace{1em}Less than high school & 63\% & 23\% & 30\% & 44\% & 38\% & 41\% & 30\% & 52\% & 20\% & 65\%\\
+\hspace{1em}Some college or Associate degree & 51\% & 23\% & 26\% & 39\% & 27\% & 36\% & 25\% & 41\% & 23\% & 46\%\\
+\textbf{Race/ethnicity} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Asian & 35\% & 30\% & 22\% & 41\% & 25\% & 35\% & 22\% & 31\% & 21\% & 30\%\\
+\hspace{1em}Black & 46\% & 25\% & 28\% & 37\% & 29\% & 36\% & 26\% & 47\% & 33\% & 35\%\\
+\hspace{1em}Hispanic & 64\% & 21\% & 33\% & 37\% & 38\% & 32\% & 30\% & 43\% & 22\% & 54\%\\
+\hspace{1em}Other & 43\% & 27\% & 25\% & 42\% & 27\% & 39\% & 31\% & 48\% & 21\% & 44\%\\
+\hspace{1em}White & 41\% & 27\% & 23\% & 43\% & 27\% & 35\% & 26\% & 40\% & 27\% & 38\%\\
+\textbf{Federal poverty} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Income\ \ 100 to 138\% poverty & 57\% & 20\% & 27\% & 34\% & 27\% & 29\% & 25\% & 34\% & 23\% & 40\%\\
+\hspace{1em}Income below 100\% poverty & 61\% & 24\% & 29\% & 42\% & 31\% & 38\% & 28\% & 46\% & 22\% & 58\%\\
+\textbf{Lifetime in US} &  &  &  &  &  &  & NA\% & NA\% &  & \\
+\hspace{1em}<25\% & 58\% & 21\% & 28\% & 42\% & 33\% & 33\% &  &  & 24\% & 51\%\\
+\hspace{1em}>25\% & 60\% & 23\% & 28\% & 39\% & 29\% & 35\% &  &  & 22\% & 53\%\\
+\textbf{Self-rated English proficiency} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Not at all & 65\% & 25\% & 31\% & 50\% & 44\% & 37\% & 49\% & 35\% & 18\% & 69\%\\
+\hspace{1em}Not well & 63\% & 23\% & 29\% & 47\% & 42\% & 34\% & 36\% & 41\% & 21\% & 63\%\\
+\hspace{1em}Only english & 48\% & 23\% & 26\% & 32\% & 27\% & 36\% & 26\% & 42\% & 26\% & 42\%\\
+\hspace{1em}Very well & 50\% & 22\% & 27\% & 35\% & 31\% & 33\% & 31\% & 42\% & 23\% & 48\%\\
+\hspace{1em}Well & 59\% & 21\% & 28\% & 40\% & 35\% & 35\% & 37\% & 40\% & 22\% & 53\%\\
+\textbf{Cultural clusters} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}African-Islamic & 38\% & 35\% & 23\% & 50\% & 26\% & 40\% &  &  &  & \\
+\hspace{1em}Catholic Europe & 43\% & 25\% & 24\% & 32\% & 27\% & 32\% &  &  &  & \\
+\hspace{1em}Confucian & 37\% & 26\% & 24\% & 37\% & 25\% & 34\% &  &  &  & \\
+\hspace{1em}English-speaking & 34\% & 23\% & 22\% & 31\% & 28\% & 35\% & 27\% & 42\% & 22\% & 52\%\\
+\hspace{1em}Latin America & 63\% & 21\% & 32\% & 36\% & 36\% & 32\% &  &  &  & \\
+\hspace{1em}Orthodox & 40\% & 35\% & 23\% & 47\% & 26\% & 35\% &  &  &  & \\
+\hspace{1em}Protestant Europe & 34\% & 23\% & 21\% & 32\% & 28\% & 37\% &  &  &  & \\
+\hspace{1em}South Asian & 33\% & 35\% & 22\% & 45\% & 23\% & 38\% &  &  &  & \\
+\textbf{Country/Region of birth} &  &  &  &  &  &  &  &  &  & \\
+\hspace{1em}Canada & 31\% & 21\% & 24\% & 29\% & 30\% & 34\% &  &  &  & \\
+\hspace{1em}Eastern Asia & 37\% & 25\% & 24\% & 37\% & 25\% & 34\% &  &  &  & \\
+\hspace{1em}Eastern Europe & 46\% & 29\% & 25\% & 42\% & 29\% & 33\% &  &  &  & \\
+\hspace{1em}Latin America & 64\% & 21\% & 33\% & 36\% & 38\% & 31\% &  &  &  & \\
+\hspace{1em}Middle East & 35\% & 41\% & 21\% & 54\% & 23\% & 44\% &  &  &  & \\
+\hspace{1em}Oceania and at Sea & 32\% & 30\% & 17\% & 42\% & 32\% & 28\% &  &  &  & \\
+\hspace{1em}South\ \ \& Centeral Asia & 37\% & 27\% & 23\% & 43\% & 23\% & 43\% &  &  &  & \\
+\hspace{1em}South East Asia & 33\% & 37\% & 21\% & 44\% & 25\% & 36\% &  &  &  & \\
+\hspace{1em}Sub-Saharan Africa & 41\% & 29\% & 24\% & 43\% & 28\% & 32\% &  &  &  & \\
+\hspace{1em}Western Europe & 36\% & 24\% & 23\% & 32\% & 28\% & 36\% &  &  &  & \\
+\hspace{1em}United States &  &  &  &  &  &  & 27\% & 42\% & 22\% & 52\%\\*
+\end{longtable}
+\endgroup{}
+
+\end{document}
