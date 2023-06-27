@@ -3,9 +3,25 @@ title: "Descriptive"
 author: "Shadi"
 date: "2023-06-20"
 output:
-  html_document:
-    df_print: paged
+  pdf_document:
+    keep_tex: true
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage{threeparttablex}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{makecell}
+  - \usepackage{xcolor}
 ---
+
 
 
 ```{r wd-setup, include=FALSE}
@@ -19,7 +35,6 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
 ```
 
-
 ```{r data, include=FALSE}
 
 load(paste0(wd$data,"Data.Rdata"))
@@ -28,7 +43,6 @@ NATV<- Data[Data$NATIVITY == "US-born", ]
 
 ```
 
-
 ```{r chunk-setup , include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       fig.align = "center",
@@ -36,20 +50,21 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.height = 4, 
                       fig.path = wd$output,
                       dev = "png",
-                      cache = TRUE,
                       warning=FALSE,
                       message=FALSE
 
                       )
 ```
 
-
 ```{r library ,  include=FALSE}
+library(knitr)
 
 library(tidyverse)
 library(gtsummary)
 library(survey)
 library(gt)
+library('kableExtra')
+library(flextable)
 
 ```
 
@@ -64,9 +79,11 @@ svy <- svydesign(
                   rscales = rep(1, 80),
                   mse = TRUE
             )
+
 ```
 
 ### Table 1: Baseline Characteristics for states
+
 
 ```{r table-1 }
 
@@ -107,7 +124,7 @@ t2<-Data %>%
   )%>%
   add_difference() %>%
   add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
-  modify_caption("**Table 1. Baseline Comparison of States**") %>%
+  modify_caption("Baseline Comparison of States") %>%
   # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
   modify_header(
     label = "**Variable**",
@@ -121,15 +138,28 @@ t2<-Data %>%
 ## Stack two tables to create table 1
 
 table1 <-
-  tbl_stack(list(t1, t2), group_header = c("**Pre-ACA**", "**Post-ACA**"))
+ 
+     tbl_stack(list(t1, t2), group_header = c('Pre-ACA', 'Post-ACA'))
 
- as_gt(table1) %>% gt::as_latex()
+#table1 %>% 
+  
+#  as_flex_table() %>% flextable::valign() didn't align
+  
+# as_hux_table(table1) # %>% huxtable::to_latex() gave latex code
+
+# as_gt() %>% gt::as_latex() 
+table1 %>% 
+ as_kable_extra(booktabs = TRUE,
+    longtable = TRUE,
+    linesep = "") %>% 
+  kableExtra::kable_styling(latex_options= "scale_down",font_size=6.5) %>%
+       column_spec(1,bold=TRUE) %>%
+          row_spec(3,hline_after=TRUE)
 
 
 ```
 
 ### Table 2: Baseline Characteristics by Nativity
-
 
 ```{r table-2 }
 
@@ -163,19 +193,29 @@ table2<-svy %>% subset(ACA=="Pre-ACA")%>%
                   # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
                         #)                 %>%
                add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
-               italicize_labels() %>%
                bold_labels() %>%
-               modify_caption("**Table 2.Baseline Characteristics by Nativity**")
+               modify_caption("Baseline Characteristics by Nativity")
               #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
             )
+table2 %>% 
   
-  table2
+as_kable_extra(booktabs = TRUE,
+                   longtable = TRUE,
+                   linesep = ""
+                  # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
+                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+    ) %>% 
+    kableExtra::kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6)%>%
+       column_spec(1,width="3 cm")  %>%
+        column_spec(2:6,width="1.8cm") 
+  #  column_spec(2:11,width="1cm") 
   
   
 ```
 
-### Table 3: Uninsured rate before and after ACA for expansion and non-expansion state by characteristics
-```{r table-3}
+### Table 3: Uninsured and Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics
+
+```{r tab1, include=FALSE}
 
 t1<- Data %>% 
       filter(expansion=="expansion")%>%
@@ -196,7 +236,8 @@ t1<- Data %>%
                         statistic = list(all_categorical() ~ "{p}%")
                              ) %>%
                     modify_column_hide(columns = stat_1)%>%
-                    italicize_labels() #%>%
+                    italicize_labels() %>%
+                    modify_header(label = "Characteristic")                  
                     # modify_header(stat_2 = "N = {n} ({style_percent(p)}%)") %>%
                     # modify_footnote(update = everything() ~ NA) # if you'd like no footnote remove #
                 )
@@ -220,33 +261,25 @@ t1<- Data %>%
                       statistic = list(all_categorical() ~ "{p}%")
                      ) %>%
           modify_column_hide(columns = stat_1) %>%
-          italicize_labels() #%>
-            )
+          italicize_labels() %>%
+           modify_header(label = "Characteristic")            )
  
 # creating the merged table out of the t1 and t2
- table3<-tbl_merge(
+ tab1<-tbl_merge(
               tbls = list(t1, t2),
               tab_spanner = c("**Expansion**", "**Non-expansion**")
                  )%>%
                modify_header(
-                 stat_2_1_1 = "**Pre-ACA** ({style_percent(p)}%)",
-                 stat_2_2_1 = "**Post-ACA** ({style_percent(p)}%)",
-                 stat_2_1_2 = "**Pre-ACA** ({style_percent(p)}%)",
-                 stat_2_2_2 = "**Post-ACA** ({style_percent(p)}%)"
-                 ) %>%
-               modify_caption("**Table 3.Uninsured rate before and after ACA for expansion and non-expansion by characteristics**")
-
- 
-table3
-
- as_gt(table3) 
+                 stat_2_1_1 = "Pre",
+                 stat_2_2_1 = "Post",
+                 stat_2_1_2 = "Pre",
+                 stat_2_2_2 = "Post"
+                 )
 
 ```
 
 
-### Table 4: Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics
-
-```{r table-4}
+```{r tab2, include=FALSE}
  
 t1<- Data %>% 
    filter(expansion=="expansion")%>%
@@ -267,10 +300,13 @@ t1<- Data %>%
          statistic = list(all_categorical() ~ "{p}%")
        ) %>%
        modify_column_hide(columns = stat_1)%>%
-       italicize_labels() #%>%
+        italicize_labels() %>%
+         modify_header(label = "Characteristic")
+   )
+     
      # modify_header(stat_2 = "N = {n} ({style_percent(p)}%)") %>%
      # modify_footnote(update = everything() ~ NA) # if you'd like no footnote remove #
-   )
+   
  
  t2<- Data %>% 
    filter(expansion=="Non-expansion")%>%
@@ -291,97 +327,166 @@ t1<- Data %>%
          statistic = list(all_categorical() ~ "{p}%")
        ) %>%
        modify_column_hide(columns = stat_1) %>%
-       italicize_labels() #%>
+        italicize_labels() %>%
+         modify_header(label = "Characteristic")
    )
  
  
- table4 <- tbl_merge(
+ tab2 <- tbl_merge(
                 tbls = list(t1, t2),
                 tab_spanner = c("**Expansion**", "**Non-expansion**")
                   )%>%
                  modify_header(
-                        stat_2_1_1 = "**Pre-ACA** ({style_percent(p)}%)",
-                        stat_2_2_1 = "**Post-ACA** ({style_percent(p)}%)",
-                        stat_2_1_2 = "**Pre-ACA** ({style_percent(p)}%)",
-                        stat_2_2_2 = "**Post-ACA** ({style_percent(p)}%)"
-                              ) %>%
-                 modify_caption("**Table 4. Medicaid coverage rate before/after ACA for expansion/non-expansion state by characteristics**")
+                        stat_2_1_1 = "Pre",
+                        stat_2_2_1 = "Post",
+                        stat_2_1_2 = "Pre",
+                        stat_2_2_2 = "Post"
+                              )
  
-as_kable(table4, format = "latex")
 
 ```
 
-### Table 5: Uninsured Rate by Socio-Demographic Factors, Across Citizenship Status
-```{r table-5}
- table5<-Data %>%  select(UNINS,SEX, DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-                           CIT,LTINU,ENG, CULRG,CORIGIN ) %>%
-    tbl_strata(
-      strata = CIT,
-      .tbl_fun = ~ .x %>% 
-        tbl_summary(
-          by = UNINS,
-          missing = "no" ,
-          label = list(SEX ~ "Sex", DIS ~"Disability",
-                      ESRG~"Current employment status",
-                      SCHLG~"Education" , RACE1~"Race/ethnicity",CULRG~"Cultural clusters",
-                      POVPIPG ~ "Federal poverty",LTINU ~"Lifetime in US",
-                      ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth"
-                      ),
-          percent = "row",
-          statistic = list(all_categorical() ~ "{p}%")
-                   ) %>%
-         
-            # add_p() %>%
-            # add_significance_stars(hide_ci = TRUE, hide_p = TRUE)%>%
-            italicize_labels() %>%
-             bold_labels() %>%
-             modify_column_hide(columns = stat_1) %>%
-             modify_header(stat_2 = "{style_percent(p)}%") %>%
-             modify_spanning_header(stat_2 ~ "**Expansion**")%>%
-        
-              modify_caption("**Table 5. Uninsured Rate by Socio-Demographic Factors, Across Citizenship Status**")
-      
-      
-      #.header = "**{strata}**, N = {n}"
-    )
-as_kable(table5, format = "html")
+
+
+
+
+```{r table-3}
+
+table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>% 
+ 
+ modify_caption("Uninsured/Medicaid Rate by charachterstics in expansion vs non expansion states")
+
+# col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
+                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+ #  
+  
+ #merged_table %>% 
+    
+# as_kable_extra(booktabs = TRUE,
+                #   longtable = TRUE,
+               #    linesep = ""
+                  # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
+                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+ #   ) %>% 
+
+
+    options(knitr.kable.NA = "")
+    kbl(table3, booktabs = TRUE,
+                  longtable = TRUE,
+                  ) %>% 
+                  
+    kableExtra::add_header_above(c(" "=1,"Expansion"=2,"Non-expansion"=2,"Expansion"=2, "Non-expansion"=2))%>% 
+         add_header_above(c(" "=1,"Uninsured Rate"=4,"Medicaid Coverage"=4))%>% 
+
+    kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6.5)  #%>%
+   # column_spec(1,width="2cm") 
 
 ```
 
-### Table 6: Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status
-```{r table-6}
- table6<-Data %>%  select(HINS4, SEX, DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-                           CIT,LTINU,ENG, CULRG,CORIGIN ) %>%
-    tbl_strata(
-      strata = CIT,
-      .tbl_fun = ~ .x %>% 
+### Table 4: Uninsured/Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status
+
+
+```{r table-4}
+
+# Create a vector of variables
+  variables <- c("UNINS", "HINS4")
+  
+  # Create an empty list to store the tables
+  tables <- list()
+  
+  # Iterate over the variables
+  for (var in variables) {
+    # Create an empty list to store the tables for each value of CIT
+    cit_tables <- list()
+    
+    # Get unique values of CIT
+    cit_values <- unique(Data$CIT)
+    
+    # Iterate over the values of CIT
+    for (cit_value in cit_values) {
+      # Filter the data based on CIT
+      filtered_data <- Data %>%
+        filter(CIT == cit_value) %>%
+        select({{ var }}, SEX, DIS, ESRG, MARG, SCHLG, RACE1, POVPIPG,LTINU, ENG, CULRG, CORIGIN)
+      
+      # Create the table using tbl_summary
+      table <- filtered_data %>%
         tbl_summary(
-          by = HINS4,
-          missing = "no" ,
-          label = list(SEX ~ "Sex", DIS ~"Disability",
-                       ESRG~"Current employment status",
-                       SCHLG~"Education" , RACE1~"Race/ethnicity",CULRG~"Cultural clusters",
-                       POVPIPG ~ "Federal poverty",LTINU ~"Lifetime in US",
-                       ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth"
+          by = all_of(var),
+          missing = "no",
+          label = list(
+            SEX ~ "Sex",
+            DIS ~ "Disability",
+            ESRG ~ "Current employment status",
+            SCHLG ~ "Education",
+            RACE1 ~ "Race/ethnicity",
+            CULRG ~ "Cultural clusters",
+            POVPIPG ~ "Federal poverty",
+            LTINU ~ "Lifetime in US",
+            MARG ~"Married",
+            ENG ~ "Self-rated English proficiency",
+            CORIGIN ~ "Country/Region of birth"
           ),
           percent = "row",
           statistic = list(all_categorical() ~ "{p}%")
         ) %>%
-        
-        # add_p() %>%
-        # add_significance_stars(hide_ci = TRUE, hide_p = TRUE)%>%
-        italicize_labels() %>%
-        bold_labels() %>%
         modify_column_hide(columns = stat_1) %>%
-        modify_header(stat_2 = "{style_percent(p)}%") %>%
-        modify_caption("**Table 6. Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status**")
+          bold_labels()       %>%
+          modify_footnote(update = everything() ~ NA)
+      # Modify the table header
+      if (var == "UNINS") {
+        table <- table %>%
+          modify_header(stat_2 = "Uninsured {style_percent(p)}%")
+      } else if (var == "HINS4") {
+        table <- table %>%
+          modify_header(stat_2 = "Medicaid {style_percent(p)}%")
+      }
       
-      
-      #.header = "**{strata}**, N = {n}"
-    )
-knitr::kable(table6)  # NA is displayed by default
+      # Add the table to the list for the specific value of CIT
+      cit_tables[[cit_value]] <- table
+    }
+    
+    # Add the list of tables for the variable to the main list
+    tables[[var]] <- cit_tables
+  }
+ 
+  
+  
+  t <- list()
+  
+  for (cit_value in cit_values) {
+  
+    t[[cit_value]]  <- tbl_merge(list(tables$UNINS[[cit_value]], tables$HINS4[[cit_value]]))
+    
+         }
+    
+tables<-tbl_merge(list(t$`Non-citizen`,t$`Naturalized-citizen`,t$`US-citizen Born abroad `,
+                       t$`Born in US states`,t$`Born in US Territories`),
+                       tab_spanner = c("Non-citizen","Naturalized-citizen",'Citizen born abroad',
+                                       'Born in US states','Born in territories')
+                       ) %>% 
+ modify_caption("Uninsured/Medicaid Rate by Socio-Demographic Factors, Across Citizenship Status")
+
+
+ tables %>% 
+    
+    as_kable_extra(booktabs = TRUE,
+                   longtable = TRUE,
+                   linesep = ""
+                  # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
+                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+    ) %>% 
+    kableExtra::kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6)%>%
+       column_spec(1,width="2.8cm") %>%
+
+    column_spec(2:11,width="1cm") 
+  
+
+
 
 ```
+
+
 
 
 
