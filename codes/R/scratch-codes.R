@@ -287,3 +287,48 @@ svyN %>%
 Data$IPC<-ifelse(Data$ST==37 & Data$YEAR==2016,-3,Data$IPC)
 
 table(Data$IPC,exclude=NaN)
+
+
+
+
+save(Data, file = paste0(wd$data,'Data.Rdata'))
+
+
+colnames(Data)
+
+
+#### Removed From DAG
+#### 
+#### ibrary(gsl)
+library(energy)
+library(devtools)
+library(pcalg)
+library(kpcalg)
+#library(CAM)
+library(bnlearn)
+#library(AlphaPart)
+#library(tabuSearch)
+#library(dplyr)
+library(Rgraphviz)
+library(AlphaPart)
+
+
+
+
+
+
+
+feols(UNINS ~ i(ttot, treat, ref = -1) |   ST + YEAR,  cluster = ~ST,   data = Data)
+
+
+
+
+
+
+
+
+
+
+
+
+Married

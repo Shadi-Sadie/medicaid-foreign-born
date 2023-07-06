@@ -422,7 +422,129 @@ table1
  
  tables 
    
+ 
+ #####################
+ # Just to check if the difference between foreign born in expansion and non expansions and see if I can include the diffenrece
+ #####################
 
+ install.packages("dummy")
+ library('dummy')
+ 
+ t1<-Data %>%  filter(ACA == "Pre-ACA") 
+ data<-subset(data, select= c(UNINS, HINS4, AGEP, SEX,  DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
+        CIT,LTINU,ENG, CULRG,CORIGIN,expansion, NATIVITY ))
+ 
+ 
+ data<-dummy(data)
+ data$expansion<-t1$expansion
+ # unweighted table2
+ data <- data %>% 
+   mutate_if(is.character, as.numeric)
+ 
+ tableA2<- data %>%  filter(ACA == "Pre-ACA") %>%
+ select(UNINS, HINS4, AGEP, SEX,  DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
+          CIT,LTINU,ENG, CULRG,CORIGIN,expansion, NATIVITY ) %>%
+   
+   
+   tableA2 <- data %>% tbl_strata (
+                          strata = "NATIVITY_Foregin.born",
+                         .tbl_fun = ~ .x %>% 
+                                      tbl_summary(
+                                               by = expansion,
+                                               missing = "no" ,
+                                               statistic =
+                                                 list(
+                                                   all_continuous() ~ "{mean} ({sd})",
+                                                   all_dichotomous() ~ "{p}%"
+                                                 )
+                                              # label = list (
+                                              #             AGEP ~ "Age", UNINS ~ "Uninsured",HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+                                                        #    ESRG~"Current employment status", MARG ~"Marital status",SCHLG~"Education" , RACE1~"Race/ethnicity",
+                                                         #   POVPIPG ~ "Federal poverty",CIT~"Citizenship status",LTINU ~"Lifetime in US",
+                                                         #   ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+                                                       #      )
+                                      ) %>% 
+       #add_p() 
+                                     
+                       # perform t-test for all variables
+                                       add_difference()  %>%
+                                        add_significance_stars(
+                                                    pattern= "{estimate}{stars}",
+                                                    hide_ci = TRUE,
+                                                    hide_p = TRUE
+                                                             ) %>%
+                                         modify_table_styling(
+                                           columns = estimate,
+                                           rows = p.value < 0.05,
+                                           text_format = "bold"
+                                         )%>%
+                       # assume equal variance in the t-test
+                       # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+                
+                   
+                     #add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
+                                       italicize_labels() %>%
+                                       bold_labels() %>%
+                                       modify_caption("**Table 2.Baseline Characteristics by Nativity**")
+                   #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
+                   
+     #.header = "**{strata}**, N = {n}"
+                       )
+
+ tableA2
+ 
+ 
+ tableA1 <- data %>% tbl_strata (
+   strata = expansion,
+   .tbl_fun = ~ .x %>% 
+     tbl_summary(
+       by = NATIVITY_Foregin.born,
+       missing = "no" ,
+       statistic =
+         list(
+           all_continuous() ~ "{mean} ({sd})",
+           all_dichotomous() ~ "{p}%"
+         )
+       # label = list (
+       #             AGEP ~ "Age", UNINS ~ "Uninsured",HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+       #    ESRG~"Current employment status", MARG ~"Marital status",SCHLG~"Education" , RACE1~"Race/ethnicity",
+       #   POVPIPG ~ "Federal poverty",CIT~"Citizenship status",LTINU ~"Lifetime in US",
+       #   ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+       #      )
+     ) %>% 
+     #add_p() 
+     
+     # perform t-test for all variables
+     add_difference()  %>%
+     add_significance_stars(
+       pattern= "{estimate}{stars}",
+       hide_ci = TRUE,
+       hide_p = TRUE
+     ) %>%
+     modify_table_styling(
+       columns = estimate,
+       rows = p.value < 0.05,
+       text_format = "bold"
+     )%>%
+     # assume equal variance in the t-test
+     # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+     
+     
+     #add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
+     italicize_labels() %>%
+     bold_labels() %>%
+     modify_caption("**Table A.1 .Baseline Characteristics by Nativity**")
+   #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
+   
+   #.header = "**{strata}**, N = {n}"
+ )
+ 
+ tableA1
+ 
+ 
+ 
+ 
+ 
   
 #####################
 # Extra helpful codes

@@ -1,0 +1,174 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={DiD-regression},
+  pdfauthor={Shadi},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{DiD-regression}
+\author{Shadi}
+\date{2023-07-06}
+
+\begin{document}
+\maketitle
+
+We first examine the effect of medicaid expansion on uninsured rate.
+Table 2 presents the primary findings of the DD analysis, employing
+sample weights and adjusting for covariates. the first 7 columns show
+estimates from the fixed effect logistic regression, while the second
+seven columns show results from OLS. Each specification controls for
+state and year fixed effects. Column 2 controls for the variables state
+political ideology and state unemployment rate which were the minimal
+adjustment set based on the DAG result. Column 3 additionally controls
+for region-by-year fixed effects while column 4 control for
+state-specific linear time trends. the full model with all the control
+variables added are presented in columns 5-7, the difference is in
+column 6 region-by-year fixed effects is added whereas in column 7
+state-specific linear time trend is added.
+
+Columns numbers reveal a positive and statistically significant
+association between Medicaid expansion and hospital Medicaid revenue.
+For hospitals in Medicaid-expansion states, Medicaid net revenue
+increased, on average, by 2.67\% after Medicaid expansion (column 3).
+Meanwhile, columns 4 - 6 shows Medicaid expansion decreased hospital
+uncompensated care cost by approximately 2\%, which is statistically and
+economically significant.
+
+For both populations, the ``Post X Expansion'' term was positive and
+statistically significant for ``any insurance'' (p\textless.01) and
+``Medicaid'' (p\textless.001), suggesting that Medicaid expansion
+resulted in a significant increase in the probability of having any
+insurance and having Medicaid for urban and rural low-income populations
+pooled.
+
+Put differently, our estimates and standard errors from column 2
+
+\begin{verbatim}
+                               model 1                .1                .2
+\end{verbatim}
+
+treat -0.075*** (0.011) -0.071*** (0.011) -0.085*** (0.015) ForeginBorn
+0.244*** (0.012) 0.243*** (0.013) 0.243*** (0.013) treat x ForeginBorn
+-0.031 (0.018) -0.029 (0.018) -0.028 (0.018) state unemployment rate
+0.004 (0.003) 0.005 (0.003) State Political Ideology -0.011 (0.038)
+0.015 (0.036) Controls No No No Fixed-Effects: -----------------
+----------------- ----------------- ST Yes Yes Yes YEAR Yes Yes Yes
+REGION-YEAR No No Yes Varying Slopes: -----------------
+----------------- ----------------- YEAR (ST) No No No
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR by: ST
+\& YEAR by: ST \& YEAR Observations 1,975,594 1,975,594 1,975,594 R2
+0.10174 0.10180 0.10226 Within R2 0.04288 0.04294 0.04208
+
+\begin{verbatim}
+                              model 4              .1.1              .2.1
+\end{verbatim}
+
+treat -0.044** (0.010) -0.081*** (0.012) -0.092*** (0.015) ForeginBorn
+0.244*** (0.013) -0.229*** (0.014) 2.27 (7.86) treat x ForeginBorn
+-0.031 (0.017) 0.0004 (0.023) 0.004 (0.031) state unemployment rate
+0.002 (0.003)\\
+State Political Ideology -0.044 (0.025)\\
+Controls No Yes Yes Fixed-Effects: ---------------- -----------------
+----------------- ST Yes Yes Yes YEAR Yes Yes Yes REGION-YEAR No No Yes
+Varying Slopes: ---------------- ----------------- -----------------
+YEAR (ST) Yes No No \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR by: ST
+\& YEAR by: ST \& YEAR Observations 1,975,594 1,975,594 1,975,594 R2
+0.10282 0.17730 0.17502 Within R2 0.04119 0.12339 0.11971
+
+\begin{verbatim}
+                              model 7
+\end{verbatim}
+
+treat -0.053** (0.011) ForeginBorn -0.064* (0.025) treat x ForeginBorn
+0.0009 (0.021) state unemployment rate\\
+State Political Ideology\\
+Controls Yes Fixed-Effects: ---------------- ST Yes YEAR Yes REGION-YEAR
+No Varying Slopes: ---------------- YEAR (ST) Yes
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR
+Observations 1,975,594 R2 0.17836 Within R2 0.12192 --- Signif. codes: 0
+`\emph{\textbf{' 0.001 '}' 0.01 '}' 0.05 `.' 0.1 ' ' 1
+
+Table number reports empirical finding regarding the effect of medicaid
+expansion on medicaid coverage among low income adult.
+
+\end{document}

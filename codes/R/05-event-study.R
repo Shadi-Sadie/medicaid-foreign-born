@@ -2,20 +2,24 @@
 # Author: Shadi Seyedi
 # Date: may 15, 2023
 # Description:  This code section is written for 
-# Event Study and Parrallel trend check 
+# Event Study and Parallel trend check 
  
 ####################
 ## Required Packages
 ####################
 #install.packages("ggiplot", repos = "https://grantmcdermott.r-universe.dev")
 #install.packages("ggpubr")
-
+library(ggplot2)
 library(ggiplot)
 library(ggpubr)
+library(fixest)
 
 ####################
 ## Data Preparation 
 ####################
+
+ ACS <- read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
+Data<-ACS
 
 NATV<- Data[Data$NATIVITY == "US-born", ]
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
@@ -52,40 +56,53 @@ Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
 
 
 ############################################################
-## Event study for the whole population with no control
+## Fig 1: Event study for the foreign born vs us born with and without control
 ############################################################
 
-## Uninured rate
-
+## 
 Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Data)
+               data = NATV)
 
-## Medicaid take-up
-
-Event2 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Data
+               data = NATV)
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+UNINSADJ<-ggiplot(list('US-born' = Event2, 'Foreign-born' = Event4),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time')
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+
+figure1<-ggarrange(UNINSUN, UNINSADJ , 
+                   ncol = 2, nrow = 1)
+
+annotate_figure(figure1,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 1", fig.lab.face = "bold"
 )
 
-ggiplot(
-        list('Uninsured rate' = Event1, 'Medicaid Take-up' = Event2),
-        main = 'Event study: Staggered treatment (TWFE)',
-        xlab = 'Time to treatment',
-        multi_style = 'facet',
-        geom_style = "ribbon",
-        facet_args = list(labeller = labeller(id = \(x) gsub(".*: ", "", x))),
-        theme = theme_minimal() +
-                theme(
-                        text = element_text(family = "HersheySans"),
-                        plot.title = element_text(hjust = 0.5),
-                        legend.position = "none"
-                )
-)
+
 
 ############################################################
 ## ###  Event study for the foreign and Native born 

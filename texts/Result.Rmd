@@ -1,0 +1,46 @@
+---
+title: "Results"
+author: "Shadi"
+date: "2023-06-20"
+output: html_document
+---
+
+
+```{r wd-setup, include=FALSE}
+
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+
+```
+
+
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.width = 4, 
+                      fig.height = 4, 
+                      fig.path = wd$output,
+                      dev = "png"
+                      )
+
+
+```
+
+
+## Descriptive Analysis
+
+```{r descriptive ,child = 'Descriptive.Rmd'}
+
+```
+
+## Finding Causal Diagram
+
+```{r DAG, child = 'DAG.Rmd'}
+```
+
+```{r event-study, child = 'event-study.Rmd'}
+```

@@ -3,12 +3,25 @@ title: "DAG"
 author: "Shadi"
 date: "2023-06-20"
 output:
-  html_document:
-    df_print: paged
-editor_options:
-  markdown:
-    wrap: 72
+  pdf_document:
+    keep_tex: true
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage{threeparttablex}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{makecell}
+  - \usepackage{xcolor}
 ---
+
 
 ```{r wd-setup, include=FALSE}
 
@@ -21,6 +34,7 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
 ```
 
+
 ```{r setup , include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       fig.align = "center",
@@ -28,10 +42,14 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.height = 4, 
                       fig.path = wd$output,
                       dev = "png",
-                      cache = TRUE,
-                      warning=FALSE 
+                      dpi = 200,
+                      warning=FALSE
                       )
+
+
 ```
+
+
 
 <!-- message=FALSE and/or warning=FALSE -->
 
@@ -45,6 +63,7 @@ library(ggplot2)
 library(graph)
 library(brew)
 library(BiocGenerics)
+
 ```
 
 ```{r data}

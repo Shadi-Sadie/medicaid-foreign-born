@@ -1,0 +1,283 @@
+---
+title: "event-study"
+author: "Shadi"
+date: "2023-06-27"
+output:
+  pdf_document:
+    keep_tex: true
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage{threeparttablex}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{makecell}
+  - \usepackage{xcolor}
+---
+
+```{r wd-setup, include=FALSE}
+
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+
+```
+
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 4, 
+                      fig.path = "figures/prefix-",
+                      dpi = 200,
+                      dev = "png",
+                       warning=FALSE,
+                      message=FALSE 
+                      )
+
+
+```
+
+```{r data, include=FALSE}
+
+Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
+
+controls <- c("SEX","DIS", "AGEP","MARG", "SCHLG", "RACE1","ESRG","POVPIPG")
+foriegn <- c( "ENG", "PLIU", "GEOR","IPC" )
+adjs<-c("UnempR", "ADA")
+adj12<-c("UnempR", "ADA","CIT")
+
+#Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
+
+Data$expansion<-as.numeric(Data$expansion)
+Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
+
+
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+NATV<- Data[Data$NATIVITY == "US-born", ]
+
+
+
+
+```
+
+```{r library, include=FALSE}
+library(fixest)
+library(ggpubr)
+library(ggiplot)
+library('kableExtra')
+
+```
+
+## Result for event Study and Parallel trend
+
+The main assumption of the Difference-in-Differences (DiD) methodology relies on the presence of parallel trends before the policy implementation.We examine the event-study estimates for uninsured rates and Medicaid take-up to assess the impact of Medicaid expansion on low-income individuals aged 26-64 and assess the validity of parallel trend assumption.
+
+### Event studies for Uninsured rate. Low-income aged 26-64
+
+Figure 1 displays the event-study estimates for both unconditional and conditional parallel trends in uninsured rates. In Panel (a), the focus is on the effects of the expansion on uninsured rates for US-born individuals, while Panel (b) examines the effects for foreign-born individuals. The green line with circles in both panels represents the conditional models, while the orange line with triangle represents the unconditional models. For the corresponding estimation coefficients, please refer to Table 1.
+
+As shown in Figure 1, there are no significant pre-trend differences for US-born individuals living in expansion states compared to non-expansion states, as the coefficients are not significantly different from zero. Similarly, for foreign-born individuals, the coefficients for the interaction terms between year and the indicator for the pre-treatment period are also small and not statistically significant, indicating no significant pre-trend differences in the uninsured rates between foreign-born individuals in expansion states and non-expansion states. Moreover, when controlling for characteristics, the coefficients exhibit minimal changes and remain small, further supporting the parallel trend assumption. Additionally, these coefficients do not attain statistical significance, indicating that the characteristics accounted for do not significantly impact the parallel trends assumption.
+
+Transitioning to the post-expansion years, we observe notable and statistically significant declines in the overall uninsured rates for both foreign-born and US-born individuals. The coefficients associated with the indicator variables representing the post-expansion years are negative and demonstrate statistical significance for both groups. These results indicate a clear reduction in uninsured rates following the implementation of Medicaid expansion.
+
+Upon analyzing the results presented in Table 1, it becomes evident that the significance levels of the lag year coefficients tend to be higher for foreign-born individuals compared to US-born individuals. Specifically, in Model 3, the coefficient for the lag year achieves statistical significance at the 5 level for the foreign-born group. In Model 4, it reaches statistical significance at the 0.1 level. In contrast, for the US-born group, the coefficient remains statistically insignificant in both models. These findings suggest stronger evidence of a pre-trend difference in uninsured rates for foreign-born individuals in expansion states compared to non-expansion states, even after accounting for foreign-born specific characteristics. Conversely, the evidence for a pre-trend difference in uninsured rates among US-born individuals is comparatively weaker. The differences in significance levels indicate a potential violation of the parallel trend assumption to a greater extent for foreign-born individuals, implying possible disparities in uninsured rates between expansion and non-expansion states even prior to the implementation of Medicaid expansion.
+
+The event study presented in Figure 1 indicates significant improvements in insurance coverage within the expansion states compared to the non-expansion states following the implementation of Medicaid expansion. However, the observed divergence in uninsured trends and the relatively smaller reduction in the uninsured rate for foreign-born individuals highlight potential disparities in healthcare access. Nevertheless, it is important to note that the gap between the insured rates of foreign-born and US-born individuals started to close after 2018.
+
+```{r fig1, echo=FALSE}
+
+
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = NATV)
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = NATV)
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+UNINSADJ<-ggiplot(list('US-born' = Event2, 'Foreign-born' = Event4),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time')
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+
+figure1<-ggarrange(UNINSUN, UNINSADJ , 
+                   ncol = 2, nrow = 1)
+
+annotate_figure(figure1,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+```{r table1, results='asis'}
+
+table1<-etable(list(Event1, Event2, Event3,Event4),
+                digits = 3,
+               title = "The Impact of Medicaid Expansion on Uninsured Rate ",
+              headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+              tex = T,
+             vcov = "twoway",
+            group = list("_^Controls"=c(controls,foriegn)),
+            interaction.combine = NULL,
+            style.tex = style.tex(
+                                   main = "base",
+                             fixef.suffix = " FE",
+                             fixef.title = " ",
+                              stats.title = "",
+                              interaction.combine = " ",
+                            # tabular = "*",
+                               model.title = "Variables",
+                               depvar.title= " ",
+                               var.title = "\\midrule \\",
+                              yesNo = "yes"),
+             depvar=FALSE,
+             fontsize = "small",
+             dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+             #extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
+      )
+
+print(table1)
+
+```
+
+
+### Event Study for medicaid-take up
+
+
+Figure 2 and Table 2 present the event-study estimates for the unconditional and conditional parallel trends concerning Medicaid take-up. According to the data presented in Figure 2,prior to the implementation of Medicaid expansion, there is no significant pre-trend difference in Medicaid take-up between expansion and non-expansion states for both low-income US-born and foreign-born individuals aged 26-64.
+
+For the US-born sub-sample, Model 2 includes control variables, while Model 1 serves as a baseline model. The coefficients for the interaction terms between year and the indicator for the pre-treatment period were generally small and statistically insignificant in both models. This suggests that there is no significant pre-trend difference in uninsured rates between expansion and non-expansion states for US-born individuals.
+
+Similarly, for the foreign-born sub-sample, Model 4 includes control variables, while Model 3 serves as a baseline model. The coefficients for the interaction terms were also small and statistically insignificant in both models, suggesting no significant pre-trend difference in uninsured rates between expansion and non-expansion states for foreign-born individuals.
+
+Furthermore, the coefficients for the interaction terms representing the post-treatment periods (years 0 to 5 after the implementation of Medicaid expansion) were positive and statistically significant in all models, indicating an increase in uninsured rates for both US-born and foreign-born individuals in expansion states compared to non-expansion states during those years.
+
+Analyzing the results presented in Table 2, a notable pattern emerges regarding the Medicaid take-up rates between foreign-born and US-born individuals following the expansion. Initially, during the first three years after the expansion, the Medicaid take-up rate for foreign-born individuals was lower compared to that of US-born individuals. However, a reversal in this observation occurred from year 4 onwards, as the rate of take-up among foreign-born individuals increased.This suggests that over time, foreign-born individuals were able to overcome some of the barriers and obstacles they initially encountered, leading to a higher participation in Medicaid. It is likely that various factors contributed to this trend. Changes in immigration policies, targeted outreach efforts aimed at foreign-born populations, or the implementation of programs specifically designed to enhance healthcare access for immigrants could have played a role in facilitating the increased participation among foreign-born individuals. Further investigation into the specific policies and initiatives implemented during this period would provide a deeper understanding of the factors influencing the changing Medicaid take-up rates among foreign-born individuals. however, it is surprising to see a higher Medicaid take-up rate for foreign-born individuals during the fourth and fifth years after expansion, which align with the years 2018 and 2019 when stricter immigration policies were implemented under the Trump administration
+
+These findings demonstrate the effectiveness of Medicaid expansion in improving access to healthcare, especially among foreign-born individuals. The absence of significant pre-trend differences and the subsequent increase in Medicaid take-up rates following the expansion highlight the positive impact of the expansion in reducing the uninsured population and promoting healthcare coverage for both US-born and foreign-born individuals in expansion states compared to non-expansion states.
+
+```{r fig2, echo=FALSE}
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = NATV)
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = NATV)
+
+
+Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+                       ST + YEAR,                             ## FEs
+               cluster = ~ST,                          ## Clustered SEs
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
+                ref.line = -1,
+                main = 'Unadjusted',
+                xlab='Event Time'
+        
+                  )
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+UNINSADJ<-ggiplot(list('US-born' = Event6, 'Foregin-born' = Event8),
+        ref.line = -1, main = 'Adjusted',xlab='Event Time')
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+
+
+figure2<-ggarrange(UNINSUN, UNINSADJ , 
+          ncol = 2, nrow = 1)
+
+annotate_figure(figure2,
+                top = text_grob("Medicaid Coverage Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 2", fig.lab.face = "bold"
+                )
+
+```
+
+```{r table 2, results='asis'}
+
+table2<-etable(list(Event5, Event6, Event7,Event8),
+                title = "The Impact of Medicaid Expansion on Medicaid Coverage ",
+                headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+
+                 digits = 3,
+                 vcov = "twoway", 
+                 group = list("_^Controls"=c(controls,foriegn)),
+                interaction.combine = " ",
+                 tex=TRUE,
+                 depvar=FALSE,
+                style.tex = style.tex(
+                                   main = "base",
+                                  fixef.suffix = " FE",
+                                  fixef.title = " ",
+                                  stats.title = "",
+                                  interaction.combine = " ",
+                                # tabular = "*",
+                                   model.title = "Variables",
+                                   depvar.title= " ",
+                                   var.title = "\\midrule \\",
+                                  yesNo = "yes"),
+                
+                fontsize = "small",
+                dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+
+              )
+
+           
+             #extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
+      
+print(table2)
+    
+
+```
+
+The fixed-effects models accounted for state and year fixed-effects, controlling for unobserved heterogeneity and time-specific factors that could affect uninsured rates. The fit statistics indicate that the models explain a modest proportion of the variation in medicaid take-up, with R-squared values ranging from 0.06514 to 0.18770.
