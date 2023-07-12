@@ -14,32 +14,33 @@ header-includes:
   - \usepackage{float}
   - \usepackage{colortbl}
   - \usepackage{pdflscape}
+  - \usepackage{adjustbox}
   - \usepackage{tabu}
   - \usepackage{threeparttable}
   - \usepackage{threeparttablex}
   - \usepackage[normalem]{ulem}
   - \usepackage{makecell}
   - \usepackage{xcolor}
+  - \setkeys{Gin}{width=\linewidth,height=\textheight,keepaspectratio}
+  - \newcommand{\blandscape}{\begin{landscape}}
+  - \newcommand{\elandscape}{\end{landscape}}
+  - \pagenumbering{gobble}
 ---
-
-
 
 ```{r setup , include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       fig.align = "center",
-                      fig.width = 8, 
-                      fig.height = 4, 
+                    #  fig.width = 8, 
+                     # fig.height = 4, 
                       fig.path = "figures/prefix-",
                       dpi = 200,
                       dev = "png",
-                       warning=FALSE,
+                      warning=FALSE,
                       message=FALSE 
                       )
 
 
 ```
-
-
 
 ```{r wd-setup, include=FALSE}
 
@@ -52,7 +53,7 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
 ```
 
-```{r}
+```{r data-read}
 Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
 
 controls <- c("SEX","DIS", "AGEP","MARG", "SCHLG", "RACE1","ESRG","POVPIPG",'CIT')
@@ -61,16 +62,12 @@ adjs<-c("UnempR", "ADA")
 adj12<-c("UnempR", "ADA","IPC")
 ```
 
-
-
-
-```{r library-setup, include=FALSE}
+```{r library-did, include=FALSE}
 library(fixest)
-
 
 ```
 
-```{r data-setup}
+```{r data-did}
 
   # create a dummy for foreign-born
 Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
@@ -86,21 +83,23 @@ data[factor_columns] <- lapply(data[factor_columns], as.factor)
 
 ```
 
-
-We first examine the effect of medicaid expansion on uninsured rate. Table 2 presents the primary findings of the DD analysis, employing sample weights and adjusting for covariates. the first 7 columns show estimates from the fixed effect logistic regression,  while the second seven columns show results from OLS. Each specification controls for state and year fixed effects. Column 2 controls for the variables state political ideology and state unemployment rate which were the minimal adjustment set based on the DAG result. Column 3  additionally controls for region-by-year fixed effects while column 4 control for state-specific linear time trends. the full model with all the control variables added are presented in columns 5-7, the difference is in column 6 region-by-year fixed effects is added whereas in column 7 state-specific linear time trend is added.
-
+We first examine the effect of medicaid expansion on uninsured rate. Table 2 presents the primary findings of the DD analysis, employing sample weights and adjusting for covariates. The first 7 columns show estimates from the fixed effect logistic regression, while the second seven columns show results from OLS. Each specification controls for state and year fixed effects. Column 2 controls for the variables state political ideology and state unemployment rate which were the minimal adjustment set based on the DAG result. Column 3 additionally controls for region-by-year fixed effects while column 4 control for state-specific linear time trends. the full model with all the control variables added are presented in columns 5-7, the difference is in column 6 region-by-year fixed effects is added whereas in column 7 state-specific linear time trend is added.
 
 Columns numbers reveal a positive and statistically significant association between Medicaid expansion and hospital Medicaid revenue. For hospitals in Medicaid-expansion states, Medicaid net revenue increased, on average, by 2.67% after Medicaid expansion (column 3). Meanwhile, columns 4 - 6 shows Medicaid expansion decreased hospital uncompensated care cost by approximately 2%, which is statistically and economically significant.
 
-For both populations, the “Post X Expansion” term was positive and statistically significant for “any insurance” (p<.01) and “Medicaid” (p<.001), suggesting that Medicaid expansion resulted in a significant increase in the probability of having any insurance and having Medicaid for urban and rural low-income populations pooled.
+For both populations, the "Post X Expansion" term was positive and statistically significant for "any insurance" (p\<.01) and "Medicaid" (p\<.001), suggesting that Medicaid expansion resulted in a significant increase in the probability of having any insurance and having Medicaid for urban and rural low-income populations pooled.
 
-Put differently, our estimates and standard errors from column 2 
+Put differently, our estimates and standard errors from column 2
 
-
+```{=tex}
+\newpage
+\blandscape
+```
 
 
 ```{r tablereg, results='asis'}
 
+# this is where I found good info on how to rotate the table # # #"https://stackoverflow.com/questions/25849814/rstudio-rmarkdown-both-portrait-and-landscape-layout-in-a-single-pdf
 
 reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
 reg2 = feols(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
@@ -110,29 +109,134 @@ reg4 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[
 
 reg5 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
 
+
+reg6 = feglm(UNINS ~treat*ForeginBorn | ST + YEAR , cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg7 = feglm(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg8 = feglm(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+reg9 = feglm(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+reg0 = feglm(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+
 table3<-
-  etable(list(reg1,reg2,reg3, reg4,reg5), 
-          group = list("^_Controls"=c(controls,foriegn)),
+  etable(list(reg1,reg2,reg3, reg4,reg5,reg6,reg7,reg8, reg9,reg0), 
+          title = "The Effect of Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation)",
+          headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+         
+         # extralines=list("^^Uninsured"=.(" ")) ,
+          group = list("-^Controls"=c(controls,foriegn)),
           digits = 3,
-          vcov = "twoway", 
-          depvar=FALSE,
-          dict=c("UnempR"= "state unemployment rate", "ADA"="State Political Ideology"),
+          vcov = "twoway",
+           adjustbox= 1.5,
+          tex= TRUE,
+          depvar= FALSE,
+          family = FALSE,
+          arraystretch = 1.5,
+          convergence = F,
+          # notes = c("note 1", "source 1"),
           style.tex = style.tex(
                              main = "base",
                              fixef.suffix = " FE",
-                             fixef.title = " ",
-                              stats.title = "",
+                             fixef.title = "\\midrule",
+                             stats.title = "\\midrule",
                             # tabular = "*",
-                               model.title = "Variables",
+                               model.title = "",
+                             #  model.format = "[i]",
+                             # fontsize= 'normalsize', 
+                             tpt=T,
                                depvar.title= " ",
-                               var.title = "\\midrule \\",
-                              yesNo = "yes")
+                               var.title = "\\midrule",
+                            slopes.title = "",
+                            slopes.format = "State-Specific Linear Time Trends",
+                             yesNo = "yes"
+                            ) ,
+         dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+               )
 )
 
-table3
+print(table3)
 
 
 ```
 
+```{=tex}
+\elandscape
+```
 
-Table number reports empirical finding regarding the effect of medicaid expansion on medicaid coverage among low income adult. 
+
+\newpage
+\blandscape
+
+```{r tablemedic, results='asis'}
+
+
+reg1 = feols(HINS4 ~treat*ForeginBorn | ST + YEAR , cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
+reg2 = feols(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
+reg3 = feols(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg4 = feols(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg5 = feols(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data) # state and year fixed effect
+
+
+reg6 = feglm(HINS4 ~treat*ForeginBorn | ST + YEAR , cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg7 = feglm(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg8 = feglm(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+reg9 = feglm(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+reg0 = feglm(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+
+
+
+table4<-
+  etable(list(reg1,reg2,reg3, reg4,reg5,reg6,reg7,reg8, reg9,reg0), 
+          title = "The Effect of Medicaid Expansion on Medicaid Covergare Rate (Difference-in-Differences Estimation)",
+          headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+         
+         # extralines=list("^^Uninsured"=.(" ")) ,
+          group = list("-^Controls"=c(controls,foriegn)),
+          digits = 3,
+          vcov = "twoway",
+           adjustbox= 1.5,
+          tex= TRUE,
+          depvar= FALSE,
+          family = FALSE,
+           arraystretch = 1.75,
+          convergence = F,
+          # notes = c("note 1", "source 1"),
+          style.tex = style.tex(
+                             main = "base",
+                             fixef.suffix = " FE",
+                             fixef.title = "\\midrule",
+                             stats.title = "\\midrule",
+                            # tabular = "*",
+                               model.title = "",
+                             #  model.format = "[i]",
+                              fontsize= 'large', 
+                             tpt=T,
+                               depvar.title= " ",
+                               var.title = "\\midrule",
+                            slopes.title = "",
+                            slopes.format = "State-Specific Linear Time Trends",
+                             yesNo = "yes"
+                            ) ,
+         dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+               )
+)
+
+print(table4)
+
+
+
+```
+\elandscape
+
+
+
+Table number reports empirical finding regarding the effect of medicaid expansion on medicaid coverage among low income adult.
+
+

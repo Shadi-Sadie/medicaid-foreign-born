@@ -1,0 +1,29 @@
+  \usepackage{booktabs}
+   \usepackage{longtable}
+   \usepackage{array}
+   \usepackage{multirow}
+  \usepackage{wrapfig}
+   \usepackage{colortbl}
+   \usepackage{pdflscape}
+   \usepackage{tabu}
+   \usepackage{threeparttable}
+   \usepackage{threeparttablex}
+   \usepackage[normalem]{ulem}
+   \usepackage{makecell}
+   \usepackage{xcolor}
+   \usepackage{placeins}
+   \renewcommand{\topfraction}{.85}
+   \renewcommand{\bottomfraction}{.7}
+   \renewcommand{\textfraction}{.15}
+   \renewcommand{\floatpagefraction}{.66}
+   \setcounter{topnumber}{3}
+   \setcounter{bottomnumber}{3}
+   \setcounter{totalnumber}{4}
+\usepackage{float}
+\let\origtable\table
+    \let\endorigtable\endtable
+    \renewenvironment{table}[1][ht]{
+      \expandafter\origtable\expandafter[H]
+    }{
+      \endorigtable
+    }

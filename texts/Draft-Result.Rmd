@@ -72,9 +72,9 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
 
 ```{r read-data, include=FALSE}
-ACS<-read.csv(paste0(wd$data,"CLNACS.csv"), header = TRUE, sep ="," , fill = TRUE)
-Data<-ACS
-save(Data, file = paste0(wd$data,'Data.Rdata'))
+
+Data<-read.csv(paste0(wd$data,"CLNACS.csv"), header = TRUE, sep ="," , fill = TRUE)
+# save(Data, file = paste0(wd$data,'Data.Rdata'))
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 NATV<- Data[Data$NATIVITY == "US-born", ]
 

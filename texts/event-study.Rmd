@@ -20,58 +20,26 @@ header-includes:
   - \usepackage[normalem]{ulem}
   - \usepackage{makecell}
   - \usepackage{xcolor}
+  - \usepackage{placeins}
 ---
 
-```{r wd-setup, include=FALSE}
-
-wd <- list()
-# commonly used paths in my working directory
-wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
-wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
-wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
-wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
-
-```
-
-```{r setup , include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
-                      fig.align = "center",
-                      fig.width = 8, 
-                      fig.height = 4, 
-                      fig.path = "figures/prefix-",
-                      dpi = 200,
-                      dev = "png",
-                       warning=FALSE,
-                      message=FALSE 
-                      )
 
 
-```
-
-```{r data, include=FALSE}
-
-Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
-
-controls <- c("SEX","DIS", "AGEP","MARG", "SCHLG", "RACE1","ESRG","POVPIPG")
-foriegn <- c( "ENG", "PLIU", "GEOR","IPC" )
-adjs<-c("UnempR", "ADA")
-adj12<-c("UnempR", "ADA","CIT")
+```{r data-event, include=FALSE}
 
 #Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
 
 Data$expansion<-as.numeric(Data$expansion)
 Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
 
-
+# need to get a new sample for foregin and native
+# Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 NATV<- Data[Data$NATIVITY == "US-born", ]
 
-
-
-
 ```
 
-```{r library, include=FALSE}
+```{r library-event, include=FALSE}
 library(fixest)
 library(ggpubr)
 library(ggiplot)
@@ -95,33 +63,32 @@ Upon analyzing the results presented in Table 1, it becomes evident that the sig
 
 The event study presented in Figure 1 indicates significant improvements in insurance coverage within the expansion states compared to the non-expansion states following the implementation of Medicaid expansion. However, the observed divergence in uninsured trends and the relatively smaller reduction in the uninsured rate for foreign-born individuals highlight potential disparities in healthcare access. Nevertheless, it is important to note that the gap between the insured rates of foreign-born and US-born individuals started to close after 2018.
 
-```{r fig1, echo=FALSE}
+```{r fig1, fig.height = 4, fig.width = 8}
 
 
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event1 = feglm(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = NATV)
+               data = NATV, family = 'logit')
 
-Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+Event2 = feglm(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = NATV)
+               data = NATV, family = 'logit')
 
-Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event3 = feglm(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Forgn)
+               data = Forgn, family = 'logit')
 
-Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+Event4 = feglm(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Forgn)
-
+               data = Forgn, family = 'logit')
 
 UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
                  ref.line = -1, main = 'Unadjusted',xlab='Event Time')
@@ -142,8 +109,10 @@ annotate_figure(figure1,
 
 
 ```
+\FloatBarrier
 
-```{r table1, results='asis'}
+```{r tab5, results='asis'}
+
 
 table1<-etable(list(Event1, Event2, Event3,Event4),
                 digits = 3,
@@ -162,7 +131,7 @@ table1<-etable(list(Event1, Event2, Event3,Event4),
                             # tabular = "*",
                                model.title = "Variables",
                                depvar.title= " ",
-                               var.title = "\\midrule \\",
+                               var.title = "\\midrule",
                               yesNo = "yes"),
              depvar=FALSE,
              fontsize = "small",
@@ -190,32 +159,33 @@ Analyzing the results presented in Table 2, a notable pattern emerges regarding 
 
 These findings demonstrate the effectiveness of Medicaid expansion in improving access to healthcare, especially among foreign-born individuals. The absence of significant pre-trend differences and the subsequent increase in Medicaid take-up rates following the expansion highlight the positive impact of the expansion in reducing the uninsured population and promoting healthcare coverage for both US-born and foreign-born individuals in expansion states compared to non-expansion states.
 
-```{r fig2, echo=FALSE}
+```{r fig2,fig.height = 4, fig.width = 8}
 
-Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+
+Event5 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = NATV)
+               data = NATV , family = 'logit')
 
-Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+Event6 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = NATV)
+               data = NATV , family = 'logit')
 
 
-Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event7 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Forgn)
+               data = Forgn , family = 'logit')
 
-Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+Event8 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
                        ST + YEAR,                             ## FEs
                cluster = ~ST,                          ## Clustered SEs
                weights = ~PWGTP,
-               data = Forgn)
+               data = Forgn , family = 'logit')
 
 
 UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
@@ -243,7 +213,9 @@ annotate_figure(figure2,
 
 ```
 
-```{r table 2, results='asis'}
+\FloatBarrier
+
+```{r tab6, results='asis'}
 
 table2<-etable(list(Event5, Event6, Event7,Event8),
                 title = "The Impact of Medicaid Expansion on Medicaid Coverage ",
@@ -264,7 +236,7 @@ table2<-etable(list(Event5, Event6, Event7,Event8),
                                 # tabular = "*",
                                    model.title = "Variables",
                                    depvar.title= " ",
-                                   var.title = "\\midrule \\",
+                                   var.title = "\\midrule",
                                   yesNo = "yes"),
                 
                 fontsize = "small",

@@ -5,34 +5,13 @@ date: "2023-06-20"
 output:
   pdf_document:
     keep_tex: true
-header-includes:
-  - \usepackage{booktabs}
-  - \usepackage{longtable}
-  - \usepackage{array}
-  - \usepackage{multirow}
-  - \usepackage{wrapfig}
-  - \usepackage{float}
-  - \usepackage{colortbl}
-  - \usepackage{pdflscape}
-  - \usepackage{tabu}
-  - \usepackage{threeparttable}
-  - \usepackage{threeparttablex}
-  - \usepackage[normalem]{ulem}
-  - \usepackage{makecell}
-  - \usepackage{xcolor}
+    includes:
+      in_header: "preamble.tex"
 ---
 
 
-```{r data, include=FALSE}
 
-load(paste0(wd$data,"Data.Rdata"))
-Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
-NATV<- Data[Data$NATIVITY == "US-born", ]
-
-```
-
-
-```{r library ,  include=FALSE}
+```{r library-des ,  include=FALSE}
 library(knitr)
 
 library(tidyverse)
@@ -60,8 +39,9 @@ svy <- svydesign(
 
 ### Table 1: Baseline Characteristics for states
 
+dfsdfksfdkakhfdskfncfdkse
 
-```{r table-1 }
+```{r tab1 }
 
 t1<-Data %>% 
         filter(ACA=="Pre-ACA")%>%
@@ -145,9 +125,8 @@ table1 <-
 # as_gt() %>% gt::as_latex() 
 table1 %>% 
  as_kable_extra(booktabs = TRUE,
-    longtable = TRUE,
     linesep = "") %>% 
-  kableExtra::kable_styling(latex_options= "scale_down",font_size=6.5) %>%
+  kableExtra::kable_styling(latex_options= "HOLD_position" ) %>% # ,font_size=6.5) 
        column_spec(1,bold=TRUE) %>%
           row_spec(3,hline_after=TRUE)
 
@@ -164,7 +143,7 @@ Significant differences were observed across all demographic characteristics bet
 For example, in the expansion state, the proportion of foreign-born individuals who identified as Hispanic was 68%, compared to 76% in non-expansion states. This reveals that the non-expansion states had approximately 6.7% more foreign-born Hispanics compared to the expansion state. Additionally, the proportion of US-born Hispanics in the expansion state was 11%, while this population was only 1% lower in non-expansion states. Notably, within both expansion and non-expansion states, the disparities between foreign-born andUS-born individuals were more pronounced. Specifically, approximately 66% of the foreign-born population in the expansion state identified as Hispanic, while only 9.7% of the US-born population shared this heritage, resulting in a significant difference of about 57%.
 
 
-```{r table-2 }
+```{r tab2 }
 
 table2<-svy %>% subset(ACA=="Pre-ACA")%>%
       tbl_strata(
@@ -209,7 +188,7 @@ as_kable_extra(booktabs = TRUE,
                   # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
                   # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
     ) %>% 
-    kableExtra::kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6)%>%
+    kableExtra::kable_styling(latex_options= c("repeat_header","HOLD_position"), font_size=6)%>%
        column_spec(1,width="3 cm")  %>%
         column_spec(2:6,width="1.8cm") 
   #  column_spec(2:11,width="1cm") 
@@ -219,7 +198,7 @@ as_kable_extra(booktabs = TRUE,
 
 ### Table 3: Uninsured and Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics
 
-```{r tab1, include=FALSE}
+```{r tab3-1, include=FALSE}
 
 t1<- Data %>% 
       filter(expansion=="expansion")%>%
@@ -283,7 +262,7 @@ t1<- Data %>%
 ```
 
 
-```{r tab2, include=FALSE}
+```{r tab3-2, include=FALSE}
  
 t1<- Data %>% 
    filter(expansion=="expansion")%>%
@@ -354,7 +333,7 @@ t1<- Data %>%
 
 
 
-```{r table-3}
+```{r tab3}
 
 table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>% 
  
@@ -382,7 +361,7 @@ table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>%
     kableExtra::add_header_above(c(" "=1,"Expansion"=2,"Non-expansion"=2,"Expansion"=2, "Non-expansion"=2))%>% 
          add_header_above(c(" "=1,"Uninsured Rate"=4,"Medicaid Coverage"=4))%>% 
 
-    kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6.5)  #%>%
+    kable_styling(latex_options= c("repeat_header", "HOLD_position"), font_size=6.5)  #%>% "scale_down" couldn't be used
    # column_spec(1,width="2cm") 
 
 ```
@@ -390,7 +369,7 @@ table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>%
 ### Table 4: Uninsured/Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status
 
 
-```{r table-4}
+```{r tab4}
 
 # Create a vector of variables
   variables <- c("UNINS", "HINS4")
@@ -479,8 +458,9 @@ tables<-tbl_merge(list(t$`Non-citizen`,t$`Naturalized-citizen`,t$`US-citizen Bor
                    linesep = ""
                   # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
                   # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+                  # "scale_down" cant be used with long table
     ) %>% 
-    kableExtra::kable_styling(latex_options= c("scale_down","repeat_header"), font_size=6)%>%
+    kableExtra::kable_styling(latex_options= c("repeat_header","HOLD_position"), font_size=6)%>% 
        column_spec(1,width="2.8cm") %>%
 
     column_spec(2:11,width="1cm") 

@@ -322,13 +322,65 @@ feols(UNINS ~ i(ttot, treat, ref = -1) |   ST + YEAR,  cluster = ~ST,   data = D
 
 
 
+## To closs ll the plot
+## 
+dev.off()
+
+dev.off(dev.list()["RStudioGD"])
+
+
+
+## Checking the result if unique using other methods
+## 
+## 
+ library(survey)
+
+reg<-svyglm(UNINS ~treat*ForeginBorn +factor(ST)+ factor(YEAR), 
+       family="binomial", 
+       design= svydesign(
+                id=~1,
+                weights = ~ PWGTP, 
+                repweights = ~ matches("PWGTP[0-9]+"), 
+                data = data, 
+                type = "JK1",
+                scale = 4/80,
+                rscales = rep(1, 80),
+                mse = TRUE
+                 ),
+       
+)
+
+# check the table
+# 
+
+tab_model(reg6, p.style = "numeric_stars", transform = NULL)
+
+
+
+# check risdiuals 
+
+par(mfrow=c(1,2))
+    
+plot(residuals(reg6,type = "deviance"))
+plot(residuals(reg))
+
+
+# just want to plot logestic regression curve 
+
+
+plot (data$UNINS, data$treat)
+abline(reg)
+
+plot(UNINS ~ treat, data=data, col="steelblue")
+lines(UNINS ~ treat, newdata, lwd=2)
+
+newdata <- data.frame(treat=data$treat,ForeginBorn=data$ForeginBorn, ST=data$ST, YEAR=data$YEAR )
+newdata$UNINS <- predict(reg, newdata, type = "response")
+dev.off()
+plot(UNINS ~ treat, data=data)
+lines(UNINS ~ treat, newdata, lwd=2, col="green")
 
 
 
 
 
-
-
-
-
-Married

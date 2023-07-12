@@ -1,8 +1,12 @@
 ---
-title: "Results"
+title: "Result"
 author: "Shadi"
-date: "2023-06-20"
-output: html_document
+date: "2023-07-06"
+output:
+  pdf_document:
+    keep_tex: true
+    includes:
+      in_header: "preamble.tex"
 ---
 
 
@@ -23,12 +27,31 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.align = "center",
                       fig.width = 4, 
                       fig.height = 4, 
+                      fig.pos = "H", out.extra = "" ,
                       fig.path = wd$output,
-                      dev = "png"
+                      dev = "png",
+                      dpi = 200,
+                      cache = TRUE # ,
+                     # warning=FALSE, 
+                     # message=FALSE
                       )
 
 
 ```
+
+
+```{r data-setup}
+
+Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
+#Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+#NATV<- Data[Data$NATIVITY == "US-born", ]
+
+controls <- c("SEX","DIS", "AGEP","MARG", "SCHLG", "RACE1","ESRG","POVPIPG",'CIT')
+foriegn <- c( "ENG", "LTINU", "CORIGIN" )
+adjs<-c("UnempR", "ADA")
+adj12<-c("UnempR", "ADA","IPC")
+```
+
 
 
 ## Descriptive Analysis
@@ -42,5 +65,15 @@ knitr::opts_chunk$set(echo = FALSE,
 ```{r DAG, child = 'DAG.Rmd'}
 ```
 
+
+## Event Study and Parallel Trend Assumption
+
 ```{r event-study, child = 'event-study.Rmd'}
+
+```
+
+##  Difference-in-Differences Model Results
+
+```{r did-regression, child = 'did-regression.Rmd', eval=FALSE}
+
 ```

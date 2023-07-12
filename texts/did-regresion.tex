@@ -62,12 +62,17 @@
 \usepackage{float}
 \usepackage{colortbl}
 \usepackage{pdflscape}
+\usepackage{adjustbox}
 \usepackage{tabu}
 \usepackage{threeparttable}
 \usepackage{threeparttablex}
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\setkeys{Gin}{width=\linewidth,height=\textheight,keepaspectratio}
+\newcommand{\blandscape}{\begin{landscape}}
+\newcommand{\elandscape}{\end{landscape}}
+\pagenumbering{gobble}
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
@@ -118,55 +123,95 @@ pooled.
 
 Put differently, our estimates and standard errors from column 2
 
-\begin{verbatim}
-                               model 1                .1                .2
-\end{verbatim}
+\newpage
+\blandscape
 
-treat -0.075*** (0.011) -0.071*** (0.011) -0.085*** (0.015) ForeginBorn
-0.244*** (0.012) 0.243*** (0.013) 0.243*** (0.013) treat x ForeginBorn
--0.031 (0.018) -0.029 (0.018) -0.028 (0.018) state unemployment rate
-0.004 (0.003) 0.005 (0.003) State Political Ideology -0.011 (0.038)
-0.015 (0.036) Controls No No No Fixed-Effects: -----------------
------------------ ----------------- ST Yes Yes Yes YEAR Yes Yes Yes
-REGION-YEAR No No Yes Varying Slopes: -----------------
------------------ ----------------- YEAR (ST) No No No
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR by: ST
-\& YEAR by: ST \& YEAR Observations 1,975,594 1,975,594 1,975,594 R2
-0.10174 0.10180 0.10226 Within R2 0.04288 0.04294 0.04208
+\begin{table}[htbp]
+   \centering
+   \begin{adjustbox}{width = 1.5\textwidth, center}
+      \begin{threeparttable}[b]
+         \caption{The Effect of Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation)}
+         \renewcommand*{\arraystretch}{1.5}
+         \begin{tabular}{lcccccccccccccc}
+            \tabularnewline \midrule \midrule
+             & \multicolumn{7}{c}{FE OLS} & \multicolumn{7}{c}{FE LOGIT} \\ \cmidrule(lr){2-8} \cmidrule(lr){9-15}
+                                                      & (1)            & (2)            & (3)            & (4)            & (5)            & (6)            & (7)            & (8)            & (9)            & (10)           & (11)           & (12)           & (13)           & (14)\\  
+            \midrule 
+            Medicaid Expansion                        & -0.075$^{***}$ & -0.071$^{***}$ & -0.085$^{***}$ & -0.044$^{***}$ & -0.081$^{***}$ & -0.092$^{***}$ & -0.053$^{***}$ & -0.568$^{***}$ & -0.549$^{***}$ & -0.572$^{***}$ & -0.333$^{***}$ & -0.612$^{***}$ & -0.629$^{***}$ & -0.384$^{***}$\\   
+                                                      & (0.011)        & (0.011)        & (0.015)        & (0.010)        & (0.012)        & (0.015)        & (0.011)        & (0.083)        & (0.081)        & (0.102)        & (0.082)        & (0.089)        & (0.112)        & (0.098)\\   
+            Foreign-Born                              & 0.244$^{***}$  & 0.243$^{***}$  & 0.243$^{***}$  & 0.244$^{***}$  & -0.229$^{***}$ & 2.27           & -0.064$^{**}$  & 1.03$^{***}$   & 1.02$^{***}$   & 1.02$^{***}$   & 1.03$^{***}$   & -0.389$^{***}$ & -0.406$^{***}$ & 9.60$^{***}$\\   
+                                                      & (0.012)        & (0.013)        & (0.013)        & (0.013)        & (0.014)        & (7.86)         & (0.025)        & (0.051)        & (0.053)        & (0.054)        & (0.054)        & (0.124)        & (0.128)        & (0.406)\\   
+            Medicaid Expansion $\times$ Foreign-Born  & -0.031         & -0.029         & -0.028         & -0.031         & 0.0004         & 0.004          & 0.0009         & 0.170$^{**}$   & 0.186$^{**}$   & 0.199$^{**}$   & 0.180$^{**}$   & 0.222$^{**}$   & 0.253$^{***}$  & 0.240$^{**}$\\   
+                                                      & (0.018)        & (0.018)        & (0.018)        & (0.017)        & (0.023)        & (0.031)        & (0.021)        & (0.084)        & (0.082)        & (0.079)        & (0.076)        & (0.107)        & (0.094)        & (0.097)\\   
+            State Unemployment Rate                   &                & 0.004          & 0.005          & 0.002          &                &                &                &                & 0.021          & 0.023$^{*}$    & 0.010          &                &                &   \\   
+                                                      &                & (0.003)        & (0.003)        & (0.003)        &                &                &                &                & (0.016)        & (0.014)        & (0.013)        &                &                &   \\   
+            State Political Ideology                  &                & -0.011         & 0.015          & -0.044         &                &                &                &                & -0.162         & -0.026         & -0.271$^{*}$   &                &                &   \\   
+                                                      &                & (0.038)        & (0.036)        & (0.025)        &                &                &                &                & (0.197)        & (0.182)        & (0.140)        &                &                &   \\   
+            \midrule 
+            Controls                                  &                &                &                &                & yes            & yes            & yes            &                &                &                &                & yes            & yes            & yes\\  
+            State FE                                  & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes\\  
+            Year FE                                   & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes\\  
+            Region-Year FE                            &                &                & yes            &                &                & yes            &                &                &                & yes            &                &                & yes            & \\  
+            State-Specific Linear Time Trends         &                &                &                & yes            &                &                & yes            &                &                &                & yes            &                &                & yes\\  
+            \midrule 
+            Observations                              & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594\\  
+            Squared Correlation                       & 0.08869        & 0.08874        & 0.08915        & 0.08977        & 0.16009        & 0.15835        & 0.16112        & 0.08897        & 0.08904        & 0.08948        & 0.09016        & 0.16532        & 0.16580        & 0.16655\\  
+            Pseudo R$^2$                              & 0.99202        & 0.99202        & 0.99203        & 0.99203        & 0.99257        & 0.99256        & 0.99258        & 0.08279        & -105.71        & -105.66        & 0.08385        & -97.947        & -97.888        & 0.15066\\  
+            BIC                                       & 2,371,638.2    & 2,371,581.6    & 2,371,233.5    & 2,370,014.1    & 2,208,630.5    & 2,213,214.6    & 2,206,836.9    & 260,177,373.2  & 260,157,750.0  & 260,035,778.6  & 259,875,687.9  & 241,236,546.0  & 241,092,958.8  & 240,927,239.1\\  
+            \midrule \midrule
+            \multicolumn{15}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
+            \multicolumn{15}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+         \end{tabular}
+      \end{threeparttable}
+   \end{adjustbox}
+\end{table}
 
-\begin{verbatim}
-                              model 4              .1.1              .2.1
-\end{verbatim}
+\elandscape
 
-treat -0.044** (0.010) -0.081*** (0.012) -0.092*** (0.015) ForeginBorn
-0.244*** (0.013) -0.229*** (0.014) 2.27 (7.86) treat x ForeginBorn
--0.031 (0.017) 0.0004 (0.023) 0.004 (0.031) state unemployment rate
-0.002 (0.003)\\
-State Political Ideology -0.044 (0.025)\\
-Controls No Yes Yes Fixed-Effects: ---------------- -----------------
------------------ ST Yes Yes Yes YEAR Yes Yes Yes REGION-YEAR No No Yes
-Varying Slopes: ---------------- ----------------- -----------------
-YEAR (ST) Yes No No \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR by: ST
-\& YEAR by: ST \& YEAR Observations 1,975,594 1,975,594 1,975,594 R2
-0.10282 0.17730 0.17502 Within R2 0.04119 0.12339 0.11971
+\newpage
+\begin{landscape}
 
-\begin{verbatim}
-                              model 7
-\end{verbatim}
-
-treat -0.053** (0.011) ForeginBorn -0.064* (0.025) treat x ForeginBorn
-0.0009 (0.021) state unemployment rate\\
-State Political Ideology\\
-Controls Yes Fixed-Effects: ---------------- ST Yes YEAR Yes REGION-YEAR
-No Varying Slopes: ---------------- YEAR (ST) Yes
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
-\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ S.E.: Clustered by: ST \& YEAR
-Observations 1,975,594 R2 0.17836 Within R2 0.12192 --- Signif. codes: 0
-`\emph{\textbf{' 0.001 '}' 0.01 '}' 0.05 `.' 0.1 ' ' 1
+\begin{table}[htbp]
+   \centering
+   \large
+   \begin{adjustbox}{width = 1.5\textwidth, center}
+      \begin{threeparttable}[b]
+         \caption{The Effect of Medicaid Expansion on Medicaid Covergare Rate (Difference-in-Differences Estimation)}
+         \renewcommand*{\arraystretch}{1.75}
+         \begin{tabular}{lcccccccccccccc}
+            \tabularnewline \midrule \midrule
+             & \multicolumn{7}{c}{FE OLS} & \multicolumn{7}{c}{FE LOGIT} \\ \cmidrule(lr){2-8} \cmidrule(lr){9-15}
+                                                      & (1)            & (2)            & (3)            & (4)            & (5)           & (6)           & (7)           & (8)            & (9)            & (10)           & (11)           & (12)          & (13)          & (14)\\  
+            \midrule 
+            Medicaid Expansion                        & 0.136$^{***}$  & 0.134$^{***}$  & 0.144$^{***}$  & 0.085$^{***}$  & 0.140$^{***}$ & 0.148$^{***}$ & 0.092$^{***}$ & 0.498$^{***}$  & 0.493$^{***}$  & 0.554$^{***}$  & 0.305$^{***}$  & 0.591$^{***}$ & 0.660$^{***}$ & 0.390$^{***}$\\   
+                                                      & (0.018)        & (0.019)        & (0.023)        & (0.021)        & (0.018)       & (0.023)       & (0.022)       & (0.072)        & (0.074)        & (0.091)        & (0.079)        & (0.084)       & (0.108)       & (0.099)\\   
+            Foreign-Born                              & -0.158$^{***}$ & -0.158$^{***}$ & -0.157$^{***}$ & -0.159$^{***}$ & 0.086$^{***}$ & -0.634        & -0.002        & -0.862$^{***}$ & -0.863$^{***}$ & -0.859$^{***}$ & -0.869$^{***}$ & -0.034        & -0.021        & -0.035\\   
+                                                      & (0.013)        & (0.014)        & (0.014)        & (0.014)        & (0.021)       & (10.3)        & (0.016)       & (0.096)        & (0.097)        & (0.097)        & (0.097)        & (0.083)       & (0.080)       & (0.078)\\   
+            Medicaid Expansion $\times$ Foreign-Born  & 0.007          & 0.007          & 0.005          & 0.009          & -0.012        & -0.016        & -0.012        & 0.239$^{***}$  & 0.241$^{***}$  & 0.233$^{***}$  & 0.256$^{***}$  & 0.151$^{**}$  & 0.136$^{**}$  & 0.163$^{***}$\\   
+                                                      & (0.023)        & (0.022)        & (0.022)        & (0.021)        & (0.026)       & (0.022)       & (0.024)       & (0.054)        & (0.051)        & (0.054)        & (0.042)        & (0.072)       & (0.069)       & (0.057)\\   
+            State Unemployment Rate                   &                & -0.003         & -0.003         & -0.003         &               &               &               &                & -0.011         & -0.014         & -0.015         &               &               &   \\   
+                                                      &                & (0.003)        & (0.003)        & (0.004)        &               &               &               &                & (0.014)        & (0.014)        & (0.016)        &               &               &   \\   
+            State Political Ideology                  &                & -0.035         & -0.074$^{*}$   & 0.025          &               &               &               &                & -0.201         & -0.368$^{**}$  & 0.082          &               &               &   \\   
+                                                      &                & (0.043)        & (0.036)        & (0.032)        &               &               &               &                & (0.189)        & (0.161)        & (0.151)        &               &               &   \\   
+            \midrule 
+            Controls                                  &                &                &                &                & yes           & yes           & yes           &                &                &                &                & yes           & yes           & yes\\  
+            State FE                                  & yes            & yes            & yes            & yes            & yes           & yes           & yes           & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
+            Year FE                                   & yes            & yes            & yes            & yes            & yes           & yes           & yes           & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
+            Region-Year FE                            &                &                & yes            &                &               & yes           &               &                &                & yes            &                &               & yes           & \\  
+            State-Specific Linear Time Trends         &                &                &                & yes            &               &               & yes           &                &                &                & yes            &               &               & yes\\  
+            \midrule 
+            Observations                              & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594     & 1,975,594     & 1,975,594     & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594     & 1,975,594     & 1,975,594\\  
+            Squared Correlation                       & 0.07469        & 0.07472        & 0.07521        & 0.07612        & 0.18391       & 0.18433       & 0.18530       & 0.07447        & 0.07451        & 0.07495        & 0.07579        & 0.18712       & 0.18757       & 0.18851\\  
+            Pseudo R$^2$                              & 0.99160        & 0.99160        & 0.99161        & 0.99161        & 0.99240       & 0.99240       & 0.99241       & 0.06642        & -104.05        & -104.00        & 0.06752        & -93.720       & -93.669       & 0.15944\\  
+            BIC                                       & 2,626,427.5    & 2,626,407.3    & 2,625,879.1    & 2,624,067.8    & 2,378,984.1   & 2,378,539.9   & 2,376,264.9   & 278,455,133.8  & 278,449,483.9  & 278,320,051.2  & 278,127,049.6  & 251,078,904.8 & 250,942,679.5 & 250,710,650.8\\  
+            \midrule \midrule
+            \multicolumn{15}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
+            \multicolumn{15}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+         \end{tabular}
+      \end{threeparttable}
+   \end{adjustbox}
+\end{table}
+\end{landscape}
 
 Table number reports empirical finding regarding the effect of medicaid
 expansion on medicaid coverage among low income adult.

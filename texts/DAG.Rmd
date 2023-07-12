@@ -23,37 +23,10 @@ header-includes:
 ---
 
 
-```{r wd-setup, include=FALSE}
-
-wd <- list()
-# commonly used paths in my working directory
-wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
-wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
-wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
-wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
-
-```
-
-
-```{r setup , include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
-                      fig.align = "center",
-                      fig.width = 4, 
-                      fig.height = 4, 
-                      fig.path = wd$output,
-                      dev = "png",
-                      dpi = 200,
-                      warning=FALSE
-                      )
-
-
-```
-
-
 
 <!-- message=FALSE and/or warning=FALSE -->
 
-```{r library ,  include=FALSE}
+```{r library-DAG ,  include=FALSE}
 
 library(dplyr)  # This will also load the magrittr package
 library(pcalg)
@@ -66,8 +39,8 @@ library(BiocGenerics)
 
 ```
 
-```{r data}
-load(paste0(wd$data,"Data.Rdata"))
+```{r data-DAG}
+
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 NATV<- Data[Data$NATIVITY == "US-born", ]
 

@@ -68,6 +68,7 @@
 \usepackage[normalem]{ulem}
 \usepackage{makecell}
 \usepackage{xcolor}
+\usepackage{placeins}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -174,7 +175,25 @@ highlight potential disparities in healthcare access. Nevertheless, it
 is important to note that the gap between the insured rates of
 foreign-born and US-born individuals started to close after 2018.
 
-\begin{center}\includegraphics{figures/prefix-fig1-1} \end{center}
+\begin{verbatim}
+## The variables 'CITNaturalized-citizen', 'CITNon-citizen' and 'CITUS-citizen Born abroad ' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{verbatim}
+## The variables 'CITBorn in US Territories', 'CITUS-citizen Born abroad ' and 'CORIGINUnited States' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{center}\includegraphics{/home/shadi/Projects/GitHub/medicaid-foreign-born/output/fig1-1} \end{center}
+
+\begin{center}\includegraphics{/home/shadi/Projects/GitHub/medicaid-foreign-born/output/fig1-2} \end{center}
+\FloatBarrier
+
+\begin{verbatim}
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+\end{verbatim}
 
 \begin{table}[htbp]
    \caption{The Impact of Medicaid Expansion on Uninsured Rate }
@@ -184,47 +203,45 @@ foreign-born and US-born individuals started to close after 2018.
       \tabularnewline \midrule \midrule
        & \multicolumn{2}{c}{US-born} & \multicolumn{2}{c}{Foreign-Born} \\ \cmidrule(lr){2-3} \cmidrule(lr){4-5}
       Variables             & (1)            & (2)                    & (3)            & (4)\\  
-      \midrule \\\
-      expansion year $=$ -8 & -0.005         & $-8.85\times 10^{-6}$  & 0.059$^{*}$    & 0.050\\   
-                            & (0.021)        & (0.023)                & (0.030)        & (0.029)\\   
-      expansion year $=$ -7 & -0.014         & -0.016                 & 0.043          & 0.018\\   
-                            & (0.025)        & (0.026)                & (0.028)        & (0.028)\\   
-      expansion year $=$ -6 & -0.012         & -0.012                 & 0.009          & -0.002\\   
-                            & (0.019)        & (0.021)                & (0.026)        & (0.028)\\   
-      expansion year $=$ -5 & 0.021$^{*}$    & 0.025$^{**}$           & 0.007          & 0.022\\   
-                            & (0.011)        & (0.011)                & (0.018)        & (0.018)\\   
-      expansion year $=$ -4 & -0.001         & $-3.17\times 10^{-5}$  & -0.012         & -0.009\\   
-                            & (0.017)        & (0.017)                & (0.016)        & (0.018)\\   
-      expansion year $=$ -3 & -0.001         & -0.001                 & -0.004         & -0.018\\   
-                            & (0.004)        & (0.004)                & (0.010)        & (0.012)\\   
-      expansion year $=$ -2 & 0.005          & 0.004                  & 0.002          & -0.017\\   
-                            & (0.003)        & (0.004)                & (0.008)        & (0.010)\\   
-      expansion year $=$ 0  & -0.052$^{***}$ & -0.052$^{***}$         & -0.035$^{***}$ & -0.026$^{**}$\\   
+      \midrule 
+      expansion year $=$ -8 & -0.005         & $3.95\times 10^{-5}$   & 0.059$^{*}$    & 0.046\\   
+                            & (0.021)        & (0.023)                & (0.030)        & (0.028)\\   
+      expansion year $=$ -7 & -0.014         & -0.015                 & 0.043          & 0.024\\   
+                            & (0.025)        & (0.026)                & (0.028)        & (0.025)\\   
+      expansion year $=$ -6 & -0.012         & -0.012                 & 0.009          & 0.012\\   
+                            & (0.019)        & (0.021)                & (0.026)        & (0.026)\\   
+      expansion year $=$ -5 & 0.021$^{*}$    & 0.025$^{**}$           & 0.007          & 0.023\\   
+                            & (0.011)        & (0.011)                & (0.018)        & (0.016)\\   
+      expansion year $=$ -4 & -0.001         & $-2.61\times 10^{-5}$  & -0.012         & -0.004\\   
+                            & (0.017)        & (0.017)                & (0.016)        & (0.017)\\   
+      expansion year $=$ -3 & -0.001         & -0.001                 & -0.004         & 0.0002\\   
+                            & (0.004)        & (0.005)                & (0.010)        & (0.009)\\   
+      expansion year $=$ -2 & 0.005          & 0.004                  & 0.002          & 0.002\\   
+                            & (0.003)        & (0.004)                & (0.008)        & (0.007)\\   
+      expansion year $=$ 0  & -0.052$^{***}$ & -0.053$^{***}$         & -0.035$^{***}$ & -0.030$^{**}$\\   
                             & (0.005)        & (0.005)                & (0.008)        & (0.011)\\   
-      expansion year $=$ 1  & -0.090$^{***}$ & -0.088$^{***}$         & -0.069$^{**}$  & -0.070$^{**}$\\   
-                            & (0.008)        & (0.008)                & (0.024)        & (0.023)\\   
-      expansion year $=$ 2  & -0.100$^{***}$ & -0.099$^{***}$         & -0.076$^{**}$  & -0.070$^{**}$\\   
-                            & (0.009)        & (0.009)                & (0.026)        & (0.025)\\   
-      expansion year $=$ 3  & -0.099$^{***}$ & -0.099$^{***}$         & -0.090$^{**}$  & -0.084$^{***}$\\   
-                            & (0.008)        & (0.008)                & (0.028)        & (0.025)\\   
-      expansion year $=$ 4  & -0.094$^{***}$ & -0.093$^{***}$         & -0.099$^{**}$  & -0.092$^{***}$\\   
-                            & (0.009)        & (0.009)                & (0.030)        & (0.027)\\   
-      expansion year $=$ 5  & -0.100$^{***}$ & -0.100$^{***}$         & -0.099$^{***}$ & -0.084$^{**}$\\   
-                            & (0.009)        & (0.008)                & (0.026)        & (0.026)\\   
+      expansion year $=$ 1  & -0.090$^{***}$ & -0.088$^{***}$         & -0.069$^{**}$  & -0.068$^{**}$\\   
+                            & (0.008)        & (0.008)                & (0.024)        & (0.024)\\   
+      expansion year $=$ 2  & -0.100$^{***}$ & -0.100$^{***}$         & -0.076$^{**}$  & -0.073$^{**}$\\   
+                            & (0.009)        & (0.009)                & (0.026)        & (0.027)\\   
+      expansion year $=$ 3  & -0.099$^{***}$ & -0.099$^{***}$         & -0.090$^{**}$  & -0.087$^{**}$\\   
+                            & (0.008)        & (0.008)                & (0.028)        & (0.028)\\   
+      expansion year $=$ 4  & -0.094$^{***}$ & -0.094$^{***}$         & -0.099$^{**}$  & -0.094$^{**}$\\   
+                            & (0.009)        & (0.009)                & (0.030)        & (0.030)\\   
+      expansion year $=$ 5  & -0.100$^{***}$ & -0.100$^{***}$         & -0.099$^{***}$ & -0.091$^{**}$\\   
+                            & (0.009)        & (0.009)                & (0.026)        & (0.027)\\   
        \\
       State FE              & yes            & yes                    & yes            & yes\\  
       Year FE               & yes            & yes                    & yes            & yes\\  
       Controls              &                & yes                    &                & yes\\  
       Observations          & 1,585,639      & 1,585,639              & 389,955        & 389,955\\  
-      R$^2$                 & 0.05930        & 0.11977                & 0.08577        & 0.19724\\  
-      Within R$^2$          & 0.00286        & 0.06696                & 0.00172        & 0.12343\\  
+      R$^2$                 & 0.05930        & 0.11985                & 0.08577        & 0.21524\\  
+      Within R$^2$          & 0.00286        & 0.06704                & 0.00172        & 0.14309\\  
       \midrule \midrule
       \multicolumn{5}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
       \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
    \end{tabular}
 \end{table}
-
-ular\} \textbackslash end\{table\}
 
 \hypertarget{event-study-for-medicaid-take-up}{%
 \subsubsection{Event Study for medicaid-take
@@ -292,7 +309,24 @@ population and promoting healthcare coverage for both US-born and
 foreign-born individuals in expansion states compared to non-expansion
 states.
 
-\begin{center}\includegraphics{figures/prefix-fig2-1} \end{center}
+\begin{verbatim}
+## The variables 'CITNaturalized-citizen', 'CITNon-citizen' and 'CITUS-citizen Born abroad ' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{verbatim}
+## The variables 'CITBorn in US Territories', 'CITUS-citizen Born abroad ' and 'CORIGINUnited States' have been removed because of collinearity (see $collin.var).
+\end{verbatim}
+
+\begin{center}\includegraphics{/home/shadi/Projects/GitHub/medicaid-foreign-born/output/fig2-1} \end{center}
+
+\FloatBarrier
+
+\begin{verbatim}
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+## Variance contained negative values in the diagonal and was 'fixed' (a la Cameron, Gelbach & Miller 2011).
+\end{verbatim}
 
 \begin{table}[htbp]
    \caption{The Impact of Medicaid Expansion on Medicaid Coverage }
@@ -302,47 +336,45 @@ states.
       \tabularnewline \midrule \midrule
        & \multicolumn{2}{c}{US-born} & \multicolumn{2}{c}{Foreign-Born} \\ \cmidrule(lr){2-3} \cmidrule(lr){4-5}
       Variables             & (1)           & (2)           & (3)            & (4)\\  
-      \midrule \\\
-      expansion year $=$ -8 & -0.011        & -0.013        & -0.006         & 0.008\\   
-                            & (0.029)       & (0.031)       & (0.009)        & (0.009)\\   
-      expansion year $=$ -7 & -0.002        & 0.0010        & -0.011         & 0.005\\   
+      \midrule 
+      expansion year $=$ -8 & -0.011        & -0.013        & -0.006         & 0.011\\   
+                            & (0.029)       & (0.031)       & (0.009)        & (0.008)\\   
+      expansion year $=$ -7 & -0.002        & 0.0008        & -0.011         & 0.003\\   
                             & (0.031)       & (0.031)       & (0.013)        & (0.011)\\   
-      expansion year $=$ -6 & -0.002        & 0.005         & -0.010         & 0.011\\   
+      expansion year $=$ -6 & -0.002        & 0.005         & -0.010         & 0.003\\   
                             & (0.021)       & (0.024)       & (0.011)        & (0.011)\\   
       expansion year $=$ -5 & -0.024        & -0.026$^{*}$  & -0.030$^{***}$ & -0.030$^{***}$\\   
-                            & (0.014)       & (0.013)       & (0.008)        & (0.008)\\   
-      expansion year $=$ -4 & 0.013         & 0.012         & 0.010          & 0.009\\   
-                            & (0.015)       & (0.015)       & (0.017)        & (0.016)\\   
-      expansion year $=$ -3 & -0.004        & -0.002        & -0.006         & 0.005\\   
-                            & (0.003)       & (0.003)       & (0.006)        & (0.009)\\   
-      expansion year $=$ -2 & -0.003        & -0.004        & -0.005         & 0.007\\   
+                            & (0.014)       & (0.013)       & (0.008)        & (0.007)\\   
+      expansion year $=$ -4 & 0.013         & 0.012         & 0.010          & 0.007\\   
+                            & (0.015)       & (0.015)       & (0.017)        & (0.015)\\   
+      expansion year $=$ -3 & -0.004        & -0.003        & -0.006         & -0.005\\   
+                            & (0.003)       & (0.003)       & (0.006)        & (0.006)\\   
+      expansion year $=$ -2 & -0.003        & -0.004        & -0.005         & -0.003\\   
                             & (0.004)       & (0.004)       & (0.007)        & (0.007)\\   
-      expansion year $=$ 0  & 0.082$^{***}$ & 0.081$^{***}$ & 0.067$^{***}$  & 0.066$^{***}$\\   
-                            & (0.004)       & (0.005)       & (0.002)        & (0.005)\\   
-      expansion year $=$ 1  & 0.150$^{***}$ & 0.148$^{***}$ & 0.144$^{***}$  & 0.144$^{***}$\\   
+      expansion year $=$ 0  & 0.082$^{***}$ & 0.081$^{***}$ & 0.067$^{***}$  & 0.068$^{***}$\\   
+                            & (0.004)       & (0.005)       & (0.002)        & (0.004)\\   
+      expansion year $=$ 1  & 0.150$^{***}$ & 0.148$^{***}$ & 0.144$^{***}$  & 0.143$^{***}$\\   
                             & (0.011)       & (0.011)       & (0.013)        & (0.014)\\   
-      expansion year $=$ 2  & 0.161$^{***}$ & 0.159$^{***}$ & 0.157$^{***}$  & 0.156$^{***}$\\   
+      expansion year $=$ 2  & 0.161$^{***}$ & 0.159$^{***}$ & 0.157$^{***}$  & 0.159$^{***}$\\   
+                            & (0.011)       & (0.012)       & (0.017)        & (0.018)\\   
+      expansion year $=$ 3  & 0.167$^{***}$ & 0.165$^{***}$ & 0.162$^{***}$  & 0.163$^{***}$\\   
                             & (0.011)       & (0.012)       & (0.017)        & (0.016)\\   
-      expansion year $=$ 3  & 0.167$^{***}$ & 0.165$^{***}$ & 0.162$^{***}$  & 0.161$^{***}$\\   
-                            & (0.011)       & (0.012)       & (0.017)        & (0.014)\\   
-      expansion year $=$ 4  & 0.157$^{***}$ & 0.155$^{***}$ & 0.182$^{***}$  & 0.180$^{***}$\\   
-                            & (0.010)       & (0.010)       & (0.018)        & (0.019)\\   
-      expansion year $=$ 5  & 0.156$^{***}$ & 0.154$^{***}$ & 0.181$^{***}$  & 0.173$^{***}$\\   
-                            & (0.011)       & (0.011)       & (0.017)        & (0.018)\\   
+      expansion year $=$ 4  & 0.157$^{***}$ & 0.155$^{***}$ & 0.182$^{***}$  & 0.181$^{***}$\\   
+                            & (0.010)       & (0.010)       & (0.018)        & (0.020)\\   
+      expansion year $=$ 5  & 0.156$^{***}$ & 0.154$^{***}$ & 0.181$^{***}$  & 0.177$^{***}$\\   
+                            & (0.011)       & (0.011)       & (0.017)        & (0.020)\\   
        \\
       State FE              & yes           & yes           & yes            & yes\\  
       Year FE               & yes           & yes           & yes            & yes\\  
       Controls              &               & yes           &                & yes\\  
       Observations          & 1,585,639     & 1,585,639     & 389,955        & 389,955\\  
-      R$^2$                 & 0.06514       & 0.18770       & 0.10655        & 0.17083\\  
-      Within R$^2$          & 0.00628       & 0.13656       & 0.00837        & 0.07972\\  
+      R$^2$                 & 0.06514       & 0.18789       & 0.10655        & 0.18046\\  
+      Within R$^2$          & 0.00628       & 0.13676       & 0.00837        & 0.09041\\  
       \midrule \midrule
       \multicolumn{5}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
       \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
    \end{tabular}
 \end{table}
-
-ular\} \textbackslash end\{table\}
 
 The fixed-effects models accounted for state and year fixed-effects,
 controlling for unobserved heterogeneity and time-specific factors that
