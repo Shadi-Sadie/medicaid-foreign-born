@@ -328,7 +328,7 @@ dev.off()
 
 dev.off(dev.list()["RStudioGD"])
 
-
+data$B<-log(data$UNINS)
 
 ## Checking the result if unique using other methods
 ## 
@@ -358,7 +358,6 @@ tab_model(reg6, p.style = "numeric_stars", transform = NULL)
 
 
 # check risdiuals 
-
 par(mfrow=c(1,2))
     
 plot(residuals(reg6,type = "deviance"))
@@ -381,6 +380,93 @@ plot(UNINS ~ treat, data=data)
 lines(UNINS ~ treat, newdata, lwd=2, col="green")
 
 
+etable(list(reg1,reg2,reg3, reg4,reg5,reg6,reg7,reg8, reg9,reg0),  fitstat = ~ n +r2 +ar2 + pr2+  aic + bic )
+       
+
+### Agregated data by st and year
+
+svy <- svydesign(
+    id=~1,
+    weights = ~ PWGTP, 
+    repweights = ~ matches("PWGTP[0-9]+"), 
+    data = Data, 
+    type = "JK1",
+    scale = 4/80,
+    rscales = rep(1, 80),
+    mse = TRUE
+)
 
 
 
+
+agrdata  <- aggregate(cbind(UNINS, treat) ~ ST + YEAR, data = Data, FUN = mean)
+
+
+#aggregated_data <- svyby(~ UNINS + treat, ~ ST + YEAR, design = svy,FUN = svymean)
+
+
+df_bacon1 <-bacon(UNINS ~ treat,
+         data = agrdata,
+        id_var = "ST",
+         time_var = "YEAR")
+
+
+dfplot1<- ggplot(df_bacon1) +
+    aes(x = weight, y = estimate, shape = factor(type)) +
+    labs(x = "Weight", y = "Estimate", shape = "Type") +
+    geom_hline(yintercept = dd_estimate, color = "A94064") +
+    
+    geom_point()
+
+
+garrange(dfplot1, dfplot2 , 
+         ncol = 2, nrow = 1)
+
+agrdata  <- aggregate(cbind(HINS4, treat) ~ ST + YEAR, data = Data, FUN = mean)
+
+
+#aggregated_data <- svyby(~ UNINS + treat, ~ ST + YEAR, design = svy,FUN = svymean)
+
+
+
+df_bacon2 <-bacon(HINS4 ~ treat,
+                 data = agrdata,
+                 id_var = "ST",
+                 time_var = "YEAR")
+
+df_bacon2
+
+bacon_summary(df_bacon2)
+
+
+dfplot2<- ggplot(df_bacon2) +
+    aes(x = weight, y = estimate, shape = factor(type)) +
+    labs(x = "Weight", y = "Estimate", shape = "Type") +
+    
+    geom_point()
+
+dd_estimate <- sum(df_bacon1$estimate*df_bacon1$weight)
+
+
+ggplot(data = df_bacon1) +
+    geom_point(aes(x = weight, y = estimate, 
+                   color = type, shape = type), size = 2) +
+    xlab("Weight") +
+    ylab("2x2 DD Estimate") +
+    geom_hline(yintercept = dd_estimate, color = "red") +
+    theme_minimal() + 
+    theme(
+        legend.title = element_blank(),
+        legend.background = element_rect(
+            fill="white", linetype="solid"),
+        legend.justification=c(1,1), 
+        legend.position=c(1,1)
+    )
+
+
+type <- c("Earlier vs Later Treated", "Later vs Earlier Treated", "Treated vs Untreated")
+Coeff <- c("0.14610", "0.08782", "0.14452")
+Weight <- c("0.11871","0.08771","0.79358")
+bc1 <- data.frame(type, Coeff,Weight )
+
+bc<- table(bc1$type, bc1$Coeff,bc1$Weight)

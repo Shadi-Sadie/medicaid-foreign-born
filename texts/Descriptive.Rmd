@@ -38,8 +38,15 @@ svy <- svydesign(
 ```
 
 ### Table 1: Baseline Characteristics for states
+Table 1 provides a baseline comparison of Non-Expansion and Expansion states before and after the implementation of the Affordable Care Act (ACA). The table displays mean values for three variables: State's Political Liberalism, Immigration Policy Climate, and State's Unemployment Rate.
 
-dfsdfksfdkakhfdskfncfdkse
+Before the ACA went into effect, there were notable differences between Expansion and Non-Expansion states. In terms of State's Political Liberalism, Expansion states had a higher mean value (0.45) compared to Non-Expansion states (0.24), with a statistically significant difference (p < 0.001). This suggests that Expansion states tended to be more politically liberal.
+
+For Immigration Policy Climate, Non-Expansion states exhibited a more negative mean value (-3) compared to Expansion states (-1), also with a statistically significant difference (p < 0.01). This indicates that Expansion states had less exclusionary immigration policies.
+
+Regarding State's Unemployment Rate, Expansion states had a higher mean value (8.60) compared to Non-Expansion states (7.16), with a statistically significant difference (p < 0.05). This implies that Expansion states had higher levels of unemployment.
+
+After the ACA went into effect, these variables did not show significant variations between the two groups. This suggests that the implementation of the ACA did not significantly impact the differences in State's Political Liberalism, Immigration Policy Climate, and State's Unemployment Rate between Expansion and Non-Expansion states.
 
 ```{r tab1 }
 
@@ -69,8 +76,8 @@ t1<-Data %>%
                      # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
                       modify_header(
                                   label = "**Variable**",
-                                  stat_1 = '**Non Expansion**',
-                                   stat_2 = '**Expansion**'
+                                  stat_1 = '**Expansion**',
+                                   stat_2 = '**Non Expansion**'
                              )
 # tab1 # check if all is correct
 
@@ -140,7 +147,7 @@ Table 2 provides a comprehensive summary of the demographic characteristics, ins
 Significant differences were observed across all demographic characteristics between foreign-born and US-born adults. However, while substantial disparities were found between native and foreign-born individuals in both expansion and non-expansion states, the discrepancies between native-born individuals in expansion and non-expansion states were relatively smaller in magnitude. The same trend was observed for foreign-born individuals.
 
 
-For example, in the expansion state, the proportion of foreign-born individuals who identified as Hispanic was 68%, compared to 76% in non-expansion states. This reveals that the non-expansion states had approximately 6.7% more foreign-born Hispanics compared to the expansion state. Additionally, the proportion of US-born Hispanics in the expansion state was 11%, while this population was only 1% lower in non-expansion states. Notably, within both expansion and non-expansion states, the disparities between foreign-born andUS-born individuals were more pronounced. Specifically, approximately 66% of the foreign-born population in the expansion state identified as Hispanic, while only 9.7% of the US-born population shared this heritage, resulting in a significant difference of about 57%.
+For example, in the expansion state, the proportion of foreign-born individuals who identified as Hispanic was 68%, compared to 76% in non-expansion states. This reveals that the non-expansion states had approximately 6.7% more foreign-born Hispanics compared to the expansion state. Additionally, the proportion of US-born Hispanics in the expansion state was 11%, while this population was only 1% lower in non-expansion states. Notably, within both expansion and non-expansion states, the disparities between foreign-born and US-born individuals were more pronounced. Specifically, approximately 66% of the foreign-born population in the expansion state identified as Hispanic, while only 9.7% of the US-born population shared this heritage, resulting in a significant difference of about 57%.
 
 
 ```{r tab2 }
@@ -197,6 +204,12 @@ as_kable_extra(booktabs = TRUE,
 ```
 
 ### Table 3: Uninsured and Medicaid coverage rate before and after ACA for expansion and non-expansion state by characteristics
+
+The table provides a comparison of the uninsured rate and Medicaid coverage rate among different groups based on their characteristics, such as age, income, ethnicity, and education level. It shows how these rates have changed before and after the ACA in both expansion and non-expansion states.
+
+By examining the values in the table, one can observe the impact of the ACA on uninsured and Medicaid coverage rates across various demographic and socioeconomic groups, providing insights into the effectiveness of the ACA in expanding health insurance coverage.
+
+The "NA" values in the table indicate that certain variables did not apply to US-born individuals, and therefore, there were no recorded data for those specific categories.
 
 ```{r tab3-1, include=FALSE}
 
@@ -368,6 +381,9 @@ table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>%
 
 ### Table 4: Uninsured/Medicaid Coverage Rate by Socio-Demographic Factors, Across Citizenship Status
 
+Table 4 presents the uninsured and Medicaid coverage rates categorized by socio-demographic factors across different citizenship statuses. The table provides a comparison of the rates among various groups based on factors such as age, income, ethnicity, and education level, focusing specifically on their citizenship status.
+
+By examining the uninsured and Medicaid coverage rates across citizenship status, the table offers insights into the disparities in health insurance coverage among different groups of individuals. This information can help understand the impact of citizenship status on access to healthcare. 
 
 ```{r tab4}
 

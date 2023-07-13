@@ -47,48 +47,45 @@ library('kableExtra')
 
 ```
 
-## Result for event Study and Parallel trend
 
 The main assumption of the Difference-in-Differences (DiD) methodology relies on the presence of parallel trends before the policy implementation.We examine the event-study estimates for uninsured rates and Medicaid take-up to assess the impact of Medicaid expansion on low-income individuals aged 26-64 and assess the validity of parallel trend assumption.
 
-### Event studies for Uninsured rate. Low-income aged 26-64
+### Effect of the ACA Medicaid Expansions on Uninsured: Accounting for Variation in Treatment Timing
 
-Figure 1 displays the event-study estimates for both unconditional and conditional parallel trends in uninsured rates. In Panel (a), the focus is on the effects of the expansion on uninsured rates for US-born individuals, while Panel (b) examines the effects for foreign-born individuals. The green line with circles in both panels represents the conditional models, while the orange line with triangle represents the unconditional models. For the corresponding estimation coefficients, please refer to Table 1.
+Figure 1 displays the event-study estimates for both unconditional and conditional parallel trends for uninsured.  In Panel (a), the focus is on the effects of the expansion on uninsured for US-born individuals, while Panel (b) examines the effects for foreign-born individuals. The green line with circles in both panels represents the conditional models, while the orange line with triangle represents the unconditional models. For the corresponding estimation coefficients, please refer to Table 1.
 
 As shown in Figure 1, there are no significant pre-trend differences for US-born individuals living in expansion states compared to non-expansion states, as the coefficients are not significantly different from zero. Similarly, for foreign-born individuals, the coefficients for the interaction terms between year and the indicator for the pre-treatment period are also small and not statistically significant, indicating no significant pre-trend differences in the uninsured rates between foreign-born individuals in expansion states and non-expansion states. Moreover, when controlling for characteristics, the coefficients exhibit minimal changes and remain small, further supporting the parallel trend assumption. Additionally, these coefficients do not attain statistical significance, indicating that the characteristics accounted for do not significantly impact the parallel trends assumption.
 
-Transitioning to the post-expansion years, we observe notable and statistically significant declines in the overall uninsured rates for both foreign-born and US-born individuals. The coefficients associated with the indicator variables representing the post-expansion years are negative and demonstrate statistical significance for both groups. These results indicate a clear reduction in uninsured rates following the implementation of Medicaid expansion.
+Transitioning to the post-expansion years, we observe notable and statistically significant declines in the overall uninsured rates for both foreign-born and US-born individuals. The coefficients associated with the indicator variables representing the post-expansion years are negative and demonstrate statistical significance for both groups. However, the change in the lead coefficients for the foreign born is less than native suggesting that there exist disparities among native and foreign -born. 
 
-Upon analyzing the results presented in Table 1, it becomes evident that the significance levels of the lag year coefficients tend to be higher for foreign-born individuals compared to US-born individuals. Specifically, in Model 3, the coefficient for the lag year achieves statistical significance at the 5 level for the foreign-born group. In Model 4, it reaches statistical significance at the 0.1 level. In contrast, for the US-born group, the coefficient remains statistically insignificant in both models. These findings suggest stronger evidence of a pre-trend difference in uninsured rates for foreign-born individuals in expansion states compared to non-expansion states, even after accounting for foreign-born specific characteristics. Conversely, the evidence for a pre-trend difference in uninsured rates among US-born individuals is comparatively weaker. The differences in significance levels indicate a potential violation of the parallel trend assumption to a greater extent for foreign-born individuals, implying possible disparities in uninsured rates between expansion and non-expansion states even prior to the implementation of Medicaid expansion.
-
-The event study presented in Figure 1 indicates significant improvements in insurance coverage within the expansion states compared to the non-expansion states following the implementation of Medicaid expansion. However, the observed divergence in uninsured trends and the relatively smaller reduction in the uninsured rate for foreign-born individuals highlight potential disparities in healthcare access. Nevertheless, it is important to note that the gap between the insured rates of foreign-born and US-born individuals started to close after 2018.
+Overall, the event study presented in Figure 1 indicates significant improvements in insurance coverage within the expansion states compared to the non-expansion states following the implementation of Medicaid expansion. However, the observed divergence in uninsured trends and the smaller reduction in the uninsured rate for foreign-born individuals highlight potential disparities in healthcare access. 
 
 ```{r fig1, fig.height = 4, fig.width = 8}
 
 
-Event1 = feglm(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = NATV, family = 'logit')
+               data = NATV)
 
-Event2 = feglm(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = NATV, family = 'logit')
+               data = NATV)
 
-Event3 = feglm(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = Forgn, family = 'logit')
+               data = Forgn)
 
-Event4 = feglm(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = Forgn, family = 'logit')
+               data = Forgn)
 
 UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
                  ref.line = -1, main = 'Unadjusted',xlab='Event Time')
@@ -144,7 +141,7 @@ print(table1)
 ```
 
 
-### Event Study for medicaid-take up
+### Effect of the ACA Medicaid Expansions on Medicaid Coverage: Accounting for Variation in Treatment Timing
 
 
 Figure 2 and Table 2 present the event-study estimates for the unconditional and conditional parallel trends concerning Medicaid take-up. According to the data presented in Figure 2,prior to the implementation of Medicaid expansion, there is no significant pre-trend difference in Medicaid take-up between expansion and non-expansion states for both low-income US-born and foreign-born individuals aged 26-64.
@@ -153,39 +150,41 @@ For the US-born sub-sample, Model 2 includes control variables, while Model 1 se
 
 Similarly, for the foreign-born sub-sample, Model 4 includes control variables, while Model 3 serves as a baseline model. The coefficients for the interaction terms were also small and statistically insignificant in both models, suggesting no significant pre-trend difference in uninsured rates between expansion and non-expansion states for foreign-born individuals.
 
-Furthermore, the coefficients for the interaction terms representing the post-treatment periods (years 0 to 5 after the implementation of Medicaid expansion) were positive and statistically significant in all models, indicating an increase in uninsured rates for both US-born and foreign-born individuals in expansion states compared to non-expansion states during those years.
+Furthermore, the coefficients for the interaction terms representing the post-treatment periods (years 0 to 5 after the implementation of Medicaid expansion) were positive and statistically significant in all models, indicating an increase in medicaid coverage for both US-born and foreign-born individuals in expansion states compared to non-expansion states during those years.
 
-Analyzing the results presented in Table 2, a notable pattern emerges regarding the Medicaid take-up rates between foreign-born and US-born individuals following the expansion. Initially, during the first three years after the expansion, the Medicaid take-up rate for foreign-born individuals was lower compared to that of US-born individuals. However, a reversal in this observation occurred from year 4 onwards, as the rate of take-up among foreign-born individuals increased.This suggests that over time, foreign-born individuals were able to overcome some of the barriers and obstacles they initially encountered, leading to a higher participation in Medicaid. It is likely that various factors contributed to this trend. Changes in immigration policies, targeted outreach efforts aimed at foreign-born populations, or the implementation of programs specifically designed to enhance healthcare access for immigrants could have played a role in facilitating the increased participation among foreign-born individuals. Further investigation into the specific policies and initiatives implemented during this period would provide a deeper understanding of the factors influencing the changing Medicaid take-up rates among foreign-born individuals. however, it is surprising to see a higher Medicaid take-up rate for foreign-born individuals during the fourth and fifth years after expansion, which align with the years 2018 and 2019 when stricter immigration policies were implemented under the Trump administration
+Analyzing the results presented in Table 2, a notable pattern emerges regarding the Medicaid take-up between foreign-born and US-born individuals following the expansion. Initially, during the first three years after the expansion, the Medicaid take-up for foreign-born individuals was similar to that of US-born individuals. However, from year 4 onwardsa we observe that the take-up rate among foreign-born individuals increased. This suggests that over time, foreign-born individuals were able to overcome some of the barriers and obstacles they initially encountered, leading to a higher participation in Medicaid. It is likely that various factors contributed to this trend. Changes in immigration policies, targeted outreach efforts aimed at foreign-born populations, or the implementation of programs specifically designed to enhance healthcare access for immigrants could have played a role in facilitating the increased participation among foreign-born individuals. Further investigation into the specific policies and initiatives implemented during this period would provide a deeper understanding of the factors influencing the changing Medicaid take-up rates among foreign-born individuals.
+
+> however, it is surprising to me see a higher Medicaid take-up rate for foreign-born individuals during the fourth and fifth years after expansion, which align with the years 2018 and 2019 when stricter immigration policies were implemented under the Trump administration.
 
 These findings demonstrate the effectiveness of Medicaid expansion in improving access to healthcare, especially among foreign-born individuals. The absence of significant pre-trend differences and the subsequent increase in Medicaid take-up rates following the expansion highlight the positive impact of the expansion in reducing the uninsured population and promoting healthcare coverage for both US-born and foreign-born individuals in expansion states compared to non-expansion states.
 
 ```{r fig2,fig.height = 4, fig.width = 8}
 
 
-Event5 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = NATV , family = 'logit')
+               data = NATV)
 
-Event6 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = NATV , family = 'logit')
+               data = NATV)
 
-
-Event7 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = Forgn , family = 'logit')
+               data = Forgn)
 
-Event8 = feglm(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn] + IPC|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
-               data = Forgn , family = 'logit')
+               data = Forgn)
+
 
 
 UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
@@ -252,4 +251,4 @@ print(table2)
 
 ```
 
-The fixed-effects models accounted for state and year fixed-effects, controlling for unobserved heterogeneity and time-specific factors that could affect uninsured rates. The fit statistics indicate that the models explain a modest proportion of the variation in medicaid take-up, with R-squared values ranging from 0.06514 to 0.18770.
+

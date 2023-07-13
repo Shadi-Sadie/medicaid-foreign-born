@@ -94,17 +94,18 @@
 
 We first examine the effect of medicaid expansion on uninsured rate.
 Table 2 presents the primary findings of the DD analysis, employing
-sample weights and adjusting for covariates. the first 7 columns show
-estimates from the fixed effect logistic regression, while the second
-seven columns show results from OLS. Each specification controls for
-state and year fixed effects. Column 2 controls for the variables state
-political ideology and state unemployment rate which were the minimal
-adjustment set based on the DAG result. Column 3 additionally controls
-for region-by-year fixed effects while column 4 control for
-state-specific linear time trends. the full model with all the control
-variables added are presented in columns 5-7, the difference is in
-column 6 region-by-year fixed effects is added whereas in column 7
-state-specific linear time trend is added.
+sample weights and adjusting for covariates. he first 7 columns show
+estimates from the fixed effect Linear probability model , while the
+second seven columns show results from fixed effect logit model. Each
+specification controls for state and year fixed effects. Column 2
+controls for the variables state political ideology and state
+unemployment rate which were the minimal adjustment set based on the
+resul of the DAG causal discovery. Column 3 additionally controls for
+region-by-year fixed effects while column 4 control for state-specific
+linear time trends. The full model with all the control variables added
+are presented in columns 5-7, the difference is in column 6
+region-by-year fixed effects is added whereas in column 7 state-specific
+linear time trend is added.
 
 Columns numbers reveal a positive and statistically significant
 association between Medicaid expansion and hospital Medicaid revenue.
@@ -138,15 +139,15 @@ Put differently, our estimates and standard errors from column 2
                                                       & (1)            & (2)            & (3)            & (4)            & (5)            & (6)            & (7)            & (8)            & (9)            & (10)           & (11)           & (12)           & (13)           & (14)\\  
             \midrule 
             Medicaid Expansion                        & -0.075$^{***}$ & -0.071$^{***}$ & -0.085$^{***}$ & -0.044$^{***}$ & -0.081$^{***}$ & -0.092$^{***}$ & -0.053$^{***}$ & -0.568$^{***}$ & -0.549$^{***}$ & -0.572$^{***}$ & -0.333$^{***}$ & -0.612$^{***}$ & -0.629$^{***}$ & -0.384$^{***}$\\   
-                                                      & (0.011)        & (0.011)        & (0.015)        & (0.010)        & (0.012)        & (0.015)        & (0.011)        & (0.083)        & (0.081)        & (0.102)        & (0.082)        & (0.089)        & (0.112)        & (0.098)\\   
-            Foreign-Born                              & 0.244$^{***}$  & 0.243$^{***}$  & 0.243$^{***}$  & 0.244$^{***}$  & -0.229$^{***}$ & 2.27           & -0.064$^{**}$  & 1.03$^{***}$   & 1.02$^{***}$   & 1.02$^{***}$   & 1.03$^{***}$   & -0.389$^{***}$ & -0.406$^{***}$ & 9.60$^{***}$\\   
-                                                      & (0.012)        & (0.013)        & (0.013)        & (0.013)        & (0.014)        & (7.86)         & (0.025)        & (0.051)        & (0.053)        & (0.054)        & (0.054)        & (0.124)        & (0.128)        & (0.406)\\   
-            Medicaid Expansion $\times$ Foreign-Born  & -0.031         & -0.029         & -0.028         & -0.031         & 0.0004         & 0.004          & 0.0009         & 0.170$^{**}$   & 0.186$^{**}$   & 0.199$^{**}$   & 0.180$^{**}$   & 0.222$^{**}$   & 0.253$^{***}$  & 0.240$^{**}$\\   
-                                                      & (0.018)        & (0.018)        & (0.018)        & (0.017)        & (0.023)        & (0.031)        & (0.021)        & (0.084)        & (0.082)        & (0.079)        & (0.076)        & (0.107)        & (0.094)        & (0.097)\\   
-            State Unemployment Rate                   &                & 0.004          & 0.005          & 0.002          &                &                &                &                & 0.021          & 0.023$^{*}$    & 0.010          &                &                &   \\   
-                                                      &                & (0.003)        & (0.003)        & (0.003)        &                &                &                &                & (0.016)        & (0.014)        & (0.013)        &                &                &   \\   
-            State Political Ideology                  &                & -0.011         & 0.015          & -0.044         &                &                &                &                & -0.162         & -0.026         & -0.271$^{*}$   &                &                &   \\   
-                                                      &                & (0.038)        & (0.036)        & (0.025)        &                &                &                &                & (0.197)        & (0.182)        & (0.140)        &                &                &   \\   
+                                                      & (0.002)        & (0.002)        & (0.002)        & (0.003)        & (0.002)        & (0.002)        & (0.003)        & (0.009)        & (0.009)        & (0.012)        & (0.015)        & (0.009)        & (0.012)        & (0.015)\\   
+            Foreign-Born                              & 0.244$^{***}$  & 0.243$^{***}$  & 0.243$^{***}$  & 0.244$^{***}$  & -0.229$^{***}$ & 2.27           & -0.064$^{***}$ & 1.03$^{***}$   & 1.02$^{***}$   & 1.02$^{***}$   & 1.03$^{***}$   & -0.389$^{***}$ & -0.406$^{***}$ & 9.60$^{***}$\\   
+                                                      & (0.001)        & (0.001)        & (0.001)        & (0.001)        & (0.008)        & (2.17)         & (0.015)        & (0.006)        & (0.006)        & (0.006)        & (0.006)        & (0.083)        & (0.083)        & (0.228)\\   
+            Medicaid Expansion $\times$ Foreign-Born  & -0.031$^{***}$ & -0.029$^{***}$ & -0.028$^{***}$ & -0.031$^{***}$ & 0.0004         & 0.004$^{*}$    & 0.0009         & 0.170$^{***}$  & 0.186$^{***}$  & 0.199$^{***}$  & 0.180$^{***}$  & 0.222$^{***}$  & 0.253$^{***}$  & 0.240$^{***}$\\   
+                                                      & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.011)        & (0.011)        & (0.011)        & (0.011)        & (0.011)        & (0.012)        & (0.012)\\   
+            State Unemployment Rate                   &                & 0.004$^{***}$  & 0.005$^{***}$  & 0.002$^{**}$   &                &                &                &                & 0.021$^{***}$  & 0.023$^{***}$  & 0.010$^{**}$   &                &                &   \\   
+                                                      &                & (0.0006)       & (0.0007)       & (0.0010)       &                &                &                &                & (0.003)        & (0.003)        & (0.005)        &                &                &   \\   
+            State Political Ideology                  &                & -0.011         & 0.015$^{*}$    & -0.044$^{***}$ &                &                &                &                & -0.162$^{***}$ & -0.026         & -0.271$^{***}$ &                &                &   \\   
+                                                      &                & (0.008)        & (0.009)        & (0.012)        &                &                &                &                & (0.044)        & (0.047)        & (0.062)        &                &                &   \\   
             \midrule 
             Controls                                  &                &                &                &                & yes            & yes            & yes            &                &                &                &                & yes            & yes            & yes\\  
             State FE                                  & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes\\  
@@ -159,7 +160,7 @@ Put differently, our estimates and standard errors from column 2
             Pseudo R$^2$                              & 0.99202        & 0.99202        & 0.99203        & 0.99203        & 0.99257        & 0.99256        & 0.99258        & 0.08279        & -105.71        & -105.66        & 0.08385        & -97.947        & -97.888        & 0.15066\\  
             BIC                                       & 2,371,638.2    & 2,371,581.6    & 2,371,233.5    & 2,370,014.1    & 2,208,630.5    & 2,213,214.6    & 2,206,836.9    & 260,177,373.2  & 260,157,750.0  & 260,035,778.6  & 259,875,687.9  & 241,236,546.0  & 241,092,958.8  & 240,927,239.1\\  
             \midrule \midrule
-            \multicolumn{15}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
+            \multicolumn{15}{l}{\emph{Heteroskedasticity-robust standard-errors in parentheses}}\\
             \multicolumn{15}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
          \end{tabular}
       \end{threeparttable}
@@ -181,31 +182,31 @@ Put differently, our estimates and standard errors from column 2
          \begin{tabular}{lcccccccccccccc}
             \tabularnewline \midrule \midrule
              & \multicolumn{7}{c}{FE OLS} & \multicolumn{7}{c}{FE LOGIT} \\ \cmidrule(lr){2-8} \cmidrule(lr){9-15}
-                                                      & (1)            & (2)            & (3)            & (4)            & (5)           & (6)           & (7)           & (8)            & (9)            & (10)           & (11)           & (12)          & (13)          & (14)\\  
+                                                      & (1)            & (2)            & (3)            & (4)            & (5)            & (6)            & (7)            & (8)            & (9)            & (10)           & (11)           & (12)          & (13)          & (14)\\  
             \midrule 
-            Medicaid Expansion                        & 0.136$^{***}$  & 0.134$^{***}$  & 0.144$^{***}$  & 0.085$^{***}$  & 0.140$^{***}$ & 0.148$^{***}$ & 0.092$^{***}$ & 0.498$^{***}$  & 0.493$^{***}$  & 0.554$^{***}$  & 0.305$^{***}$  & 0.591$^{***}$ & 0.660$^{***}$ & 0.390$^{***}$\\   
-                                                      & (0.018)        & (0.019)        & (0.023)        & (0.021)        & (0.018)       & (0.023)       & (0.022)       & (0.072)        & (0.074)        & (0.091)        & (0.079)        & (0.084)       & (0.108)       & (0.099)\\   
-            Foreign-Born                              & -0.158$^{***}$ & -0.158$^{***}$ & -0.157$^{***}$ & -0.159$^{***}$ & 0.086$^{***}$ & -0.634        & -0.002        & -0.862$^{***}$ & -0.863$^{***}$ & -0.859$^{***}$ & -0.869$^{***}$ & -0.034        & -0.021        & -0.035\\   
-                                                      & (0.013)        & (0.014)        & (0.014)        & (0.014)        & (0.021)       & (10.3)        & (0.016)       & (0.096)        & (0.097)        & (0.097)        & (0.097)        & (0.083)       & (0.080)       & (0.078)\\   
-            Medicaid Expansion $\times$ Foreign-Born  & 0.007          & 0.007          & 0.005          & 0.009          & -0.012        & -0.016        & -0.012        & 0.239$^{***}$  & 0.241$^{***}$  & 0.233$^{***}$  & 0.256$^{***}$  & 0.151$^{**}$  & 0.136$^{**}$  & 0.163$^{***}$\\   
-                                                      & (0.023)        & (0.022)        & (0.022)        & (0.021)        & (0.026)       & (0.022)       & (0.024)       & (0.054)        & (0.051)        & (0.054)        & (0.042)        & (0.072)       & (0.069)       & (0.057)\\   
-            State Unemployment Rate                   &                & -0.003         & -0.003         & -0.003         &               &               &               &                & -0.011         & -0.014         & -0.015         &               &               &   \\   
-                                                      &                & (0.003)        & (0.003)        & (0.004)        &               &               &               &                & (0.014)        & (0.014)        & (0.016)        &               &               &   \\   
-            State Political Ideology                  &                & -0.035         & -0.074$^{*}$   & 0.025          &               &               &               &                & -0.201         & -0.368$^{**}$  & 0.082          &               &               &   \\   
-                                                      &                & (0.043)        & (0.036)        & (0.032)        &               &               &               &                & (0.189)        & (0.161)        & (0.151)        &               &               &   \\   
+            Medicaid Expansion                        & 0.136$^{***}$  & 0.134$^{***}$  & 0.144$^{***}$  & 0.085$^{***}$  & 0.140$^{***}$  & 0.148$^{***}$  & 0.092$^{***}$  & 0.498$^{***}$  & 0.493$^{***}$  & 0.554$^{***}$  & 0.305$^{***}$  & 0.591$^{***}$ & 0.660$^{***}$ & 0.390$^{***}$\\   
+                                                      & (0.002)        & (0.002)        & (0.002)        & (0.003)        & (0.002)        & (0.002)        & (0.003)        & (0.008)        & (0.009)        & (0.011)        & (0.013)        & (0.009)       & (0.011)       & (0.013)\\   
+            Foreign-Born                              & -0.158$^{***}$ & -0.158$^{***}$ & -0.157$^{***}$ & -0.159$^{***}$ & 0.086$^{***}$  & -0.634         & -0.002         & -0.862$^{***}$ & -0.863$^{***}$ & -0.859$^{***}$ & -0.869$^{***}$ & -0.034        & -0.021        & -0.035\\   
+                                                      & (0.001)        & (0.001)        & (0.001)        & (0.001)        & (0.007)        & (2.47)         & (0.015)        & (0.007)        & (0.007)        & (0.007)        & (0.007)        & (0.082)       & (0.082)       & (0.082)\\   
+            Medicaid Expansion $\times$ Foreign-Born  & 0.007$^{***}$  & 0.007$^{***}$  & 0.005$^{**}$   & 0.009$^{***}$  & -0.012$^{***}$ & -0.016$^{***}$ & -0.012$^{***}$ & 0.239$^{***}$  & 0.241$^{***}$  & 0.233$^{***}$  & 0.256$^{***}$  & 0.151$^{***}$ & 0.136$^{***}$ & 0.163$^{***}$\\   
+                                                      & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.002)        & (0.010)        & (0.011)        & (0.011)        & (0.011)        & (0.011)       & (0.011)       & (0.012)\\   
+            State Unemployment Rate                   &                & -0.003$^{***}$ & -0.003$^{***}$ & -0.003$^{***}$ &                &                &                &                & -0.011$^{***}$ & -0.014$^{***}$ & -0.015$^{***}$ &               &               &   \\   
+                                                      &                & (0.0006)       & (0.0007)       & (0.0010)       &                &                &                &                & (0.003)        & (0.003)        & (0.005)        &               &               &   \\   
+            State Political Ideology                  &                & -0.035$^{***}$ & -0.074$^{***}$ & 0.025$^{**}$   &                &                &                &                & -0.201$^{***}$ & -0.368$^{***}$ & 0.082          &               &               &   \\   
+                                                      &                & (0.009)        & (0.009)        & (0.012)        &                &                &                &                & (0.040)        & (0.043)        & (0.056)        &               &               &   \\   
             \midrule 
-            Controls                                  &                &                &                &                & yes           & yes           & yes           &                &                &                &                & yes           & yes           & yes\\  
-            State FE                                  & yes            & yes            & yes            & yes            & yes           & yes           & yes           & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
-            Year FE                                   & yes            & yes            & yes            & yes            & yes           & yes           & yes           & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
-            Region-Year FE                            &                &                & yes            &                &               & yes           &               &                &                & yes            &                &               & yes           & \\  
-            State-Specific Linear Time Trends         &                &                &                & yes            &               &               & yes           &                &                &                & yes            &               &               & yes\\  
+            Controls                                  &                &                &                &                & yes            & yes            & yes            &                &                &                &                & yes           & yes           & yes\\  
+            State FE                                  & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
+            Year FE                                   & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes            & yes           & yes           & yes\\  
+            Region-Year FE                            &                &                & yes            &                &                & yes            &                &                &                & yes            &                &               & yes           & \\  
+            State-Specific Linear Time Trends         &                &                &                & yes            &                &                & yes            &                &                &                & yes            &               &               & yes\\  
             \midrule 
-            Observations                              & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594     & 1,975,594     & 1,975,594     & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594     & 1,975,594     & 1,975,594\\  
-            Squared Correlation                       & 0.07469        & 0.07472        & 0.07521        & 0.07612        & 0.18391       & 0.18433       & 0.18530       & 0.07447        & 0.07451        & 0.07495        & 0.07579        & 0.18712       & 0.18757       & 0.18851\\  
-            Pseudo R$^2$                              & 0.99160        & 0.99160        & 0.99161        & 0.99161        & 0.99240       & 0.99240       & 0.99241       & 0.06642        & -104.05        & -104.00        & 0.06752        & -93.720       & -93.669       & 0.15944\\  
-            BIC                                       & 2,626,427.5    & 2,626,407.3    & 2,625,879.1    & 2,624,067.8    & 2,378,984.1   & 2,378,539.9   & 2,376,264.9   & 278,455,133.8  & 278,449,483.9  & 278,320,051.2  & 278,127,049.6  & 251,078,904.8 & 250,942,679.5 & 250,710,650.8\\  
+            Observations                              & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594      & 1,975,594     & 1,975,594     & 1,975,594\\  
+            Squared Correlation                       & 0.07469        & 0.07472        & 0.07521        & 0.07612        & 0.18391        & 0.18433        & 0.18530        & 0.07447        & 0.07451        & 0.07495        & 0.07579        & 0.18712       & 0.18757       & 0.18851\\  
+            Pseudo R$^2$                              & 0.99160        & 0.99160        & 0.99161        & 0.99161        & 0.99240        & 0.99240        & 0.99241        & 0.06642        & -104.05        & -104.00        & 0.06752        & -93.720       & -93.669       & 0.15944\\  
+            BIC                                       & 2,626,427.5    & 2,626,407.3    & 2,625,879.1    & 2,624,067.8    & 2,378,984.1    & 2,378,539.9    & 2,376,264.9    & 278,455,133.8  & 278,449,483.9  & 278,320,051.2  & 278,127,049.6  & 251,078,904.8 & 250,942,679.5 & 250,710,650.8\\  
             \midrule \midrule
-            \multicolumn{15}{l}{\emph{Clustered (State \& Year) standard-errors in parentheses}}\\
+            \multicolumn{15}{l}{\emph{Heteroskedasticity-robust standard-errors in parentheses}}\\
             \multicolumn{15}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
          \end{tabular}
       \end{threeparttable}

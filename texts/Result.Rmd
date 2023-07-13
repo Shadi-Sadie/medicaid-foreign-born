@@ -31,9 +31,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.path = wd$output,
                       dev = "png",
                       dpi = 200,
-                      cache = TRUE # ,
-                     # warning=FALSE, 
-                     # message=FALSE
+                      cache = TRUE  ,
+                       warning=FALSE, 
+                      message=FALSE
                       )
 
 
@@ -74,6 +74,15 @@ adj12<-c("UnempR", "ADA","IPC")
 
 ##  Difference-in-Differences Model Results
 
-```{r did-regression, child = 'did-regression.Rmd', eval=FALSE}
+```{r did-regression, child = 'did-regression.Rmd'}
 
 ```
+
+
+## Sensitivity and Robustness Check
+
+```{r robustness, child = 'robustness.Rmd'}
+
+```
+
+

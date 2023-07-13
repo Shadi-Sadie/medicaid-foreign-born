@@ -198,3 +198,10 @@ reg1 = feglm(HINS4 ~ treat | ST + YEAR + sw0(REGION^YEAR), cluster = ~ST, weight
 reg2 = feglm(HINS4 ~ treat +.[controls]+ .[foriegn]+.[statefor]| ST + YEAR + REGION^YEAR+ sw0(ST[YEAR]), cluster = ~ST, weights = ~PWGTP, data = Forgn, family = 'logit') #
 etable(reg1,reg2)
 
+\begin{table}[htb]
+\caption{Descriptive Statistics and Correlations for Variables}
+tab1
+tab2
+[1]\ Footnote 1: Variable~1 is calculated as\ldots \endgraf
+[2]\ Correlations are Pearson.
+\end{table}
