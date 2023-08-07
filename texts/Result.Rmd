@@ -14,13 +14,12 @@ output:
 
 wd <- list()
 # commonly used paths in my working directory
-wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
-wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
-wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/texts"
-wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+wd$data   <- "~/Desktop/shadi/Data/"
+wd$output <- "~/Desktop/shadi/output/"
+wd$texts <- "~/Desktop/shadi/text"
+wd$codes <- "~/Desktop/shadi/codes/R/"
 
 ```
-
 
 ```{r setup , include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
@@ -31,14 +30,12 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.path = wd$output,
                       dev = "png",
                       dpi = 200,
-                      cache = TRUE  ,
-                       warning=FALSE, 
+                      warning=FALSE, 
                       message=FALSE
                       )
 
 
 ```
-
 
 ```{r data-setup}
 
@@ -51,7 +48,6 @@ foriegn <- c( "ENG", "LTINU", "CORIGIN" )
 adjs<-c("UnempR", "ADA")
 adj12<-c("UnempR", "ADA","IPC")
 ```
-
 
 
 ## Descriptive Analysis

@@ -23,7 +23,6 @@ header-includes:
 ---
 
 
-
 <!-- message=FALSE and/or warning=FALSE -->
 
 ```{r library-DAG ,  include=FALSE}
@@ -113,8 +112,10 @@ for (i in 1:4) {
         
         # Convert factor variables to numeric
         currentData <- currentData %>% mutate_if(is.factor, as.numeric)
-        
-        # 1.Perform the GES algorithm
+         
+        currentData <- replace(currentData, is.na(currentData), 99999999)
+
+                # 1.Perform the GES algorithm
         score <- new("GaussL0penObsScore", currentData)
         ges1.fit <- ges(score, fixedGaps = NULL, adaptive = "vstructures", phase = "forward", maxDegree = integer(0), verbose = FALSE)
         

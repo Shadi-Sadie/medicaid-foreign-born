@@ -10,7 +10,6 @@ output:
 ---
 
 
-
 ```{r library-des ,  include=FALSE}
 library(knitr)
 
@@ -48,7 +47,7 @@ Regarding State's Unemployment Rate, Expansion states had a higher mean value (8
 
 After the ACA went into effect, these variables did not show significant variations between the two groups. This suggests that the implementation of the ACA did not significantly impact the differences in State's Political Liberalism, Immigration Policy Climate, and State's Unemployment Rate between Expansion and Non-Expansion states.
 
-```{r tab1 }
+```{r tab1}
 
 t1<-Data %>% 
         filter(ACA=="Pre-ACA")%>%
@@ -149,8 +148,9 @@ Significant differences were observed across all demographic characteristics bet
 
 For example, in the expansion state, the proportion of foreign-born individuals who identified as Hispanic was 68%, compared to 76% in non-expansion states. This reveals that the non-expansion states had approximately 6.7% more foreign-born Hispanics compared to the expansion state. Additionally, the proportion of US-born Hispanics in the expansion state was 11%, while this population was only 1% lower in non-expansion states. Notably, within both expansion and non-expansion states, the disparities between foreign-born and US-born individuals were more pronounced. Specifically, approximately 66% of the foreign-born population in the expansion state identified as Hispanic, while only 9.7% of the US-born population shared this heritage, resulting in a significant difference of about 57%.
 
+\renewcommand{\arraystretch}{0.7}
 
-```{r tab2 }
+```{r tab2, cache=TRUE}
 
 table2<-svy %>% subset(ACA=="Pre-ACA")%>%
       tbl_strata(
@@ -197,7 +197,7 @@ as_kable_extra(booktabs = TRUE,
     ) %>% 
     kableExtra::kable_styling(latex_options= c("repeat_header","HOLD_position"), font_size=6)%>%
        column_spec(1,width="3 cm")  %>%
-        column_spec(2:6,width="1.8cm") 
+        column_spec(2:7,width="1.5cm") 
   #  column_spec(2:11,width="1cm") 
   
   
@@ -210,6 +210,7 @@ The table provides a comparison of the uninsured rate and Medicaid coverage rate
 By examining the values in the table, one can observe the impact of the ACA on uninsured and Medicaid coverage rates across various demographic and socioeconomic groups, providing insights into the effectiveness of the ACA in expanding health insurance coverage.
 
 The "NA" values in the table indicate that certain variables did not apply to US-born individuals, and therefore, there were no recorded data for those specific categories.
+
 
 ```{r tab3-1, include=FALSE}
 
@@ -344,31 +345,20 @@ t1<- Data %>%
 
 
 
+\renewcommand{\arraystretch}{0.7}
 
 
 ```{r tab3}
 
-table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>% 
+table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid'))  %>% 
+
+ modify_caption("Uninsured/Medicaid Rate by charachterstics, expansion vs non-expansion")
+
  
- modify_caption("Uninsured/Medicaid Rate by charachterstics in expansion vs non expansion states")
-
-# col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
-                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
- #  
-  
- #merged_table %>% 
-    
-# as_kable_extra(booktabs = TRUE,
-                #   longtable = TRUE,
-               #    linesep = ""
-                  # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
-                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
- #   ) %>% 
-
-
     options(knitr.kable.NA = "")
     kbl(table3, booktabs = TRUE,
                   longtable = TRUE,
+        caption= "Uninsured/Medicaid Rate by charachterstics, expansion vs non-expansion"
                   ) %>% 
                   
     kableExtra::add_header_above(c(" "=1,"Expansion"=2,"Non-expansion"=2,"Expansion"=2, "Non-expansion"=2))%>% 
@@ -384,6 +374,7 @@ table3<-tbl_merge(list(tab1,tab2),tab_spanner = c('Uninsured','Medicaid')) %>%
 Table 4 presents the uninsured and Medicaid coverage rates categorized by socio-demographic factors across different citizenship statuses. The table provides a comparison of the rates among various groups based on factors such as age, income, ethnicity, and education level, focusing specifically on their citizenship status.
 
 By examining the uninsured and Medicaid coverage rates across citizenship status, the table offers insights into the disparities in health insurance coverage among different groups of individuals. This information can help understand the impact of citizenship status on access to healthcare. 
+\renewcommand{\arraystretch}{0.7}
 
 ```{r tab4}
 

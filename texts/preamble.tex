@@ -1,10 +1,10 @@
-  \usepackage{booktabs}
+   \usepackage{setspace}\doublespacing
+   \usepackage{booktabs}
    \usepackage{longtable}
    \usepackage{array}
    \usepackage{multirow}
-  \usepackage{wrapfig}
+   \usepackage{wrapfig}
    \usepackage{colortbl}
-   \usepackage{pdflscape}
    \usepackage{tabu}
    \usepackage{threeparttable}
    \usepackage{threeparttablex}
@@ -19,11 +19,18 @@
    \setcounter{topnumber}{3}
    \setcounter{bottomnumber}{3}
    \setcounter{totalnumber}{4}
-\usepackage{float}
-\let\origtable\table
-    \let\endorigtable\endtable
-    \renewenvironment{table}[1][ht]{
+   \usepackage{float}
+   \let\origtable\table
+   \let\endorigtable\endtable
+   \renewenvironment{table}[1][ht]{
       \expandafter\origtable\expandafter[H]
     }{
       \endorigtable
     }
+   \usepackage{pdflscape}
+   \newcommand{\blandscape}{\begin{landscape}}
+    \newcommand{\elandscape}{\end{landscape}}
+    \usepackage{adjustbox}
+     \setkeys{Gin}{width=\linewidth,height=\textheight,keepaspectratio}
+
+    

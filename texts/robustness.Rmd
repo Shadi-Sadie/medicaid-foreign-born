@@ -232,29 +232,39 @@ The analysis involves comparing timing groups to units that never received treat
 
 Furthermore, when we exclude the variation arising from comparisons of states with different treatment times, the Difference-in-Differences (DD) estimate remains highly consistent with the main DD estimate. In simpler terms, the magnitude of the treatment effect produced by the 2014 wave is comparable to the effects observed in subsequent waves. This robustness analysis strengthens our findings and affirms the reliability of the estimated treatment effect.
 
-```{r plotbac, fig.height = 6, fig.width = 4}
-
+```{r plotbac, fig.height = 7 , fig.width = 5.5}
+library(cowplot)
 
 dfplot1<- ggplot(df_bacon1) +
     aes(x = weight, y = estimate, shape = factor(type)) +
     labs(x = "Weight", y = "Estimate", shape = "Type") +
       geom_hline(yintercept = dd_estimate1, color = "#A94064") +
     theme_bw()+
-
-    geom_point()
+  ggtitle("Uninsured")+
+    geom_point(show.legend = FALSE)
 
 dfplot2<- ggplot(df_bacon2) +
     aes(x = weight, y = estimate, shape = factor(type)) +
     labs(x = "Weight", y = "Estimate", shape = "Type") +
       geom_hline(yintercept = dd_estimate2, color = "#A94064") +
   theme_bw()+
+  theme(legend.position ="bottom")+
+    ggtitle("Medicaid Coverage")+
     geom_point()
 
-ggarrange(dfplot1,dfplot2 ,
-         ncol = 1, nrow = 2,
-         legend = 'bottom')
+# Combine the plots vertically
+combined_plot <- plot_grid(dfplot1, dfplot2, ncol = 1, align = "v")
+
+# Add a common legend
+combined_plot_with_legend <- cowplot::plot_grid(combined_plot, get_legend(dfplot1), ncol = 2, rel_widths = c(0.9, 0.1))
+
+# Display the combined plot with the common legend
+combined_plot_with_legend
 
 ```
+
+
+
 
 
 Figure 4 provides support for this finding by presenting the 2 × 2 DD estimates and associated weights derived from the conventional two-way fixed effect model. Panel (a) illustrates the estimates for the Uninsured group, while panel (b) exhibits the estimates for Medicaid coverage. 
