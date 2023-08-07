@@ -12,6 +12,7 @@
 library(ggplot2)
 library(ggiplot)
 library(ggpubr)
+library('kableExtra')
 library(fixest)
 
 ####################
@@ -24,14 +25,15 @@ Data<-ACS
 NATV<- Data[Data$NATIVITY == "US-born", ]
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 
-#--- global variables
-table(Data$NATIVITY)
+#Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
+Data$expansion<-as.numeric(Data$expansion)
+Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
 
-controls <- c("SEX","DIS", "AGEP","MARG", "SCHLG", "RACE1","ESRG","POVPIPG")
-foriegn <- c( "ENG",  "YLIU", "PLIU", "GEOR", "CULRG" )
-state<-c("UnempR", "ADA")
-statefor<-c("UnempR", "ADA","IPCINDX")
-weights<-Data %>% select(starts_with("PWGTP")) %>% colnames
+# need to get a new sample for foregin and native
+# Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+NATV<- Data[Data$NATIVITY == "US-born", ]
+
 
 
 # In my data set for those state that the did not expand medicaid the expansion year is equal to 0
@@ -44,46 +46,44 @@ weights<-Data %>% select(starts_with("PWGTP")) %>% colnames
 # these never-treated observations at estimation time and our results will be 
 # off.
 
-Data$ttot<-ifelse(Data$expansion == "Adopted", Data$YEAR - Data$ExpansionY, 0)
+#Data$ttot<-ifelse(Data$expansion == "Adopted", Data$YEAR - Data$ExpansionY, 0)
 
 #Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
 
-class(Data$expansion)
-table(Data$expansion)
-Data$expansion<-as.numeric(Data$expansion)
-Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
+#class(Data$expansion)
+#table(Data$expansion)
+#Data$expansion<-as.numeric(Data$expansion)
+#Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
 
 
 
 ############################################################
-## Fig 1: Event study for the foreign born vs us born with and without control
+## Fig 1: Event study for Uninsured 
 ############################################################
 
-## 
 Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
                data = NATV)
 
 Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
                data = NATV)
 
 Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
                data = Forgn)
 
 Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
                        ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
+               vcov = "hetero" ,
                weights = ~PWGTP,
                data = Forgn)
-
 
 UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
                  ref.line = -1, main = 'Unadjusted',xlab='Event Time')
@@ -103,179 +103,128 @@ annotate_figure(figure1,
 )
 
 
-
 ############################################################
-## ###  Event study for the foreign and Native born 
-############################################################
-
-# Uninsured
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1) |                 
-                         ST + YEAR,                             ## FEs
-                 cluster = ~ST,                          ## Clustered SEs
-                weights = ~PWGTP,
-                 data = Data,
-                split = ~NATIVITY)
-# Medicaid Take-up
-Event2 = feols(HINS4 ~ i(ttot, expansion, ref = -1) |                 
-                     ST + YEAR,                             ## FEs
-             cluster = ~ST,                          ## Clustered SEs
-             weights = ~PWGTP,
-             data = Data,
-             split = ~NATIVITY)
-
-ggiplot(
-        list('Uninsured rate' = Event1, 'Medicaid Take-up' = Event2),
-        main = 'Event study: Staggered treatment (TWFE)',
-        xlab = 'Time to treatment',
-        multi_style = 'facet',
-        geom_style = "ribbon",
-        facet_args = list(labeller = labeller(id = \(x) gsub(".*: ", "", x))),
-        theme = theme_minimal() +
-                theme(
-                        text = element_text(family = "HersheySans"),
-                        plot.title = element_text(hjust = 0.5),
-                        legend.position = "none"
-                )
-        )
-
-############################################################
-## Event study for the whole population with control
+## Tab 1: Event study for Uninsured 
 ############################################################
 
-# Uninsured
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data)
-
-# Medicaid Take-up
-Event2 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data
+table1<-etable(list(Event1, Event2, Event3,Event4),
+               digits = 3,
+               title = "The Impact of Medicaid Expansion on Uninsured Rate ",
+               headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+               tex = T,
+               arraystretch = 0.5,
+               vcov = "twoway",
+               group = list("_^Controls"=c(controls,foriegn)),
+               interaction.combine = NULL,
+               style.tex = style.tex(
+                       main = "base",
+                       fixef.suffix = " FE",
+                       fixef.title = "",
+                       stats.title = "",
+                       interaction.combine = " ",
+                       # tabular = "*",
+                       model.title = "Variables",
+                       depvar.title= " ",
+                       var.title = "\\midrule",
+                       yesNo = "yes"),
+               depvar=FALSE,
+               fontsize = "small",
+               dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+               #extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
 )
 
-ggiplot(
-        list('Uninsured rate' = Event1, 'Medicaid Take-up' = Event2),
-        main = 'Event study: Staggered treatment (TWFE)',
-        xlab = 'Time to treatment',
-        multi_style = 'facet',
-        geom_style = "ribbon",
-        facet_args = list(labeller = labeller(id = \(x) gsub(".*: ", "", x))),
-        theme = theme_minimal() +
-                theme(
-                        text = element_text(family = "HersheySans"),
-                        plot.title = element_text(hjust = 0.5),
-                        legend.position = "none"
-                )
+print(table1)
+
+############################################################
+###  Fig 2: Event study for Medicaid 
+############################################################
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
+                 ref.line = -1,
+                 main = 'Unadjusted',
+                 xlab='Event Time'
+                 
 )
-
-#################################################################
-## Event study for the for the foreign and Native born with control
-#################################################################
-
-# Uninsured
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1) +.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data,
-               split = ~NATIVITY)
-# Medicaid Take-up
-Event2 = feols(HINS4 ~ i(ttot, expansion, ref = -1) +.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data,
-               split = ~NATIVITY)
-
-ggiplot(
-        list('Uninsured rate' = Event1, 'Medicaid Take-up' = Event2),
-        main = 'Event study: Staggered treatment (TWFE)',
-        xlab = 'Time to treatment',
-        multi_style = 'facet',
-        geom_style = "ribbon",
-        facet_args = list(labeller = labeller(id = \(x) gsub(".*: ", "", x))),
-        theme = theme_minimal() +
-                theme(
-                        text = element_text(family = "HersheySans"),
-                        plot.title = element_text(hjust = 0.5),
-                        legend.position = "none"
-                )
-)
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
 
 
-
-#################################################################
-## Event study for whole sample with control for the whole population  vs  Sun & Abraham 
-#################################################################
-
-### Event study 
-
-df<-Data
-# Following Sun and Abraham, we give our never-treated units a fake "treatment"
-# date far outside the relevant study period.
-
-df$year_treated <- ifelse(df$expansion == 0, 10000, df$ExpansionY)
-
-# Now we re-run our model from earlier, but this time swapping out 
-# `i(time_to_treat, treat, ref = -1)` for `sunab(year_treated, year)`.
-# See `?sunab`.
-
-mod_sa = feols(UNINS ~ sunab(year_treated, YEAR) +.[controls] |
-                       ST + YEAR,
-               cluster = ~ST,
-               weights = ~PWGTP,
-               data = df)
+UNINSADJ<-ggiplot(list('US-born' = Event6, 'Foregin-born' = Event8),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time')
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
 
 
+figure2<-ggarrange(UNINSUN, UNINSADJ , 
+                   ncol = 2, nrow = 1)
 
-twfe = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data)
-
-
-UNinPlot<-ggiplot(
-        list("TWFE,Event-study" = twfe, "Sun & Abraham (2020)" = mod_sa),
-        main = 'Uninsured: Event study: Staggered treatment (TWFE)',
-        xlab = 'Time to treatment',
-        ref.line = -1
-                )
-
-
-mod_saM = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controls] |
-                       ST + YEAR,
-               cluster = ~ST,
-               weights = ~PWGTP,
-               data = df)
-
-
-
-
-twfeM = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
-                       ST + YEAR,                             ## FEs
-               cluster = ~ST,                          ## Clustered SEs
-               weights = ~PWGTP,
-               data = Data
+annotate_figure(figure2,
+                top = text_grob("Medicaid Coverage Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 2", fig.lab.face = "bold"
 )
 
 
+############################################################
+###  Tab 2: Event study for Medicaid 
+############################################################
 
-MedicPlot<-ggiplot(
-        list("TWFE,Event-study" = twfeM, "Sun & Abraham (2020)" = mod_saM),
-        main = 'Medicaid: Event study: Staggered treatment (TWFE) ',
-        xlab = 'Time to treatment',
-        ref.line = -1
+
+table2<-etable(list(Event5, Event6, Event7,Event8),
+               title = "The Impact of Medicaid Expansion on Medicaid Coverage ",
+               headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+               adjustbox= 0.6,
+               arraystretch = 0.5,
+               digits = 3,
+               vcov = "twoway", 
+               group = list("_^Controls"=c(controls,foriegn)),
+               interaction.combine = " ",
+               tex=TRUE,
+               depvar=FALSE,
+               style.tex = style.tex(
+                       main = "base",
+                       fixef.suffix = " FE",
+                       fixef.title = "",
+                       stats.title = "",
+                       interaction.combine = " ",
+                       # tabular = "*",
+                       model.title = "Variables",
+                       depvar.title= " ",
+                       var.title = "\\midrule",
+                       yesNo = "yes"),
+               
+               fontsize = "small",
+               dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+               
 )
 
-ggarrange(MedicPlot, UNinPlot , 
-          ncol = 2, nrow = 1)
 
+#extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
 
-
+print(table2)
 
 
