@@ -69,11 +69,15 @@ Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controls] + .[foriegn]|
                data = Forgn)
 
 UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
-                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
 #UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
 
 UNINSADJ<-ggiplot(list('US-born' = Event2, 'Foreign-born' = Event4),
-                  ref.line = -1, main = 'Adjusted',xlab='Event Time')
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
 #UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
 
 figure1<-ggarrange(UNINSUN, UNINSADJ , 
@@ -162,13 +166,16 @@ UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
                 ref.line = -1,
                 main = 'Unadjusted',
                 xlab='Event Time'
-        
-                  )
+                  ) +
+  scale_color_manual(values=c('black','#B64074'))
 #UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
 
 
 UNINSADJ<-ggiplot(list('US-born' = Event6, 'Foregin-born' = Event8),
-        ref.line = -1, main = 'Adjusted',xlab='Event Time')
+        ref.line = -1, main = 'Adjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+#CCABD8
 #UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
 
 
