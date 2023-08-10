@@ -76,7 +76,7 @@ Data$CULRG <- factor(ifelse(Data$NATIVITY == "US-born", "English-speaking", as.c
 Data$LTINU<-ifelse(Data$PLIU>25,1,0)
 Data$LTINU<-ordered(Data$LTINU, labels=c("<25%", ">25%"))
 
-levels(b) <- c("Non-expansion","expansion")
+levels(b) <- c("Non-expansion","Expansion")
 class(b)
 b<-as.factor(b)
 Data$expansion<-b
