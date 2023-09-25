@@ -1,0 +1,1484 @@
+---
+title: "Outline"
+author: "Shadi"
+date: "2023-08-07"
+output: 
+  pdf_document:
+    keep_tex: true
+    includes:
+      in_header: "preamble.tex"
+  bibliography: references.bib
+---
+
+
+```{r wd-setup, include=FALSE}
+
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/text/"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
+
+```
+
+```{r setup , include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.pos = "H", out.extra = "" ,
+                      fig.path = wd$output,
+                      dev = "png",
+                      dpi = 200,
+                      warning=FALSE, 
+                      message=FALSE
+                      )
+
+```
+
+```{r data-setup}
+
+Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+
+allcontrols   <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA", "ENG", "LTINU", "CORIGIN", "NonCit")
+controlwof    <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA") # (SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA)
+NICont        <- c("SEX","DIS", "AGEP","POVPIPG", "ENG", "LTINU", "CORIGIN", "NonCit")
+NIContwof     <- c("SEX","DIS", "AGEP","POVPIPG") # SEX+DIS+AGEP+MARG+SCHLG+POVPIPG
+Intcontrol    <- c("MARG", "RACE1", "ESRG","ADA","SCHLG" ) # (MARG + RACE1 + ESRG + ADA)
+forcont       <- c("ENG", "LTINU", "CORIGIN", "NonCit") # ENG+LTINU+CORIGIN+NonCit
+
+#NATV<- Data[Data$NATIVITY == "US-born", ]
+
+
+```
+
+
+```{r library-des ,  include=FALSE}
+library(knitr)
+library(fixest)
+library(tidyverse)
+library(gtsummary)
+library(survey)
+library(gt)
+library('kableExtra')
+library(flextable)
+library(ggplot2)
+library(ggiplot)
+library(ggpubr)
+library(dagitty)
+library(ggdag)
+library(bacondecomp)
+
+
+```
+
+
+```{r svydesign}
+svy <- svydesign(
+                  id=~1,
+                  weights = ~ PWGTP, 
+                  repweights = ~ matches("PWGTP[0-9]+"), 
+                  data = Data, 
+                  type = "JK1",
+                  scale = 4/80,
+                  rscales = rep(1, 80),
+                  mse = TRUE
+            )
+
+```
+
+## 1. Introduction
+
+### 1.1. Background of ACA
+
+* The Affordable Care Act (ACA) was enacted in 2010 in response to failures in the US insurance and healthcare markets, aiming to introduce universal health care reform.
+* The ACA included various provisions such as insurance reform, health insurance exchange establishment, and subsidies to achieve nearly universal health insurance coverage.[@courtemancheEarlyImpactsAffordable2017]
+* Medicaid Expansion, a crucial ACA provision, was implemented in 2014, allowing childless individuals with income below 138% of the federal poverty level (FPL) to apply for Medicaid coverage.Following the Supreme Court decision in 2012, states had the option to participate in Medicaid Expansion; as of July 2022, 39 states (including DC) have implemented it [@kaiserfamilyfoundationStatusStateMedicaid2022]
+* Primary Goals of Medicaid Expansion is goes beyond just enhancing access to medical services;and increase in coverage, it also aims to address health inequities and reducing the disparities that exist among various demographic groups.
+
+### 1.2. Problem Statement
+
+* Ongoing policy evaluation is necessary even years after implementation to ensure that the policy continues to produce the intended outcomes, adapt to changing circumstances, and address any unforeseen consequences that may have arisen over time.
+* Numerous policy analysts and researchers have evaluated the effect of Medicaid on variety of desired outcomes, including direct outcome like insurance coverage and less direct consequences such as unemployment.
+* Many investigated whether the Medicaid expansion's benefits were distributed equally across all beneficiary groups.
+* One beneficiary groups that hasn't been studied as much as other are vulnerable population but is important to include in the literature are foreign-borns.
+    + Many of Foreign-born population benefit from Medicaid expansion. This include low income, US citizen born abroad , US citizen who become citizens through naturalization, and those immigrants that are eligible to receive benefits from public program according to Personal Responsibility and Work Opportunity Reconciliation Act(PRWORA) of 1996..
+    
+    + Foreign-born make up a great portion of US population.
+    + Foreign-born immigrants are more likely to be low-income.
+    + Foreign-born, face additional challenges in access to care
+
+* Understanding how Medicaid expansion impacts these two distinct groups is essential for crafting effective policies that address the intricate interplay between policy, demographics, and healthcare access.
+
+### 1.3. Research Gap
+
+While few studies compared the effects of the ACA among foreign-born and immigrants vs citizen a critical gap persists in the literature.
+
+   1. Those that I find are descriptive one can not infer a causal relationship
+   2.  many are at state level and cannot be generalize to the whole US population
+   3.  Includes one or at most two years of data after the Medicaid expansion went into effect, which is not enough time to see all the outcome of a policy change.
+   4.  They have not isolate the separate effects of expanding Medicaid eligibility versus other changes such as the introduction of market plan insurance subsidies
+
+### 1.4. Research Questions and Hypotheses
+
+* The central research question guiding this study is: "How does the effect of Medicaid expansion differ between foreign-born and native populations in terms of uninsured rates and Medicaid take-up?" This overarching inquiry will be addressed through the following interconnected objectives:
+  + Examine the impact of Medicaid expansion on uninsured rates among foreign-born and native populations, identifying potential disparities. Assess the disparities in Medicaid enrollment and utilization between foreign-born and native individuals following Medicaid expansion. Identify and analyze the multifaceted factors contributing to variations in healthcare access, Medicaid utilization, and barriers to enrollment within these demographic segments.
+  
+* Hypothesis 1: The effect of Medicaid expansion on reducing uninsured rates will differ significantly between foreign-born and native populations due to an intricate interplay of demographic, socio-economic, and cultural factors. 
+* Hypothesis 2: Foreign-born individuals will exhibit a lower propensity for Medicaid take-up post-expansion compared to native individuals, attributed to an amalgamation of linguistic, cultural, and immigration-related complexities.
+
+## 2. Theoretical Model
+
+### 2.1. Understanding Rational for Enrolling in Medicaid
+        
+  * **Conventional health insurance theory**: Individual are risk averse, thus purchase insurance to reduce risk of large loss. Free or subsidized insurance like medicaid increase the insurance demand, increase the risky behavior, increase health care use and reduces welfare.
+  * __Nyman Theory of Insurance Demand__: Not all individual are risk averse, individual purchase insurance to gain additional income for their time of illness. Offer of free insurance, increase demand for insurance, increase the use of healthcare, increase the social welfare.
+  
+  * Both Nyman Theory and Conventional health insurance theory  are based on rational choice theory.They predict that free or subsidized insurance will increase the demand for the insurance and health care. From Nyman's theory we infer that expanding Medicaid, can improve healthcare utilization and outcomes, but practical challenges complicate this theoretical alignment.
+  * Empirical evidence shows imperfect uptake of social benefits, diverging from expected theoretical outcomes. Some Medicaid-eligible individuals do not claim entitled benefits (Wehby & Lyu, 2018). Non-utilization of benefits extends globally beyond Medicaid and the US population. Some effectively use social assistance while others do not.
+
+  * Non-utilization's significance reaches beyond healthcare access, promoting equitable outcomes.
+  
+
+### 2.2. Exploring Models That Explains Take-Up Pattern of Social Welfare
+
+* Additional theories and perspectives are crucial to understanding non-utilization complexities.
+* The literature on social welfare program participation, like Medicaid, encompasses two key perspectives: traditional economics, which relies on rational choice theory, and behavioral economics, which emphasizes cognitive barriers to decision-making.
+* Van Oorschot's Multilevel System Model: provides a valuable overarching framework that ties together various models and factors that offers a comprehensive lens by examining factors across multiple levels.
+  + Considers personal motivations, administrative procedures, and policy contexts as intertwined influences on benefit uptake.
+  + Allows for analyzing the interplay between individual, administrative, and policy-level factors in Medicaid insurance utilization.
+
+### 2.3. Foreign-Born vs. Native Populations: A Comparative Approach:
+        
+  * Contradictory empirical evidence exists on social benefit uptake rates among immigrants and native-born individuals.
+  * There is uncertainty about whether foreign-born uptake rates are higher, lower, or equivalent.
+  * Leveraging Van Oorschot's model, I comprehensively examine factors influencing benefit uptake.
+  
+### 2.4. Analyzing Factors Affecting Uptake Among Foreign-born Individuals Using Van Oorschot's Model.
+
+#### 2.4.1. Individual Level Factors:
+
+* _Perceived Deservingness_, foreign-born individuals' perception of entitlement to social benefits based on contributions and circumstances. 
+* *Institutional Trust*, Trust in host country institutions' fairness and reliability regarding benefit provision. 
+* *Language Proficiency*, Influence of language skills on benefit comprehension and access. 
+* *Social Networks*, Impact of personal networks on benefit enrollment decisions.
+* *Cultural Perceptions and Stigma*, Role of cultural beliefs and stigma in public assistance choices.
+* *Integration Level*, how integration into the host society affects benefit knowledge and utilization. 
+* *Unfamiliarity with Local Resources* Challenges due to unfamiliarity with local services for accessing benefits.
+
+#### 2.4.2. Administrative Level: 
+* *Complexities of Procedures and Requirements*: Administrative hurdles faced by foreign-born individuals due to procedural complexities and additional documentation.
+* *Administrator Prejudice*: Bias from administrators based on classicism towards immigrants affecting benefit access.
+
+\pagebreak
+
+#### 2.4.3. Policy Level: 
+
+* *Chilling Effect of Policies*: The discouraging impact of policies like immigration enforcement and public charge rule on seeking benefits. 
+* *Outreach Programs*: Effectiveness of outreach initiatives targeting foreign-born individuals for benefit awareness. 
+* *Political Climate and Discourse*: Influence of political context and public discourse on policies related to foreign-born populations.
+
+Drawing from our theoretical insights, we detail data sources, analysis methods, and controls, bridging theoretical concepts with rigorous empirical investigation.
+
+## 3. Emprical Strategy
+
+### 3.1. Data
+
+#### 3.1.1. Sources
+
+  * American Community Survey (ACS) which is accessible via the Public Use Microdata Sample(PUMS)
+  * Kaiser Family Foundation(KFF) State's Health Facts for the dynamic status of medicaid expansion.
+
+#### 3.1.2. Sample Restrictions
+
+  * To ensure the internal validity of our study and focus on individuals more likely to be eligible for Medicaid, I have carefully established the following sample restrictions:
+
+  - Age Inclusion (26-65):Include individuals aged 26 to 65 to exclude ACA's young adult provision and Medicare-eligible individuals.
+  - Income Threshold (less than138% FPL):Select individuals with incomes at below 138% FPL, aligning with Medicaid eligibility criteria.
+  - Exclude non-citizens less than 5 years adhering to Lawfully Present Immigrants' waiting period. Recognize data limitations regarding immigration status/visa types.
+  - Excluded non-citizens who have been residing in U.S. for less than five years. since Lawfully Present Immigrants should wait five year to qualify for Medicaid. Some limitation Immigration status/ visa type is not declreaed in dataset. Refugees and Asylees are not subject to the 5 year bar. Undocumented are on eligible for Medicaid. Some states waived the requirments.
+  - Time Frame (2011-2019): To avoid ACA's minor provisions in 2010 and COVID-19 complexities in 2020
+  - Remove states with similar policies for a focused analysis of Medicaid expansion effects.
+  - Exclude individuals in prisons, nursing homes, mental hospitals, etc. since ACS lacks information on poverty Measures:
+
+### 3.2. Measures
+
+* **Treatment**: *Medicaid Expansion Status*, binary variable indicating states' decision to expand Medicaid (0 for non-expansion, 1 for expansion during 2014-2020).
+
+* **Outcome**: *Uninsured Rates*, binary variables derived from ACS responses on being insurancd during previous year. *Medicaid Coverage* another binary variables derived from ACS responses on having Medicaid coverage during the previous year.
+
+* **Nativity Status**: binary variable distinguishing individuals as "Native" (1) if born in the U.S. or its territories, and "Foreign-Born" (0) if born outside the U.S.
+
+* **Demographic Characteristics**: *Age*, *gender*, *marital status*, *race*, and *ethnicity*.
+* **Socioeconomic Factors**: *Income*, *education*, *employment status*. 
+
+* **Disability Status**:Binary variable indicating disability status. 
+
+* **Foreign-Born Specific Variables**:  *Language Proficiency*, *Length of Residency*, *Region of Origin*. *Citizenship Status*, a binary variable showing if a person is citizen or non-Citizen.
+
+* **State-Level Measures:** *Immigration Policy Climate (IPC) Index*, reflecting immigration policy friendliness or restrictiveness. *Unemployment Rate*, indicating economic conditions. *Americans for Democratic Action (ADA) Scores*, measuring state legislators' perceived liberalism.
+
+
+### 3.3. Methodology
+
+
+#### 3.3.1. Difference-in-Differences (DID) Estimation:
+
+* DID is used to estimate the impact of Medicaid expansion on Uninsured and Medicaid Coverage.
+* Utilizing a two-way fixed effects model with differential timing, which enables the incorporation of the Medicaid expansion timeline into the DID analysis.
+
+**Model Specification:**
+    
+
+\begin{equation}
+Y_{ist} = \alpha + \delta_s + \lambda_t + \gamma_s \cdot Treat_{st} + \beta_1 (FB_{ist} \times Treat_{st}) + FB_{ist} + \beta  X_{ist} + \theta(FB_{ist} \times C_{ist}) + \epsilon_{ist}
+\end{equation}
+
+    
+    
+**Equation Components:**
+
+- \(Y_{ist}\) represents the outcome of individual \(i\) in year \(t\) in state \(s\).
+- \(\delta_s\) represents state fixed effects.
+- \(\lambda_t\) represents year fixed effects.
+- \(\gamma\) represents the average treatment effect of Medicaid expansion for state \(s\).
+- \(Treat_{st}\) is a dummy variable that equals 1 if individual \(i\) in state \(s\) is exposed to the treatment in year \(t\), and 0 otherwise. For states that expanded Medicaid in 2014, \(Treat_{st}\) is equal to 1 for all years after 2014. For states that expanded Medicaid later, \(T_{ist}\) is equal to 1 for all years after the year of expansion.
+- \(\beta_1\) represents the coefficient for the interaction term between \(FB_{ist}\) and \(T_{st}\), capturing the differential treatment effect for foreign-born individuals.
+X represents vector of control variables, including racial composition, age distribution, gender distribution, employment, and personal income 
+- \(\theta_k \cdot (FB_{ist} \times C_{ist,k})\) represents the interaction terms between the binary variable \(FB_{ist}\) and the control variables specifice to foreign-born individuals (\(C_{ist,k}\)). These interaction terms capture the differential effects of the control variables for foreign-born individuals compared to native-born individuals. 
+
+
+The standard errors are adjusted to accommodate for serial correlation at the state level and heteroskedastic errors.
+
+
+ 
+#### 3.3.2. Event Study Estimation:
+    
+* Additionally, I estimate this effect using an event study model that allows us to assess the evolution of relative outcomes while controlling for fixed differences across states and national trends over time.
+
+* Event study model allows us to test the parallel trends assumption and it provides valuable insights into the temporal dynamics of the treatment effect, enhancing our understanding of the causal relationship between the treatment and the outcome variable.
+
+
+**Model Specification:**
+    
+
+\begin{equation}
+{Y}_{its}=  {\alpha} + {\delta}_s + {\lambda}_t+{\psi}{X}_{ist} + \sum_{k=-4,k\neq -1}^{6} {\beta}_k{D}_{k,its} 
+ +{\epsilon}_{its}.
+\end{equation}
+
+    
+    
+**Equation Components:**
+    
+- \(Y_{ist}\): Outcome for individual \(i\) each year and state.
+- \(\delta_s\): State fixed effect.
+- \(\lambda_t\): Year fixed effects.
+- \(X_{idt}\): Vector of control variables.
+
+**Dynamic Policy Effects:**
+    
+- \(\sum_{n=-3}^{5} \beta_y D_s D_{it}^n\): Captures dynamic effects of policy.
+- \(D_{k,its}\): Lead and lag dummy variables when state adopts expansion.
+- \({\beta}_y\): Estimates change in outcomes in expansion vs. non-expansion states during year \(y\).
+
+**Omitted Category:**
+    
+- \(k=-1\): Year prior to expansion, excluded as omitted category.
+
+
+#### 3.3.3 Addressing challenges of varying treatment effects over time in the literature:
+
+* Recent research in econometrics has raised concerns about the potential bias in staggered difference-in-differences and event studies estimates when treatment effects are heterogeneous and treatment timing varies across units.
+* This research is susceptible to these concerns since some states implemented Medicaid expansions after 2014, making the timing of treatment heterogeneous across units.
+* To address these challenge I used : 
+    + Interaction-weighted (IW) event study estimator proposed by Sun & Abraham (2021) 
+    + Bacon decomposition and examine the consistency of the results.
+
+## 4. Result
+
+### 4.1. Causal Structure Discovery
+
+* Employed causal structure discovery techniques to construct a complex DAG from the data itself. to capture variable interactions, account for confounding factors and biases, provide credible evidence for Medicaid expansion effects.
+* The DAG generated using multiple constraint-based and score-based algorithms including GDS algorithms, Greedy Equivalence Search (GES), Peter-Clark (PC) algorithm, and Fast Causal Inferences (FCI).
+
+* Obtained a final graph using the majority voting approach following Joe et al.(2023)
+
+* Carefully reviewed and adjusted the graph to align better with real-world expertise, simplifying complex relationships.
+
+* The derived DAG served as a valuable tool for generating hypotheses and guiding the analysis process.AND helped in selecting relevant control variables for the analysis based on the identified relationships.
+
+```{r DAG3, echo=FALSE,  fig.width = 6.3, fig.height = 3 }
+
+
+shaddag<-dagitty('dag {
+        bb="-3.828,-4.241,3.728,3.459"
+        "State Political Ideology" [pos="-3.274,-2.020"]
+         Demographics [pos="0.049,-1.978"]
+        "Medicaid Expansion" [exposure,pos="-2.803,-0.805"]
+        "Immigration Policy Climate" [pos="-2.771,0.180"]
+        "Foregin-Born" [pos="-1.294,0.128"]
+        "Socioeconomic" [pos="-1.288,-2.010"]
+        "Medicaid Take-Up" [outcome,pos="0.049,-0.763"]
+        "Unemployment Rate" [pos="-2.478,-2.020"]
+        "State Political Ideology" -> "Medicaid Expansion"
+        "State Political Ideology" -> "Immigration Policy Climate"
+        "State Political Ideology" -> "Unemployment Rate"
+        "State Political Ideology" -> "Medicaid Take-Up"
+        Demographics -> "Socioeconomic"
+        Demographics -> "Medicaid Take-Up"
+        "Medicaid Expansion" -> "Medicaid Take-Up"
+        "Immigration Policy Climate" -> "Foregin-Born"
+        "Immigration Policy Climate" -> "Medicaid Take-Up"
+        "Foregin-Born" -> "Socioeconomic"
+        "Foregin-Born" <-> "Demographics"
+        "Foregin-Born" -> "Medicaid Take-Up"
+        "Socioeconomic" -> "Medicaid Take-Up"
+        "Unemployment Rate" -> "Medicaid Expansion"
+        "Unemployment Rate" -> "Immigration Policy Climate"
+        "Unemployment Rate" -> "Socioeconomic"
+        "Unemployment Rate" -> "Medicaid Take-Up"
+}')
+
+## Create simplified  DAG
+
+DAGSHADI<-ggdag_status(shaddag,node_size = 10,use_labels = "name", text = FALSE)+
+        guides(color = FALSE) +  # Turn off legend
+        theme_dag()
+
+DAGSHADI$layers[[3]]$mapping <- aes(colour = status)
+DAGSHADI + scale_color_manual(na.value ="#222D5a" , values = c(exposure ="#A94064" , outcome = "#44AA99")) +
+        scale_fill_manual(na.value ="#222D5a", values = c( exposure ="#A94064" , outcome = "#44AA99")) # other coloer = "#ffc300",  
+
+
+```
+
+### 4.2. Descriptive Results
+
+
+Table 1 provides a baseline comparison of Non-Expansion and Expansion states before and after the implementation of the Affordable Care Act (ACA). The table displays mean values for three variables: State’s Political Liberalism, Immigration Policy Climate, and State’s Unemployment Rate.
+
+```{r tab1}
+
+t1<-Data %>% 
+        filter(ACA=="Pre-ACA")%>%
+        select(ADA,IPC, UnempR,expansion) %>%
+            tbl_summary(
+                    by = expansion,
+                    label = list(ADA ~ "State's Political Liberalism",
+                                 UnempR ~"State's Unemployment Rate",
+                                 IPC ~ "Immigration Policy Climate"
+                                  ),
+                     statistic = list(all_continuous() ~ "{mean} ({sd})")
+                     )%>%
+                      add_difference() %>%
+                      add_significance_stars(
+                                    pattern= "{estimate}{stars}",
+                                    hide_ci = TRUE,
+                                    hide_p = TRUE
+                                         ) %>%
+                      modify_table_styling(
+                                   columns = estimate,
+                                   rows = p.value < 0.05,
+                                   text_format = "bold"
+                                      )%>%
+  
+                     # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+                      modify_header(
+                                  label = "**Variable**",
+                                  stat_1 = '**Expansion**',
+                                   stat_2 = '**Non Expansion**'
+                             )
+# tab1 # check if all is correct
+
+# create post-aca table for states variable
+
+t2<-Data %>% 
+  filter(ACA=="Post-ACA")%>%
+  select(ADA,IPC, UnempR,expansion) %>%
+  tbl_summary(
+    by = expansion,
+    label = list(ADA ~ "State's Political Liberalism",
+                 UnempR ~"State's Unemployment Rate",
+                 IPC ~ "Immigration Policy Climate"
+    ),
+    statistic = list(all_continuous() ~ "{mean} ({sd})")
+  )%>%
+  add_difference() %>%
+   add_significance_stars(
+                            pattern= "{estimate}{stars}",
+                            hide_ci = TRUE,
+                            hide_p = TRUE
+                       ) %>%
+   modify_table_styling(
+     columns = estimate,
+     rows = p.value < 0.05,
+     text_format = "bold"
+   )%>%
+  
+  modify_caption("Baseline Comparison of States") %>%
+  # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+  modify_header(
+    label = "**Variable**",
+    stat_1 = '**Non-expansion**',
+    stat_2 = '**Expansion**'
+  ) 
+
+#tab2 # check if everything is correct
+
+## Stack two tables to create table 1
+
+table1 <-
+ 
+     tbl_stack(list(t1, t2), group_header = c('Pre-ACA', 'Post-ACA'))
+
+#table1 %>% 
+  
+#  as_flex_table() %>% flextable::valign() didn't align
+  
+# as_hux_table(table1) # %>% huxtable::to_latex() gave latex code
+
+# as_gt() %>% gt::as_latex() 
+table1 %>% 
+ as_kable_extra(booktabs = TRUE,
+    linesep = "") %>% 
+  kableExtra::kable_styling(latex_options= "HOLD_position" ) %>% # ,font_size=6.5) 
+       column_spec(1,bold=TRUE) %>%
+          row_spec(3,hline_after=TRUE)
+
+
+```
+**Key Observations:**
+
+* Before the ACA went into effect, there were notable differences between Expansion and Non-Expansion states.
+* Expansion states tended to be more politically liberal.
+* Expansion states had less exclusionary immigration policies.
+* Expansion states had higher levels of unemployment.
+* Implementation of the ACA did not significantly impact the differences in State’s
+Political Liberalism, Immigration Policy Climate, and State’s Unemployment Rate between Expansion and
+Non-Expansion states.
+
+
+Table 2 gives a detailed look at demographics, insurance rates, and Medicaid coverage before the Affordable Care Act. It compares foreign-born and US-born individuals in states with and without Medicaid expansion.
+
+```{r tab2 }
+
+table2<-svy %>% subset(ACA=="Pre-ACA")%>%
+      tbl_strata(
+           strata = expansion,
+          .tbl_fun = ~ .x %>% 
+                tbl_svysummary(
+                         by = NATIVITY,
+                         include = c(
+                                 UNINS, HINS4, AGEP, RACE1, SEX,  MARG  ,
+                                 ESRG,SCHLG ,POVPIPG,
+                                   DIS),
+                         missing = "no",
+                         label = list(
+                               AGEP ~ "Age", UNINS ~ "Uninsured",
+                               HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+                               ESRG~"Employment status", MARG ~"Married",
+                               SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"
+                                      ),
+                              statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+
+                              ) %>%
+                add_p()                  %>%
+               add_stat_label()        %>%
+
+                  #add_p (
+                  # perform t-test for all variables
+                  #test = list(all_continuous() ~ "t.test", all_categorical() ~ "chisq.test"),
+                  # assume equal variance in the t-test
+                  # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+                        #)                 %>%
+               # add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
+               bold_labels() %>%
+               modify_caption("Baseline Characteristics by Nativity") %>%
+               modify_header(all_stat_cols() ~ "**{level}**, \nN = {n}"
+                             
+)
+              #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
+            )
+table2 %>% 
+  
+as_kable_extra(booktabs = TRUE,
+                   linesep = ""
+                  # col.names=linebreak(c("","Born in US\n Territories","Born in\n US states", 
+                  # "Naturalized \n citizen",'Non-citizen' ,"US-citizen\n Born abroad"),align="c")
+    ) %>% 
+    kableExtra::kable_styling(latex_options= c("scale_down","HOLD_position")) #%>%
+      # column_spec(1,bold=TRUE) 
+#  %>%
+       # column_spec(2:7,width="1.5cm") 
+  #  column_spec(2:11,width="1cm") 
+  
+  
+```
+
+**Key Observations:**
+
+* Notable demographic variations exist when comparing foreign-born and US-born adults, regardless of Medicaid expansion status.
+* Baseline data shows minimal or negligible differences in characteristics of foreign-born individuals between expansion and non-expansion states.
+* At the baseline, characteristics of native-born individuals exhibit either no differences or slight variations between expansion and non-expansion states. 
+
+
+Table 3, provides a comprehensive view of uninsured individuals' characteristics, along with those covered by Medicaid, before and after the implementation of the Affordable Care Act (ACA) in both Medicaid expansion and non-expansion states. 
+
+It shows changes in uninsured and Medicaid-covered groups post-ACA. and provides context on the ACA's impact across different state contexts.
+
+```{r tab3-1, include=FALSE}
+
+t1<- Data %>% 
+      filter(expansion=="Expansion")%>%
+      select(UNINS, NATIVITY , RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG,DIS,expansion,ACA) %>%  
+      tbl_strata(
+           strata = ACA,
+          .tbl_fun = ~ .x %>%  
+                  tbl_summary(
+                        by = UNINS,
+                        include = c(NATIVITY, RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, DIS) ,
+                        label = list(
+                                     RACE1~"Race/ethnicity",NATIVITY ~"Nativity" ,
+                                     SEX ~ "Sex", DIS ~"Disability", ESRG~"Employment status", MARG ~"Marital status",
+                                     SCHLG~"Education" , POVPIPG ~ "Federal poverty"
+                                     ), 
+                     #   percent = "row",
+                        statistic = list(all_categorical() ~ "{p}")
+                             ) %>%
+                    modify_column_hide(columns = stat_1)%>%
+                    add_stat_label()        %>%
+
+                    bold_labels() %>%
+                    modify_header(label = "Characteristic")                  
+                    # modify_header(stat_2 = "N = {n} ({style_percent(p)}%)") %>%
+                    # modify_footnote(update = everything() ~ NA) # if you'd like no footnote remove #
+                )
+
+ t2<- Data %>% 
+   filter(expansion=="Non-expansion")%>%
+   select(UNINS, NATIVITY,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, DIS,expansion,ACA) %>%  
+   tbl_strata(
+       strata = ACA,
+      .tbl_fun = ~ .x %>%  
+           tbl_summary(
+                      by = UNINS,
+                      include = c(NATIVITY, RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, DIS) ,
+                      label = list (
+                                RACE1~"Race/ethnicity", NATIVITY~"Nativity",
+                                SEX ~ "Sex", DIS ~"Disability", ESRG~"Employment status", MARG ~"Marital status",
+                                SCHLG~"Education" , POVPIPG ~ "Federal poverty"
+                                   ), 
+                    #  percent = "row",
+                      statistic = list(all_categorical() ~ "{p}")
+                     ) %>%
+          modify_column_hide(columns = stat_1) %>%
+          add_stat_label()        %>%
+           bold_labels() %>%
+           modify_header(label = "Characteristic")            )
+ 
+# creating the merged table out of the t1 and t2
+ tab1<-tbl_merge(
+              tbls = list(t1, t2),
+              tab_spanner = c("**Expansion**", "**Non-expansion**")
+                 )%>%
+               modify_header(
+                 stat_2_1_1 = "Pre",
+                 stat_2_2_1 = "Post",
+                 stat_2_1_2 = "Pre",
+                 stat_2_2_2 = "Post"
+                 )
+
+```
+
+```{r tab3-2, include=FALSE}
+ 
+t1<- Data %>% 
+   filter(expansion=="Expansion")%>%
+   select(HINS4, NATIVITY,RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, DIS,expansion,ACA) %>%  
+   tbl_strata(
+     strata = ACA,
+     .tbl_fun = ~ .x %>%  
+       tbl_summary(
+         by = HINS4,
+         include = c(NATIVITY,RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG,DIS) ,
+         label = list(
+           RACE1~"Race/ethnicity", NATIVITY~"Nativity",
+           SEX ~ "Sex", DIS ~"Disability", ESRG~"Employment status", MARG ~"Marital status",
+           SCHLG~"Education" , POVPIPG ~ "Federal poverty"
+         ), 
+       #  percent = "row",
+         statistic = list(all_categorical() ~ "{p}")
+       ) %>%
+       modify_column_hide(columns = stat_1)%>%
+        bold_labels() %>%
+         add_stat_label()        %>%
+         modify_header(label = "Characteristic")
+   )
+     
+     # modify_header(stat_2 = "N = {n} ({style_percent(p)}%)") %>%
+     # modify_footnote(update = everything() ~ NA) # if you'd like no footnote remove #
+   
+ 
+ t2<- Data %>% 
+   filter(expansion=="Non-expansion")%>%
+   select(HINS4, NATIVITY,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, DIS,expansion,ACA) %>%  
+   tbl_strata(
+     strata = ACA,
+     .tbl_fun = ~ .x %>%  
+       tbl_summary(
+         by = HINS4,
+         include = c(NATIVITY,RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG,DIS) ,
+         label = list (
+           RACE1~"Race/ethnicity", NATIVITY~"Nativity",
+           SEX ~ "Sex", DIS ~"Disability", ESRG~"Employment status", MARG ~"Marital status",
+           SCHLG~"Education" , POVPIPG ~ "Federal poverty"
+         ), 
+     #    percent = "row",
+         statistic = list(all_categorical() ~ "{p}")
+       ) %>%
+       modify_column_hide(columns = stat_1) %>%
+         bold_labels() %>%
+        add_stat_label()        %>%
+         modify_header(label = "Characteristic")
+   )
+ 
+ 
+ tab2 <- tbl_merge(
+                tbls = list(t1, t2),
+                tab_spanner = c("**Expansion**", "**Non-expansion**")
+                  )%>%
+                 modify_header(
+                        stat_2_1_1 = "Pre",
+                        stat_2_2_1 = "Post",
+                        stat_2_1_2 = "Pre",
+                        stat_2_2_2 = "Post"
+                              )
+ 
+
+```
+
+```{r tab3}
+
+table3<-tbl_merge(list(tab1,tab2))  %>%  
+  modify_spanning_header(everything() ~ NA_character_)%>%
+
+ modify_caption("Charachterstics of Uninsured and Medicaid Covered Low Income Indiduals, expansion vs non-expansion")
+
+ 
+table3 %>% 
+ as_kable_extra(booktabs = TRUE,  linesep = "") %>% 
+  
+  
+  kableExtra::add_header_above(c(" "=1,"Expansion"=2,"Non-expansion"=2,"Expansion"=2, "Non-expansion"=2))%>% 
+       add_header_above(c(" "=1,"Uninsured Rate"=4,"Medicaid Coverage"=4))%>% 
+
+ kable_styling(font_size=8) # %>% # "scale_down" couldn't be used
+   # column_spec(1,width="5cm") 
+
+  #latex_options= c("scale_down", "HOLD_position"),
+  
+       #column_spec(1,bold=TRUE) %>%
+        #  row_spec(3,hline_after=TRUE)
+
+
+   # options(knitr.kable.NA = "")
+  #  kbl(table3, booktabs = TRUE,
+    #    caption= "Uninsured/Medicaid Rate by charachterstics, expansion vs non-expansion"
+                #  ) %>% 
+                  
+  #  kableExtra::add_header_above(c(" "=1,"Expansion"=2,"Non-expansion"=2,"Expansion"=2, "Non-expansion"=2))%>% 
+   #      add_header_above(c(" "=1,"Uninsured Rate"=4,"Medicaid Coverage"=4))%>% 
+
+#    kable_styling(latex_options= c( "HOLD_position"))  #%>% "scale_down" couldn't be used
+   # column_spec(1,width="2cm") 
+
+```
+
+
+Table 4 presents the shifts in characteristics unique to foreign-born individuals before and after the enactment of the Affordable Care Act (ACA) in both Medicaid expansion and non-expansion states.
+
+```{r preptab4, include=FALSE }
+
+# Data preperation
+
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+
+Forgn$CIT <- droplevels(Forgn$CIT[c(Forgn$CIT != "Born in US states" & Forgn$CIT!= "Born in US Territories")])
+
+Forgn$CORIGIN<-droplevels(Forgn$CORIGIN[Forgn$CORIGIN!= "United States"])
+  
+# Data for table
+
+df<-Forgn
+dummy<- subset(Forgn, select=c( UNINS, HINS4, CIT,LTINU,ENG,CORIGIN)  )
+
+df$ACA <- factor(df$ACA, levels = c("Pre-ACA", "Post-ACA"))
+
+library(dummy)
+dummy<-dummy(dummy)
+dummy <- dummy %>% mutate_all(as.numeric)
+colnm<-colnames(dummy)
+colnm<-gsub("\\bLTINU_\\.25\\.\\b", "Less than 25%", colnm)
+colnm<-gsub("\\bLTINU_\\.25\\.\\.1\\b", "More than 25%", colnm)
+colnm<- gsub("CIT_|ENG_|CORIGIN_", "", colnm)
+colnm <- gsub("\\.", " ", colnm)
+colnm <- gsub("\\s+", " ", colnm)
+colnm
+names(dummy)<-colnm
+head(dummy)
+df <- cbind(dummy, df)
+
+colnm<-c("UNINS","HINS4","HINS2","HINS1",colnm)
+
+
+```
+
+```{r tab4}
+
+svy <- svydesign(
+                  id=~1,
+                  weights = ~ PWGTP, 
+                  repweights = ~ matches("PWGTP[0-9]+"), 
+                  data = df, 
+                  type = "JK1",
+                  scale = 4/80,
+                  rscales = rep(1, 80),
+                  mse = TRUE
+            )
+
+
+
+
+table4<-df %>% 
+      tbl_strata(
+           strata = expansion,
+          .tbl_fun = ~ .x %>% 
+                tbl_summary(
+                         by = ACA,
+                         include = colnm ,
+                         missing = "no",
+                         label = list(
+                               UNINS ~ "Uninsured",
+                               HINS4 ~ "Medicaid coverage",
+                               HINS1 ~ "Employer Sponsered",
+                               HINS2 ~ "Individualy Purchased"
+
+                         ),
+                        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+
+                              ) %>%
+                add_difference()                  %>%
+                  #add_p (
+                  # perform t-test for all variables
+                  #test = list(all_continuous() ~ "t.test", all_categorical() ~ "chisq.test"),
+                  # assume equal variance in the t-test
+                  # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+                        #)                 %>%
+                add_significance_stars(hide_ci = TRUE,
+                                       hide_p = TRUE, 
+                                       hide_se =TRUE,
+                                      pattern = "{estimate}{stars}"
+
+                                      )%>%
+               modify_caption("Changes in Foreign-Born-Specific Characteristics Before and After the Affordable Care Act (ACA) in Expansion and Non-Expansion States") %>%
+               modify_header(all_stat_cols() ~ "**{level}**"
+                             
+)
+              #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
+            )
+
+table4  %>% 
+as_kable_extra(booktabs = TRUE,
+    linesep = "") %>% 
+  kableExtra::kable_styling(latex_options= c("scale_down","HOLD_position"), font_size= 6.5 ) %>% # ,font_size=6.5) 
+
+        pack_rows("Insurance coverage, %",1,4) %>%
+        pack_rows("Citizenship status, %",5,7)%>%
+        pack_rows("Lifetime in US, %",8,9)%>%
+        pack_rows("Self-rated English proficiency, %",10,14)%>%
+        pack_rows("Country/Region of birth, %",15,24)
+
+
+```
+
+**Key Observations:**
+
+* With the exception of insurance coverage, the foreign-born-specific characteristics remain consistent  over time and exhibit minimal differences between expansion and non-expansion states.
+
+### 4.3. Event Study
+
+```{r}
+
+Data$expansion<-as.numeric(Data$expansion)
+Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
+
+Data$NonCit<- ifelse(Data$CIT == "Non-citizen",1,0)
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+
+NATV<- Data[Data$NATIVITY == "US-born", ]
+```
+
+
+#### 4.3.1. Uninsured Rate:
+
+
+In Figure 1, Event-study estimates for uninsured rates are displayed.
+
+Panel (a): Focuses on expansion effects on uninsured for both US-born and foreign-born individuals without control variables.
+Panel (b): Examines expansion effects while controlling for covariates.
+Black line with circles: Represents foreign-borns.
+Purple line with triangles: Represents US-born.
+
+
+```{r fig1, fig.height = 4, fig.width = 9}
+
+
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero",
+               weights = ~PWGTP,
+               data = NATV)
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+UNINSADJ<-ggiplot(list('US-born' = Event2, 'Foreign-born' = Event4),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+
+figure1<-ggarrange(UNINSUN, UNINSADJ , 
+                   ncol = 2, nrow = 1)
+
+annotate_figure(figure1,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+
+```{r tab5, results='asis',cache=TRUE}
+
+
+table5<-etable(list(Event1, Event2, Event3,Event4),
+                digits = 3,
+               title = "The Impact of Medicaid Expansion on Uninsured Rate ",
+              headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+              tex = T,
+               arraystretch = 0.5,
+             vcov = "twoway",
+            group = list("_^Controls"=c(controlwof,forcont)),
+            interaction.combine = NULL,
+            style.tex = style.tex(
+                                   main = "base",
+                             fixef.suffix = " FE",
+                             fixef.title = "",
+                              stats.title = "",
+                              interaction.combine = " ",
+                            # tabular = "*",
+                               model.title = "Variables",
+                               depvar.title= " ",
+                               var.title = "\\midrule",
+                              yesNo = "yes"),
+             depvar=FALSE,
+             fontsize = "small",
+             dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+             #extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
+      )
+
+table5
+
+```
+
+**Key Observations:**
+
+* Consistent Pre-Trend Patterns:
+    + For US-born individuals in expansion vs. non-expansion states; coefficients not significantly different from zero.
+    + Coefficients for interaction terms between year and pre-treatment indicator are small and not statistically significant.
+    
+* Witness notable, statistically significant declines in uninsured rates for both groups in Post-expansion years 
+
+* Notable contrast in lead coefficient shifts for foreign-born compared to native individuals, signaling disparities between these groups.
+
+
+#### 4.3.2. Medicaid Coverage
+
+
+Figure 2 and Table 2, display event-study estimates for unconditional and conditional parallel trends in Medicaid take-up.
+
+```{r fig2,fig.height = 4, fig.width =9}
+
+controls   <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG") # (SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA)
+
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ ADA +.[controls] +.[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov = "hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+UNINSUN<-ggiplot(list('US-born' = Event5, 'Foregin-born' = Event7),
+                ref.line = -1,
+                main = 'Unadjusted',
+                xlab='Event Time'
+                  ) +
+  scale_color_manual(values=c('black','#B64074'))
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+UNINSADJ<-ggiplot(list('US-born' = Event6, 'Foregin-born' = Event8),
+        ref.line = -1, main = 'Adjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+#CCABD8
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+
+
+figure2<-ggarrange(UNINSUN, UNINSADJ , 
+          ncol = 2, nrow = 1)
+
+annotate_figure(figure2,
+                top = text_grob("Medicaid Coverage Rate", face = "bold", size = 14),
+                
+                fig.lab = "Figure 2", fig.lab.face = "bold"
+                )
+
+```
+
+
+
+```{r tab6, results='asis'}
+
+table6<-etable(list(Event5, Event6, Event7,Event8),
+                title = "The Impact of Medicaid Expansion on Medicaid Coverage ",
+                headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
+           adjustbox= 0.6,
+          arraystretch = 0.5,
+                 digits = 3,
+                 vcov = "twoway", 
+                 group = list("_^Controls"=c(controlwof,forcont)),
+                interaction.combine = " ",
+                 tex=TRUE,
+                 depvar=FALSE,
+                style.tex = style.tex(
+                                   main = "base",
+                                  fixef.suffix = " FE",
+                                  fixef.title = "",
+                                  stats.title = "",
+                                  interaction.combine = " ",
+                                # tabular = "*",
+                                   model.title = "Variables",
+                                   depvar.title= " ",
+                                   var.title = "\\midrule",
+                                  yesNo = "yes"),
+                
+                fontsize = "small",
+                dict=c(ST = "State" , YEAR = "Year", ttot="year", UNINS="Uninsured Rate")# ,
+
+              )
+
+           
+             #extralines = list("^^Nativity" = c("US-Born", "US-Born", "Foreign-Born", "Foreign-Born"))
+      
+table6
+    
+
+```
+
+**Key Observations:**
+
+* No Pre-Trend Differences: Before Medicaid expansion, no significant differences observed in Medicaid take-up between expansion and non-expansion states for low-income US-born and foreign-born individuals (26-64).
+
+* Interaction term coefficients small and statistically insignificant, indicating no pre-trend disparity in uninsured rates between expansion and non-expansion states.
+
+* Coefficients for post-treatment years (0 to 5 after expansion) positive and statistically significant in all models, showing increased Medicaid coverage in expansion states.
+
+* Observed divergence in Take-Up Trends: Over time, foreign-born individuals' Medicaid take-up increased, differing from US-born individuals; potential factors include policy changes, targeted outreach, or specific programs.
+
+* Demonstrates Medicaid expansion's effectiveness in enhancing healthcare access, particularly among foreign-born individuals.
+
+### 4.4. Difference-in-Differences 
+
+**Uninsured Rate**
+
+```{r tab7prep}
+Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
+# Make sure data are factor
+data<-Data
+factor_columns <- sapply(data, is.factor)
+data[factor_columns] <- lapply(data[factor_columns], as.character)
+
+data <- replace(data, is.na(data), 99999999)
+
+data[factor_columns] <- lapply(data[factor_columns], as.factor)
+```
+
+
+```{r tab7, results='asis'}
+
+reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg2 = feols(UNINS ~ treat*ForeginBorn + .[NICont] +.[Intcontrol] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+reg3 = feols(UNINS ~treat*ForeginBorn + .[NICont] + .[Intcontrol] | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg4 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+
+reg5 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+#reg5 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+
+table7<-
+  etable(list(reg1,reg2,reg3, reg4,reg5), 
+          title = "The Effect of Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation)",
+          #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+                 # extralines=list("^^Uninsured"=.(" ")) ,
+          group = list("-^Controls"=c(NICont, Intcontrol )),
+          extralines = list("-^Controls x Foreign-born" = c("No", "No", "No", "Yes", "Yes")), 
+          digits = 3,
+        #  adjustbox= 1.5,
+          tex= TRUE,
+          se.row = TRUE, 
+          depvar= FALSE,
+          family = FALSE,
+          # arraystretch = 1,
+          #convergence = T,
+          fixef.group = T,
+         # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+          # notes = c("note 1", "source 1"),
+          style.tex = style.tex(
+                             main = "base",
+                             fixef.suffix = " FE",
+                             fixef.title = "\\midrule",
+                             stats.title = "\\midrule",
+                            # tabular = "*",
+                               model.title = "",
+                             #  model.format = "[i]",
+                             # fontsize= 'normalsize', 
+                             tpt=T,
+                               depvar.title= " ",
+                               var.title = "\\midrule",
+                            slopes.title = "",
+                            slopes.format = "State-Specific Linear Time Trends",
+                             yesNo = "yes"
+                            ) ,
+         dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+               )
+)
+
+
+table7
+
+
+
+
+```
+
+
+**Key Observations:**
+
+* Model 4 stands out as the best-fitting model according to R2 results.
+* The incorporation of interaction terms for control variables differing between foreign-born and native individuals appears to have enhanced model fit.
+* Medicaid Expansion notably reduced the probability of being uninsured.
+* Being foreign-born correlates with an increased chance of being uninsured, though the extent varies across different models.
+* The significance and direction of coefficients for Medicaid Expansion x Foreign-Born interactions differ across models.
+    + In Model 1, the negative and significant coefficient implies a smaller uninsured probability for foreign-born individuals compared to US-born.
+    + In Model 2, the coefficient lacks significance, suggesting no distinct difference in uninsured probabilities.
+    + In Models 3 to 5, the positive coefficient signifies a reduced impact of Medicaid expansion on decreasing the uninsured rate for foreign-born individuals relative to US-born individuals.
+* Model 3 features a coefficient exceeding 1, rendering it unsuitable for meaningful interpretation due to the linear probability framework's limitations.
+* While the heatmap hinted at differences in outcomes by region and year, adding a Region-year fixed effect in the later analysis didn't show any clear improvements in model fit. 
+
+**Medicaid Coverage**
+
+
+```{r tab8, results='asis'}
+
+reg1 = feols(HINS4 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg2 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + .[Intcontrol]| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+reg3 = feols(HINS4 ~treat*ForeginBorn + .[NICont] + .[Intcontrol]| ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg4 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+
+reg5 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+
+table8<-
+  etable(list(reg1,reg2,reg3, reg4,reg5), 
+          title = "The Effect of Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation)",
+          #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+                 # extralines=list("^^Uninsured"=.(" ")) ,
+          group = list("-^Controls"=c(NICont, Intcontrol )),
+          extralines = list("-^Controls x Foreign-born" = c("No", "No", "No", "Yes", "Yes")), 
+          digits = 3,
+         # adjustbox= 1.5,
+          tex= TRUE,
+          se.row = TRUE, 
+          depvar= FALSE,
+          family = FALSE,
+         # arraystretch = 1,
+          #convergence = T,
+          fixef.group = T,
+         # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+          #notes = c("note 1", "source 1"),
+          style.tex = style.tex(
+                             main = "base",
+                             fixef.suffix = " FE",
+                             fixef.title = "\\midrule",
+                             stats.title = "\\midrule",
+                            # tabular = "*",
+                               model.title = "",
+                             #  model.format = "[i]",
+                             # fontsize= 'normalsize', 
+                             tpt=T,
+                               depvar.title= " ",
+                               var.title = "\\midrule",
+                            slopes.title = "",
+                            slopes.format = "State-Specific Linear Time Trends",
+                             yesNo = "yes"
+                            ) ,
+         dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+               )
+)
+
+table8
+
+
+
+
+
+```
+
+**Key Observations:**
+
+* The incorporation of interaction terms for control variables differing between foreign-born and native individuals appears to have enhanced model fit.
+* Model 4 stands out as the best-fitting model according to R2 results.
+* Medicaid Expansion notably increased the probability of having medicaid coverage for low income aged 26-64.
+* In Model 1 and 2, the coefficient for "Foreign-Born" is negative, indicating that being foreign-born is associated with a decrease in the probability of having Medicaid coverage However, in subsequent models (Model 4 and Model 5), the coefficient for "Foreign-Born" becomes positive (0.011 to 0.192). This implies that the effect of being foreign-born on Medicaid coverage is not consistently negative and could be postive or have no effect based on other factors in the model.
+
+* The interaction effect term "Medicaid Expansion x Foreign-Born" suggests that the impact of Medicaid Expansion on Medicaid coverage changes based on foreign-born status. Model indicating a slight increase in the impact of Medicaid Expansion for foreign-born individuals However, in subsequent models (Model 3 to Model 5), the coefficient becomes negative (-0.015 to -0.036). This suggests that the effect of Medicaid Expansion diminishes for foreign-born individuals as other factors are considered.
+
+
+* Being foreign-born correlates with the chance of having a med, though the extent varies across different models.
+* The significance and direction of coefficients for Medicaid Expansion x Foreign-Born interactions differ across models.
+    + In Model 1, the negative and significant coefficient implies a smaller uninsured probability for foreign-born individuals compared to US-born.
+    + In Model 2, the coefficient lacks significance, suggesting no distinct difference in uninsured probabilities.
+    + In Models 3 to 5, the positive coefficient signifies a reduced impact of Medicaid expansion on decreasing the uninsured rate for foreign-born individuals relative to US-born individuals.
+* Model 3 features a coefficient exceeding 1, rendering it unsuitable for meaningful interpretation due to the linear probability framework's limitations.
+* While the heatmap hinted at differences in outcomes by region and year, adding a Region-year fixed effect in the later analysis didn't show any clear improvements in model fit. 
+
+
+### 4.5. Addressing Threat of Treatment Heterogenity  
+
+#### 4.5.1. Sun & Abraham Interaction-weighted (IW) event study 
+
+Since 2018, there's been a growing focus on validating staggered Difference-in-Differences (DID) models and event study designs.To address these concerns and account for heterogeneous treatment effects, we use the interaction-weighted (IW) event study estimator by Sun and Abraham (2021).
+
+
+
+```{r data-robust, include=FALSE}
+
+#Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
+
+Data$expansion<-as.numeric(Data$expansion)
+Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
+
+# need to get a new sample for foregin and native
+# Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+NATV<- Data[Data$NATIVITY == "US-born", ]
+
+
+df<-Data
+# Following Sun and Abraham, we give our never-treated units a fake "treatment"
+# date far outside the relevant study period.
+
+df$year_treated <- ifelse(df$expansion == 0, 10000, df$ExpansionY)
+
+dfF<- df[df$NATIVITY == "Foregin-born", ]
+dfN<- df[df$NATIVITY == "US-born", ]
+
+```
+
+
+
+```{r sun&abr, fig.height = 8, fig.width = 8}
+
+
+#################################################################
+## Event study for whole sample with control for the whole population  vs  Sun & Abraham 
+#################################################################
+
+
+#plot 1 unin native
+san = feols(UNINS ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfN)
+
+
+fen= feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               weights = ~PWGTP,
+                vcov = "hetero" ,
+               data = NATV)
+Plota<-ggiplot(
+        list("Event-study" = fen, "Sun & Abraham (2020)" = san),
+        main = 'Adjusted. US-born Uninsured',
+        xlab = 'Time to treatment',
+        ref.line = -1 ,
+         theme  = theme_minimal() +
+                  theme(legend.position = "none",
+                        plot.title = element_text(hjust = 0.5, size=11)
+                       )
+) +
+                 scale_color_manual(values=c('black','#B64074'))
+
+  
+            
+
+#plot 1 unin foreg 
+
+saf = feols(UNINS ~ sunab(year_treated, YEAR) +.[controlwof] + .[forcont]|
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfF)
+
+
+fef= feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof] + .[forcont] |                 
+                       ST + YEAR,                             ## FEs
+               weights = ~PWGTP,
+                vcov = "hetero" ,
+               data = Forgn)
+
+Plotb<-ggiplot(
+        list("Event-study" = fef, "Sun & Abraham (2020)" = saf),
+        main = 'Adjusted. Foreign-born Uninsured',
+        xlab = 'Time to treatment',
+        ref.line = -1,
+         theme  = theme_minimal() + 
+          theme(legend.position = "none",
+                                          plot.title = element_text(hjust = 0.5, size=11))
+                ) +
+    scale_color_manual(values = c('black', '#B64074'))  # Set color values
+
+
+
+#plot 3 uni med nat
+
+
+msan = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfN)
+
+
+mfen= feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               weights = ~PWGTP,
+                vcov = "hetero" ,
+               data = NATV)
+
+        
+
+Plotc<-ggiplot(
+        list("Event-study" = mfen, "Sun & Abraham (2020)" = msan),
+        main = 'Adjusted. US-born Medicaid Coverage',
+        xlab = 'Time to treatment',
+        ref.line = -1,
+        theme  = theme_minimal() + theme(legend.position = "none",
+                                          plot.title = element_text(hjust = 0.5, size=11))
+                ) +
+        scale_color_manual(values=c('black','#B64074'))
+
+
+
+
+#plot 4 uni med for
+
+
+
+msaf = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlwof] +.[forcont] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfF)
+
+
+mfef= feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controlwof]+.[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               weights = ~PWGTP,
+                vcov = "hetero" ,
+               data = Forgn)
+
+Plotd<-ggiplot(
+        list("Event-study" = mfef, "Sun & Abraham (2020)" = msaf),
+        main = 'Adjusted. Foreign-born Medicaid Coverage',
+        ref.line = -1,
+            xlab = "Time to treatment",
+        theme  = theme_minimal() + theme(legend.position = "none",
+                                          plot.title = element_text(hjust = 0.5, size=11))
+                ) +
+          scale_color_manual(values=c('black','#B64074'))
+
+
+
+figure3<- ggarrange(
+          Plota, Plotb ,Plotc,Plotd ,
+          ncol = 2, nrow = 2,
+          common.legend = T,
+          legend=   "bottom",
+          font.label= 'plain'
+
+)
+
+annotate_figure(figure3,
+                top = text_grob("Medicaid Expansions Effect Accounting for Variation in Treatment Timing", face = "bold", size = 10),
+                
+                fig.lab = "Figure 3"
+)
+
+
+
+
+
+```
+
+* No evidence of differing pre-trends is found, we can conclude  our results are robust and not disproportionately influenced by variations in treatment effects across diverse cohorts.
+
+#### 4.5.2. Bacon decomposition
+
+```{r bac, include=FALSE }
+
+agrdata  <- aggregate(cbind(UNINS, treat) ~ ST + YEAR, data = Data, FUN = mean)
+
+#aggregated_data <- svyby(~ UNINS + treat, ~ ST + YEAR, design = svy,FUN = svymean)
+
+df_bacon1 <- bacon(UNINS ~ treat,
+         data = agrdata,
+        id_var = "ST",
+         time_var = "YEAR")
+
+dd_estimate1 <-  sum(df_bacon1$estimate*df_bacon1$weight)
+
+
+
+agrdata  <- aggregate(cbind(HINS4, treat) ~ ST + YEAR, data = Data, FUN = mean)
+
+df_bacon2 <- bacon(HINS4 ~ treat,
+                 data = agrdata,
+                 id_var = "ST",
+                 time_var = "YEAR")
+
+dd_estimate2 <- sum(df_bacon2$estimate*df_bacon2$weight)
+
+
+```
+* Compares timing groups to untreated units and evaluates relative treatment effects at different timings.
+
+```{r tab9}
+
+Comparison <- c("Earlier vs Later Treated", "Later vs Earlier Treated", "Treated vs Untreated","Earlier vs Later Treated", "Later vs Earlier Treated", "Treated vs Untreated" )
+Coefficient <- c('-0.09309','-0.05521' , "-0.08462", "0.14610", "0.08782", "0.14452")
+Weight <- c("0.11871","0.08771", "0.79358","0.11871","0.08771","0.79358")
+bc <- data.frame(Comparison, Coefficient, Weight)
+
+kbl(bc,caption="Bacon Decomposition" , booktabs=T) %>%
+kable_styling()%>%
+pack_rows("Uninsured",1,3,latex_gap_space="1em")%>% pack_rows("Medicaid",4,6)
+
+```
+
+```{r plotbac, fig.height = 5 , fig.width = 7}
+library(cowplot)
+
+dfplot1<- ggplot(df_bacon1) +
+    aes(x = weight, y = estimate, shape = factor(type)) +
+    labs(x = "Weight", y = "Estimate", shape = "Type") +
+      geom_hline(yintercept = dd_estimate1, color = "#A94064") +
+    theme_bw()+
+  ggtitle("Uninsured")+
+    geom_point(show.legend = FALSE)
+
+dfplot2<- ggplot(df_bacon2) +
+    aes(x = weight, y = estimate, shape = factor(type)) +
+    labs(x = "Weight", y = "Estimate", shape = "Type") +
+      geom_hline(yintercept = dd_estimate2, color = "#A94064") +
+  theme_bw()+
+  theme(legend.position ="bottom")+
+    ggtitle("Medicaid Coverage")+
+    geom_point()
+
+# Combine the plots vertically
+combined_plot <- plot_grid(dfplot1, dfplot2, ncol = 1, align = "v")
+
+# Add a common legend
+combined_plot_with_legend <- cowplot::plot_grid(combined_plot, get_legend(dfplot1), ncol = 2, rel_widths = c(0.9, 0.1))
+
+# Display the combined plot with the common legend
+print(combined_plot_with_legend)
+
+```
+* When we exclude variation due to state-level treatment timing differences:
+  + Difference-in-Differences (DD) estimate remains highly consistent with main DD estimate.
+  + Treatment effect magnitude from 2014 wave aligns with subsequent wave effects.
+
+* Result Confirms the reliability of the estimated treatment effect.
+
+* Figure 4 illustrates 2 × 2 DD estimates and associated weights.
+
