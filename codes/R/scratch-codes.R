@@ -470,3 +470,380 @@ Weight <- c("0.11871","0.08771","0.79358")
 bc1 <- data.frame(type, Coeff,Weight )
 
 bc<- table(bc1$type, bc1$Coeff,bc1$Weight)
+
+
+### Aug 10, 2023
+### 
+CIT,LTINU,ENG,CULRG,CORIGIN
+
+CIT~"Citizenship status",LTINU ~"Lifetime in US",
+ENG~"Self-rated English proficiency", 
+CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+
+
+   print(table2) 
+
+
+## 4.Method
+
+4.1 Used Causal Structure Discovery to find the Directed acyclic graph and minimal adjustment set
+
+
+4.2 Difference-in-Differences (DID) Estimation:
+    
+    DID is used to estimate the impact of Medicaid expansion on Uninsured and Medicaid Coverage.
+Utilizing a two-way fixed effects model with differential timing, which enables the incorporation of the Medicaid expansion timeline into the DID analysis.
+
+Model Specification:
+    
+    $$ 
+    \begin{equation}
+Y_{ist} = \alpha + \delta_s + \lambda_t + \gamma_s \cdot T_{st} + \beta_1 (FB_{ist} \times T_{st}) + FB_{ist} + \beta  X_{ist} + \theta(FB_{ist} \times C_{ist}) + \epsilon_{ist}
+\end{equation}
+
+$$
+    
+    
+    In this equation:
+    
+    - \(Y_{ist}\) represents the outcome of individual \(i\) in year \(t\) in state \(s\).
+- \(\delta_s\) represents state fixed effects.
+- \(\lambda_t\) represents year fixed effects.
+- \(\gamma\) represents the average treatment effect of Medicaid expansion for state \(s\).
+- \(T_{st}\) is a dummy variable that equals 1 if individual \(i\) in state \(s\) is exposed to the treatment in year \(t\), and 0 otherwise. For states that expanded Medicaid in 2014, \(T_{ist}\) is equal to 1 for all years after 2014. For states that expanded Medicaid later, \(T_{ist}\) is equal to 1 for all years after the year of expansion.
+- \(\beta_1\) represents the coefficient for the interaction term between \(FB_{ist}\) and \(T_{st}\), capturing the differential treatment effect for foreign-born individuals.
+X represents vector of control variables, including racial composition, age distribution, gender distribution, employment, and personal income 
+
+\(\theta_k \cdot (FB_{ist} \times C_{ist,k})\) represents the interaction terms between the binary variable \(FB_{ist}\) and the control variables specifice to foreign-born individuals (\(C_{ist,k}\)). These interaction terms capture the differential effects of the control variables for foreign-born individuals compared to native-born individuals. This includes English proficiency, region of origin, acculturation.
+
+The inclusion of the interaction term between \(FB_{ist}\) and the treatment variable is important to account for potential differences in the treatment effect between foreign-born and US-born individuals.
+
+Clustered standard errors at the state-level are used for robustness.
+spital-specific linear time trends
+
+
+
+
+    
+    
+    4.3 Event Study Estimation:
+    
+    Additionally, I estimate this effect using an event study model that allows us to assess the evolution of relative outcomes while controlling for fixed differences across states and national trends over time.
+
+event study model allows us to test the parallel trends assumption and it provides valuable insights into the temporal dynamics of the treatment effect, enhancing our understanding of the causal relationship between the treatment and the outcome variable.
+
+
+Model Specification:
+    
+    $$ 
+    \begin{equation}
+Y_{ist} = \alpha + \delta_s + \lambda_t + \gamma_s \cdot T_{st} + \beta_1 (FB_{ist} \times T_{st}) + \sum_{j=2}^{J} \beta_j  X_{ist,j} + \sum_{k=1}^{K} \theta_k (FB_{ist} \times C_{ist,k}) + \epsilon_{ist}
+\end{equation}
+$$
+
+
+
+    
+    
+    *Equation Components:**
+    
+    - \(Y_{ist}\): Outcome for individual \(i\) each year and state.
+- \(\delta_s\): State fixed effect.
+- \(\lambda_t\): Year fixed effects.
+- \(X_{idt}\): Vector of control variables.
+
+**Dynamic Policy Effects:**
+    
+    - \(\sum_{n=-3}^{5} \beta_y D_s D_{it}^n\): Captures dynamic effects of policy.
+- \(D_{k,its}\): Lead and lag dummy variables when state adopts expansion.
+- \({\beta}_y\): Estimates change in outcomes in expansion vs. non-expansion states during year \(y\).
+
+**Omitted Category:**
+    
+    - \(k=-1\): Year prior to expansion, excluded as omitted category.
+
+
+
+
+
+
+
+
+
+
+LTINU ~"Lifetime in US",
+
+ENG~"Self-rated English proficiency",
+CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+
+print(levels(Data$expansion))
+
+
+
+table(Data$expansion)
+print(levels(Data$expansion))
+levels(Data$expansion)[levels(Data$expansion) == "expansion"] <- "Expansion"
+
+table2<-Data %>% subset(ACA=="Pre-ACA")%>%
+    tbl_strata(
+        strata = expansion,
+        .tbl_fun = ~ .x %>% 
+            tbl_summary(
+                by = NATIVITY,
+                include = c(
+                    UNINS, HINS4, AGEP, RACE1, SEX,  MARG  ,
+                    ESRG,SCHLG ,POVPIPG,
+                    DIS),
+                missing = "no",
+                label = list(
+                    AGEP ~ "Age", UNINS ~ "Uninsured",
+                    HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+                    ESRG~"Employment status", MARG ~"Married",
+                    SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"
+                ),
+                statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+                
+            ) %>%
+            add_p()                  %>%
+            add_stat_label()        %>%
+            
+            #add_p (
+            # perform t-test for all variables
+            #test = list(all_continuous() ~ "t.test", all_categorical() ~ "chisq.test"),
+            # assume equal variance in the t-test
+            # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+            #)                 %>%
+            # add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
+            bold_labels() %>%
+            modify_caption("Baseline Characteristics by Nativity") %>%
+            modify_header(all_stat_cols() ~ "**{level}**, \nN = {n}"
+                          
+            )
+        #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
+    )
+
+
+NATV<- Data[Data$NATIVITY == "US-born", ]
+IMG<- Data[Data$CIT == "Non-citizen", ]
+
+NCIT<- Data[Data$CIT == "Naturalized-citizen", ]
+CIT<- Data[Data$CIT == "US-citizen Born abroad ", ]
+
+# I want to add another dummy variable for cit that only shows if the person is citizen or not
+data$NonCit<- ifelse(data$CIT == "Non-citizen",1,0)
+
+alcontol   <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG", "ENG", "LTINU" )
+controlwof    <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA") # (SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA)
+NICont        <- c("SEX","DIS", "AGEP","POVPIPG", "ENG", "LTINU", "CORIGIN", "NonCit")
+NIContwof     <- c("SEX","DIS", "AGEP", "POVPIPG") # SEX+DIS+AGEP+MARG+POVPIPG
+Intcontrol    <- c("MARG", "RACE1", "ESRG","ADA", "SCHLG" ) # (MARG + RACE1 + ESRG + ADA)
+forcont       <- c("ENG", "LTINU", "CORIGIN", "NonCit") # ENG+LTINU+CORIGIN+NonCit
+
+
+reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # no control
+reg7 = feols(UNINS ~ treat*ForeginBorn + .[alcontol] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # control for all normal thin
+
+reg7
+
+reg2 = feols(UNINS ~treat*ForeginBorn + .[controlswf] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg3 = feols(UNINS ~treat*ForeginBorn + .[controlswf] + ForeginBorn*(MARG + RACE1 + ESRG + ADA)| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg4 = feols(UNINS ~treat*ForeginBorn + .[controls] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg5 = feols(UNINS ~treat*ForeginBorn + .[controls] + ForeginBorn*(MARG + RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg6 = feols(UNINS ~treat*ForeginBorn + .[controlswf] + ForeginBorn*(MARG + RACE1 + ESRG + ADA+ENG+LTINU+CORIGIN+ NonCit )| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg7 = feols(UNINS ~ treat*ForeginBorn + .[alcontol] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg8 = feols(UNINS ~ treat*ForeginBorn +  ForeginBorn*(SEX+DIS+AGEP+MARG+SCHLG+RACE1+ESRG+POVPIPG+ENG+LTINU+CORIGIN+NonCit+ADA)| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+etable(list(reg1, reg2,reg3,reg4,reg5,reg6,reg7,reg8),    fitstat = ~ n +ll+r2 +ar2 + pr2+  aic + bic )  
+
+
+
+
+allcontrols   <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA", "ENG", "LTINU", "CORIGIN", "NonCit")
+controlwof    <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA") # (SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA)
+NICont        <- c("SEX","DIS", "AGEP","POVPIPG", "ENG", "LTINU", "NonCit")
+NIContwof     <- c("SEX","DIS", "AGEP","POVPIPG") # SEX+DIS+AGEP+MARG+SCHLG+POVPIPG
+Intcontrol    <- c("MARG", "RACE1", "ESRG","SCHLG" ) # (MARG + RACE1 + ESRG + ADA)
+forcont       <- c("ENG", "LTINU", "CORIGIN", "NonCit") # ENG+LTINU+CORIGIN+NonCit
+
+
+reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # no control
+
+
+# reg2 = feols(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # control for all normal things
+
+#reg3 = feols(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ENG+LTINU+NonCit| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Control for demographic + immigrants
+
+reg4 = feols(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ENG+LTINU+NonCit+ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = data) # Control for demographic + immigrants + state
+
+#reg5 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state 
+
+
+#reg6 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
+reg7 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ADA+UnempR+IPC+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
+
+reg8 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+reg9 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
+# reg9 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG +IPC+ UnempR )  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
+# reg9 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + SEX + DIS+AGEP+ POVPIPG+ENG+ADA+IPC+UnempR+NonCit+LTINU) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with all (+state+ img)
+# reg = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with all(+immigrants)
+# reg0 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + SEX + DIS+AGEP+ POVPIPG) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with all 
+
+
+# reg7= feols(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ADA+ IPC +ENG+LTINU+NonCit| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+# reg8 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ADA+ IPC +ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+# reg9 = feols(UNINS ~ treat*ForeginBorn +  SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+#reg5 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+etable(list(reg1, reg4,reg7, reg8,reg9),    fitstat = ~ n +ll+r2 +ar2 + pr2+  aic + bic )  
+
+etable(list(reg1, reg2,reg3, reg4))
+
+
+
+
+t1<- Data %>% 
+    filter(expansion=="Expansion")%>%
+    select(HINS4, NATIVITY,RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, DIS,expansion,ACA) %>%  
+    tbl_strata(
+        strata = ACA,
+        .tbl_fun = ~ .x %>%  
+            tbl_summary(
+                by = HINS4,
+                include = c(NATIVITY,RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG,DIS) ,
+                label = list(
+                    RACE1~"Race/ethnicity", NATIVITY~"Nativity",
+                    SEX ~ "Sex", DIS ~"Disability", ESRG~"Employment status", MARG ~"Marital status",
+                    SCHLG~"Education" , POVPIPG ~ "Federal poverty"
+                ), 
+               # percent = "row",
+                statistic = list(all_categorical() ~ "{p}")
+            ) %>%
+         #   modify_column_hide(columns = stat_1)%>%
+            bold_labels() %>%
+            add_stat_label()        %>%
+            modify_header(label = "Characteristic")
+    )
+
+
+reg = feglm(UNINS ~ treat*ForeginBorn +.[NICont] + ForeginBorn*(MARG + RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg = feols(UNINS ~treat*ForeginBorn + .[NICont] + ForeginBorn*(MARG + RACE1 + ESRG + ADA)| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+reg = feglm(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+reg = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+reg = feols(UNINS ~treat*ForeginBorn + .[allcontrols] | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+reg = feols(UNINS ~treat*ForeginBorn + .[allcontrols] | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+
+-
+
+reg = feglm(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+POVPIPG+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+extract_eq(reg)
+equatiomatic::extract_eq(reg)
+
+
+"SEX","DIS", "AGEP","POVPIPG", "ENG", "LTINU", "CORIGIN", "NonCit"
+
+library(sjPlot)
+library(sjmisc)
+library(equatiomatic)
+
+
+
+
+
+trend_data <- aggregate(UNINS ~ YEAR + StateN, data, mean)
+trend_data$UNINS <- trend_data$UNINS * 100
+
+state_trend_plots <- trend_data %>%
+    ggplot(aes(x = YEAR, y = UNINS, color = StateN)) +
+    geom_line() +
+    labs(title = "State-Specific Uninsured Rate Trends Over Time",
+         x = "Year", y = "Uninsured Rate",
+         color = "State") +
+    scale_x_continuous(breaks = trend_data$YEAR, labels = trend_data$YEAR) +
+    
+    theme_minimal() +
+    theme(legend.position = "right")
+
+plotly::ggplotly(state_trend_plots)
+
+
+```{r}
+
+trend_data <- aggregate(UNINS ~ YEAR + REGION, data, mean)
+trend_data$UNINS <- trend_data$UNINS * 100
+
+heatmap_plot <- trend_data %>%
+    ggplot(aes(x = YEAR, y = REGION, fill = UNINS)) +
+    geom_tile() +
+    scale_fill_gradient(low = "white", high = "blue") +
+    labs(title = "Uninsured Rate Across Regions and Years",
+         x = "Year", y = "Region",
+         fill = "Uninsured Rate") +
+    scale_x_continuous(breaks = trend_data$YEAR, labels = trend_data$YEAR) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(heatmap_plot)
+
+
+```
+class(data$ACA)
+
+
+tab<-svy %>% subset(ACA=="Pre-ACA")%>%
+    tbl_strata(
+        strata = NATIVITY,
+        .tbl_fun = ~ .x %>% 
+            tbl_svysummary(
+                by = expansion,
+                include = c(
+                    UNINS, HINS4, AGEP, RACE1, SEX,  MARG  ,
+                    ESRG,SCHLG ,POVPIPG,
+                    DIS),
+                missing = "no",
+                label = list(
+                    AGEP ~ "Age", UNINS ~ "Uninsured",
+                    HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+                    ESRG~"Employment status", MARG ~"Married",
+                    SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"
+                ),
+                statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+                
+            ) %>%
+            add_difference()                  %>%
+            add_significance_stars(hide_ci = TRUE,
+                                   hide_p = TRUE, 
+                                   hide_se =TRUE,
+                                   pattern = "{estimate}{stars}"
+                                   ) %>%
+          #  add_p()                  %>%
+          #  add_stat_label()        %>%
+            
+            #add_p (
+            # perform t-test for all variables
+            #test = list(all_continuous() ~ "t.test", all_categorical() ~ "chisq.test"),
+            # assume equal variance in the t-test
+            # test.args = all_tests("t.test") ~ list(var.equal = TRUE)
+            #)                 %>%
+            # add_significance_stars(hide_ci = TRUE, hide_p = FALSE)%>%
+            bold_labels() %>%
+            modify_caption("Baseline Characteristics by Nativity") %>%
+            modify_header(all_stat_cols() ~ "**{level}**, \nN = {n}"
+                          
+            )
+    )
+        #modify_spanning_header(

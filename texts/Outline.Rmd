@@ -445,7 +445,7 @@ table1 %>%
   kableExtra::kable_styling(latex_options= "HOLD_position" ) %>% # ,font_size=6.5) 
        column_spec(1,bold=TRUE) %>%
           row_spec(3,hline_after=TRUE)
-
+table
 
 ```
 **Key Observations:**
@@ -618,7 +618,6 @@ t1<- Data %>%
      
      # modify_header(stat_2 = "N = {n} ({style_percent(p)}%)") %>%
      # modify_footnote(update = everything() ~ NA) # if you'd like no footnote remove #
-   
  
  t2<- Data %>% 
    filter(expansion=="Non-expansion")%>%
@@ -755,19 +754,17 @@ table4<-df %>%
            strata = expansion,
           .tbl_fun = ~ .x %>% 
                 tbl_summary(
-                         by = ACA,
-                         include = colnm ,
-                         missing = "no",
-                         label = list(
-                               UNINS ~ "Uninsured",
-                               HINS4 ~ "Medicaid coverage",
-                               HINS1 ~ "Employer Sponsered",
-                               HINS2 ~ "Individualy Purchased"
-
-                         ),
-                        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
-
-                              ) %>%
+                             by = ACA,
+                             include = colnm ,
+                             missing = "no",
+                             label = list(
+                                UNINS ~ "Uninsured",
+                                HINS4 ~ "Medicaid coverage",
+                                HINS1 ~ "Employer Sponsered",
+                                HINS2 ~ "Individualy Purchased"
+                                      ),
+                             statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+                         ) %>%
                 add_difference()                  %>%
                   #add_p (
                   # perform t-test for all variables
@@ -779,12 +776,9 @@ table4<-df %>%
                                        hide_p = TRUE, 
                                        hide_se =TRUE,
                                       pattern = "{estimate}{stars}"
-
-                                      )%>%
+                                      )           %>%
                modify_caption("Changes in Foreign-Born-Specific Characteristics Before and After the Affordable Care Act (ACA) in Expansion and Non-Expansion States") %>%
-               modify_header(all_stat_cols() ~ "**{level}**"
-                             
-)
+               modify_header(all_stat_cols() ~ "**{level}**")
               #modify_spanning_header(stat_1 ~ "**Non Expansion**", stat_2 ~ "**Expansion**")
             )
 
@@ -840,7 +834,7 @@ Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|
                weights = ~PWGTP,
                data = NATV)
 
-Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof]|                 
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
@@ -852,7 +846,7 @@ Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|
                weights = ~PWGTP,
                data = Forgn)
 
-Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlwof] + .[forcont]|                 
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
@@ -943,7 +937,7 @@ Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|
                weights = ~PWGTP,
                data = NATV)
 
-Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controls]|                 
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ ADA +IPC+UnempR + .[controls]|                 
                        ST + YEAR,                             ## FEs
                vcov = "hetero" ,
                weights = ~PWGTP,
@@ -955,7 +949,7 @@ Event7 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|
                weights = ~PWGTP,
                data = Forgn)
 
-Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ ADA +.[controls] +.[forcont]|                 
+Event8 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ ADA + IPC+ UnempR +.[controls] +.[forcont]|                 
                        ST + YEAR,                             ## FEs
                vcov = "hetero" ,
                weights = ~PWGTP,
@@ -1064,16 +1058,15 @@ data[factor_columns] <- lapply(data[factor_columns], as.factor)
 
 reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
 
-reg2 = feols(UNINS ~ treat*ForeginBorn + .[NICont] +.[Intcontrol] | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
-
-reg3 = feols(UNINS ~treat*ForeginBorn + .[NICont] + .[Intcontrol] | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg4 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+reg2 = feols(UNINS ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ENG+LTINU+NonCit+ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = data) # Control for demographic + immigrants + state
 
 
-reg5 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+reg3 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ADA+UnempR+IPC+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
 
-#reg5 = feols(UNINS ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+
+reg4 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+reg5 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
 
 
 table7<-
@@ -1144,15 +1137,14 @@ table7
 
 reg1 = feols(HINS4 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
 
-reg2 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + .[Intcontrol]| ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
-
-reg3 = feols(HINS4 ~treat*ForeginBorn + .[NICont] + .[Intcontrol]| ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg4 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+reg2 = feols(HINS4 ~ treat*ForeginBorn + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ENG+LTINU+NonCit+ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = data) # Control for demographic + immigrants + state
 
 
-reg5 = feols(HINS4 ~ treat*ForeginBorn + .[NICont] + ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA) | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and 
+reg3 = feols(HINS4 ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ADA+UnempR+IPC+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG ) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
 
+
+reg4 = feols(HINS4 ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+reg5 = feols(HINS4 ~ treat*ForeginBorn + SEX + DIS+AGEP+ POVPIPG+ENG+LTINU+NonCit+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR + REGION^YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
 
 table8<-
   etable(list(reg1,reg2,reg3, reg4,reg5), 
@@ -1444,7 +1436,7 @@ pack_rows("Uninsured",1,3,latex_gap_space="1em")%>% pack_rows("Medicaid",4,6)
 
 ```
 
-```{r plotbac, fig.height = 5 , fig.width = 7}
+```{r plotbac}
 library(cowplot)
 
 dfplot1<- ggplot(df_bacon1) +
