@@ -5,7 +5,6 @@
 #############################################################################################################
 
 
-
                                                                     #### loading required library  ####
 library(labelled)
 library(tidyr)
@@ -13,6 +12,13 @@ library(readxl)
 library(dplyr)
 
 
+
+wd <- list()
+# commonly used paths in my working directory
+wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
+wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
+wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/text/"
+wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
                                                                     #### Reading Dataset   ####
 
@@ -36,7 +42,7 @@ Varname<-colnames(Data) # Checking the names of all variable
   
 ### 4. AGEP to AGEG
 
-table(Data$AGEP, exclude = NULL)
+table(ACS$AGEP, exclude = NULL)
 
 Data$AGEG<-0
 Data$AGEG<-ifelse(Data$AGEP>25 & Data$AGEP<35,1,Data$AGEG) # 1. 25-34
@@ -77,6 +83,8 @@ table(Data$ENG, Data$YEAR , exclude = NULL)   # NA .Speaks only english  # 1 .Ve
         # were coded as 0 ,but after 2017 they were coded as NA. We need to frist fix this.
 
 Data$ENG<-replace(Data$ENG,is.na(Data$ENG),0) #
+Data$ENG<-replace(Data$ENG,Data$ENG=="b",0) #
+
 table(Data$ENG,exclude = NULL)
 
 Data$ENG<- ordered(Data$ENG, labels = c("Only english","Very well", "Well", "Not well", "Not at all"  ))
@@ -90,6 +98,7 @@ var_label(Data$ENG) <- "English Proficiency"
  # We obsesrve similar pattern as ENG here before 2017, men and not applicable interviewee were coded 0 but after 2017 there were coded NA
 
 Data$FER<-replace(Data$FER,Data$FER==0,NA) # Change the 0 value to NA
+Data$FER<-replace(Data$FER,Data$FER=="b",0) # Change the 0 value to NA
 
  table(Data$FER,Data$YEAR ,exclude = NULL)  # Coded 8 is only for 2012 were there was a problem gathering the data
 
@@ -146,7 +155,8 @@ table(Data$MARG, exclude = NULL)
 var_label(Data$MARG) <- "Married "
 
 ### 9. EDUCATION STATUS
- 
+Data$SCHL <- as.numeric(as.character(Data$SCHL))
+
 Data$SCHLG<-0 # creating a school group variable
 Data$SCHLG<-ifelse(Data$SCHL>=1 & Data$SCHL< 16,1,Data$SCHLG) # 1. Less than High school 
 Data$SCHLG<-ifelse(Data$SCHL %in% c(16,17),2,Data$SCHLG) # 2. High school
@@ -168,7 +178,8 @@ Data$SEX<-replace(Data$SEX,Data$SEX==2,1) # recode female from 2 to 1
 Data$SEX<- ordered(Data$SEX, labels = c("Male", "Female" ))
 var_label(Data$SEX) <- "Sex"
 table(Data$SEX)
-
+  Data$SEX<-PREACS$SEX
+    
 ### 12. YEAR arrived in US  "YOEP"
 
 ### 13. DISABILITY STATUS  DIS make it a dummy 
@@ -179,7 +190,7 @@ var_label(Data$DIS) <- "Disability"
 
 ### 14. ETHNICITY
 
-table(Data$ETHN, exclude = NULL)
+table(Data$HISP, exclude = NULL)
 Data$ETHN<-1 # creat ethnicity variable      # 1 : Hispanic
 Data$ETHN<-ifelse(Data$HISP == 1,0,Data$ETHN) # 0 : Not hispanic
 table(Data$ETHN,exclude = NULL) 
@@ -198,6 +209,8 @@ var_label(Data$ESRG) <- "Employment"
 table(Data$ESRG, exclude = NULL)
 
 ### 16. INCOME To Poverty RATION : POVPIP
+Data$POVPIP <- as.numeric(as.character(Data$POVPIP))
+
 
 Data$POVPIPG<-1 # 1.0 to 100% poverty 
 Data$POVPIPG<-ifelse(Data$POVPIP>100,2,Data$POVPIPG) #2.100 t0 138% poverty
@@ -212,26 +225,30 @@ table(Data$POVPIPG,Data$CIT ,exclude = NULL)
 ### 19. RACE  
 
 Data$RACE<-Data$RAC1P
-Data$RACE<-ifelse(Data$RAC1P %in% c(4,5),3,Data$RACE) # 4. Asian# 5. Native Hawaiian and Other Pacific Islander
-Data$RACE<-ifelse(Data$RAC1P==6,4,Data$RACE) # 6. Asian
-Data$RACE<-ifelse(Data$RAC1P %in% c(7,8,9),5,Data$RACE)  # 8.Some Other Race alone # 9.Two or More Races
-Data$RACE<- ordered(Data$RACE, labels = c("White", "Black", "American Indian or Alaska Native", "Asian", "Other"))
-var_label(Data$RACE) <- "Race"
+Data$RACE<-ifelse(Data$RAC1P %in% c(3,4,5,7,8,9),9,Data$RACE)  # 8.Some Other Race alone # 9.Two or More Races
+Data$RACE<-ifelse(Data$RACE==6,3,Data$RACE) # 6. Asian rename asian to 3
+Data$RACE<-ifelse(Data$RACE==9,4,Data$RACE) # 9 other to 4
+
 
 
 ## Creating a new variable for race/ethnicity and rename it RACE1
+Data$RACE1<-Data$RACE
+Data$RACE1<-ifelse(Data$ETHN==1,5,Data$RACE1) # merge ethnicity into the race
+Data$RACE1<-ifelse(Data$RACE1==4,6,Data$RACE1) # merge ethnicity into the race
 
-Data$RACE1<-ifelse(Data$RACE==1,4,Data$RACE1) # merge native american to other
-Data$RACE1<-ifelse(Data$ETHN==1,1,Data$RACE1) # merge ethnicity into the race
-Data$RACE1<- ordered(Data$RACE1, labels = c("Hispanic", "Asian","Black", "Other", "White"))
+Data$RACE<- ordered(Data$RACE, labels = c("White", "Black", "Asian", "Other"))
+var_label(Data$RACE) <- "Race"
+
+Data$RACE1<- ordered(Data$RACE1, labels = c("White", "Black", "Asian", "Hispanic","Other"))
 var_label(Data$RACE1) <- "Race and Ethnicity"
 
+  
 
 # Create a variable ACA to have pre and post ACA
 Data$ACA <- ifelse(Data$YEAR < 2014,1, 2)
 Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
 
-
+table(Data$ACA)
 #####  expansion status
 #2015 Pennsylvania,  Indiana ,Alaska
 #2016, Montana, Louisiana
@@ -254,8 +271,7 @@ Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
 
 ## Substitue way using the excel file that is already there by KFF
 
-
-expanData <- read_excel("expansion.xlsx", sheet = "raw_data")
+expanData <- read_excel(paste0(wd$data,"expansion.xlsx"), sheet = "raw_data")
 
 # this data set includes stfips code(ST), State name(StateN), expansion(expansion) if state adopted or not(treatment), the year of expansion (ExpansionY)
 # and the Expan_STS which has values not expanded, expanded, late expanded.
@@ -317,8 +333,7 @@ Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa
 var_label(Data$GEOR) <- "Geographic region"
 
 # TO DO : maybe put cenetal Asia in another group since thera are not much observation in that group 
-table(Data$expansion_years, exclude = NULL)
-
+table(Data$ExpansionY, exclude = NULL)
 
 ### 1. Based on Culture 
 
@@ -352,7 +367,7 @@ table(Data$CULRG, exclude = NULL)
 # Read an Excel file named "IPC.xlsx" from the working directory, 
 # where the sheet named "Sheet1" will be read.
 
-IPC <- read_excel("IPC.xlsx", sheet = "Sheet1")
+IPC <- read_excel(paste0(wd$data,"IPC.xlsx"), sheet = "Sheet1")
 
 # Change the format of data to make it easier to append 
 IPC <- pivot_longer(IPC, 
@@ -385,7 +400,7 @@ table(Data$IPCINDX,Data$YEAR,exclude=NaN)
 
 # Read an Excel file named "Pol.xlsx" from the working directory, 
 
-PolClM<-read_excel("Pol.xlsx", sheet = "Sheet4")
+PolClM<-read_excel(paste0(wd$data,"Pol.xlsx"), sheet = "Sheet4")
 sapply(PolClM, class)
 
 # first I drop the extra variable
@@ -399,7 +414,7 @@ Data <- merge(Data, PolClM, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
 table(Data$ADA,exclude=NaN)
 
-
+class(Data$ADA)
 #table(PolClM$Leg_Control, exclude = NaN)
 #table(PolClM$Gov_Party, exclude = NaN)
 #table(PolClM$State_Control, exclude = NaN)
@@ -418,7 +433,7 @@ table(Data$ADA,exclude=NaN)
 
                                         ## State's unemployment rate ##
 
-UNEMPR <- read_excel("UnempR.xlsx", sheet = "Sheet1")
+UNEMPR <- read_excel(paste0(wd$data,"UnempR.xlsx"), sheet = "Sheet1")
 sapply(UNEMPR, class)
 
 # Drop the columns I don't want, Statae name and State ABR are not included in the original Dataset, 
