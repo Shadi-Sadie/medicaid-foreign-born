@@ -46,6 +46,8 @@ for( i in 2011:2019)  {
         assign(paste0("ACS",i),ldf[[i]] )
 }
 
+## Variable name for relation has deferent name should be changed
+names(ACS2019)[names(ACS2019) == "RELSHIPP"] <- "RELP"
 ### Bind all the annual date in a single data set 
 
 ACS<-rbind(ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS2017,ACS2018,ACS2019)
@@ -62,9 +64,10 @@ classcol<-sapply(ACS, class)
 table(classcol)
 char_columns <- which(classcol=="character")   
 for (i in char_columns){
-        ACS[,i] <- as.factor(ACS[,i])
+        ACS[,i] <- as.numeric(ACS[,i])
 }
 
+## don't worry warninig is because b in data are changing to NA
 
 
 ## Upon checking all the variable and their value I noticed that  YOEP (Year of entry) for people borned in US is bottem coded instead of being NA , 
