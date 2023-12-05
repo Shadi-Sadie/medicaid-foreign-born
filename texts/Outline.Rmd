@@ -1155,7 +1155,7 @@ table8<-
           extralines = list("-^Controls x Foreign-born" = c("No", "No", "No", "Yes", "Yes")), 
           digits = 3,
          # adjustbox= 1.5,
-          tex= TRUE,
+         # tex= TRUE,
           se.row = TRUE, 
           depvar= FALSE,
           family = FALSE,
@@ -1473,4 +1473,755 @@ print(combined_plot_with_legend)
 * Result Confirms the reliability of the estimated treatment effect.
 
 * Figure 4 illustrates 2 × 2 DD estimates and associated weights.
+
+## 5.Appendix
+
+Here, I'm going to add some other graphs and table requested by committee member.
+
+### 5.1 Private insurance analysis 
+Other type on insurance to the analysis. 
+Fig A-in appendix will show the adjusted event study result for medicaid, uninsured rate, private insurance through employer and Insurance purchased directly from an insurance company 
+ 
+ #### 5.1.1 Adjusted
+ 
+
+```{r Ap-fig1, fig.height = 4, fig.width = 9}
+
+# Uninsured
+
+  # NTV
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+  # FB
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+# Medicaid
+
+Event3 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+# Employer
+
+Event5 = feols(HINS1 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event6 = feols(HINS1 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+# directly purchased
+
+Event7 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event8 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event2),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+Medicaid<-ggiplot(list('US-born' = Event3, 'Foreign-born' = Event4),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+#
+Employer<-ggiplot(list('US-born' = Event5, 'Foreign-born' = Event6),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+DirectPurch<-ggiplot(list('US-born' = Event7, 'Foreign-born' = Event8),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+figureA1<-ggarrange(Uninsured, Medicaid , Employer, DirectPurch, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA1,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+
+This suggest that medicaid expansion didn't affect insurance obtained through the employer/ or union.
+
+On the other hand, for the directly purchased insurance there is a big gap difference between the directly purchased insurance,between foreign-born and native.
+foreign-born were more likely to reduce their directly purchased insurance because of medicaid expansion.
+
+however for foreign-born there seems to be a difference in pretrend for some of late adopter
+
+#### 5.1.2 Unadjasuted
+I want to check if I used the unadjusted speicifaction how would this result change.
+
+```{r Ap-fig2, fig.height = 4, fig.width = 9}
+
+# Uninsured
+
+  # NTV
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+  # FB
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+# Medicaid
+
+Event3 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+# Employer
+
+Event5 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event6 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+# directly purchased
+
+Event7 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event8 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event2),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+Medicaid<-ggiplot(list('US-born' = Event3, 'Foreign-born' = Event4),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
+#
+Employer<-ggiplot(list('US-born' = Event5, 'Foreign-born' = Event6),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+DirectPurch<-ggiplot(list('US-born' = Event7, 'Foreign-born' = Event8),
+                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
+                           scale_color_manual(values=c('black','#B64074'))
+
+figureA2<-ggarrange(Uninsured, Medicaid , Employer, DirectPurch, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA2,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+I think the result of the sun-abraham might be different for these two final graph here, I would like to check that:
+
+
+#### 5.1.3 Sun & Abrham vs Event Study
+
+This graph shows the result of event study and Sun& Abraham IW estimator.
+
+```{r sun&abr-ap3, fig.height = 8, fig.width = 8}
+
+
+#################################################################
+## Event study for whole sample with control for the whole population  vs  Sun & Abraham 
+#################################################################
+
+
+Event7 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event8 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+
+Sun7= feols(HINS2 ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfN)
+
+
+Sun8= feols(HINS2 ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfF)
+
+
+Plota<-ggiplot(
+        list("Event-study NTV" = Event7,"Event-study FB" = Event8, "Sun & Abraham NTV" = Sun7, "Sun & Abraham FB" = Sun8 ),
+        main = 'Directly Purchased',
+        xlab = 'Time to treatment',
+        ref.line = -1 ,
+         theme  = theme_minimal() +
+                  theme(legend.position = "none",
+                        plot.title = element_text(hjust = 0.5, size=11)
+                       )
+) +
+                 scale_color_manual(values=c('black','#B64074',"red","blue"))
+
+
+
+
+
+```
+
+I graphed all Sun and Event as well as FB and native in one graph the result
+wasn't that differtent between the two, however the sd for tge fb got super big, I wonder why that is, what ever that is I think that is causing a significant problem.
+
+
+Now I want to take a look at the private insurance through employer:
+
+
+```{r sun&abr-ap4, fig.height = 8, fig.width = 8}
+
+
+#################################################################
+## Event study for whole sample with control for the whole population  vs  Sun & Abraham 
+#################################################################
+
+
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+
+Sun7= feols(HINS1 ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfN)
+
+
+Sun8= feols(HINS1 ~ sunab(year_treated, YEAR) +.[controlwof] |
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfF)
+
+
+ap3<-ggiplot(
+        list("Event-study NTV" = Event7,"Event-study FB" = Event8, "Sun & Abraham NTV" = Sun7, "Sun & Abraham FB" = Sun8 ),
+        main = 'Directly Purchased',
+        xlab = 'Time to treatment',
+        ref.line = -1 ,
+         theme  = theme_minimal() +
+                  theme(legend.position = "none",
+                        plot.title = element_text(hjust = 0.5, size=11)
+                       )
+) +
+                 scale_color_manual(values=c('black','#B64074',"red","blue"))
+
+
+
+
+
+```
+it is the same wiht the same issue of having very big sd for FB before the treatment
+
+I'd also like to take a look at the adjusted graphs before moving to find out the reason for the big sd of the pre treatment fb
+
+```{r sun&abr, fig.height = 8, fig.width = 8}
+
+
+#################################################################
+## Event study for whole sample with control for the whole population  vs  Sun & Abraham 
+#################################################################
+
+
+Event7 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|              
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+Event8 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = Forgn)
+
+
+
+
+Sun7= feols(HINS2 ~ sunab(year_treated, YEAR) +.[controlwof] +ADA+ IPC+ UnempR+.[controlwof]|   
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfN)
+
+
+Sun8= feols(HINS2 ~ sunab(year_treated, YEAR) +.[controlwof] +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|  
+                       ST + YEAR,
+                        vcov = "hetero" ,
+                          weights = ~PWGTP,
+                             data = dfF)
+
+
+ap5<-ggiplot(
+        list("Event-study NTV" = Event7,"Event-study FB" = Event8, "Sun & Abraham NTV" = Sun7, "Sun & Abraham FB" = Sun8 ),
+        main = 'Directly Purchased',
+        xlab = 'Time to treatment',
+        ref.line = -1 ,
+         theme  = theme_minimal() +
+                  theme(legend.position = "none",
+                        plot.title = element_text(hjust = 0.5, size=11)
+                       )
+) +
+                 scale_color_manual(values=c('black','#B64074',"red","blue"))
+
+
+
+
+
+```
+
+adjusted did not differ that much with unadjusted.
+
+On the isuse of having larger confidence interval prior the expansion, there are couple of reason that can be investigated:
+
+* Small Sample Size
+* High variability in the data
+* Greater Standard Deviation
+* Heterogeneity in the Population:
+
+### 5.2 Look at subgroup of Foreig-born 
+
+
+
+
+
+
+#### 5.2.1 FB (Citizen vs Immigrants vs Native)
+
+Let's first create a subsample for foreign born, I decided to put the Citizen born abroad in Foreign-born CIT category as it was before
+
+```{r }
+
+# Foreig-born
+
+dfF
+
+FBNC<- dfF[dfF$CIT == "Non-citizen", ]
+#FBC2<-  dfF[dfF$CIT == "Naturalized-citizen", ]
+FBC<- dfF[dfF$CIT %in%  c("Naturalized-citizen","US-citizen Born abroad "), ]
+#FBC3<-  dfF[dfF$CIT == "US-citizen Born abroad ", ]
+
+
+# and Native
+
+# or 
+
+  # considering US-citizen Born abroad as native
+  # 
+
+# dfNa<-df[df$CIT %in%  c("Born in US states","US-citizen Born abroad "), ]
+
+
+```
+
+
+Now which one of the even studies do I want to look at?? I say let's do all 4 with no adjustment
+
+```{r Ap-fig4, fig.height = 4, fig.width = 9}
+
+# Uninsured
+
+  # NTV : No FB
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+  # FB Citizen including abroad and naturlaized
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBC)
+  # FB non citizen
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBNC)
+
+
+
+# Medicaid
+
+
+  # NTV : No FB
+ 
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # FB Citizen including abroad and naturlaized
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBC)
+  # FB Non citizen
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBNC)
+
+
+# Employer
+
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # FB Citizen including abroad and naturlaized
+
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBC)
+  # FB Non citizen
+
+Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBNC)
+
+# directly purchased
+
+Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # FB Citizen including abroad and naturlaized
+
+Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBC)
+  # FB Non citizen
+
+Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+             weights = ~PWGTP,
+               data = FBNC)
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1, 'FB-Citizen' = Event2, 'FB-Non-Citizen' = Event3),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+#+
+ # scale_color_manual(values=c('black','#B64074', "blue","green"))
+Medicaid<- ggiplot(list('US-born' = Event4, 'FB-Citizen' = Event5, 'FB-Non-Citizen' = Event6),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+Employer<-ggiplot(list('US-born' = Event7, 'FB-Citizen' = Event8, 'FB-Non-Citizen' = Event9),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+DirPurchs<- ggiplot(list('US-born' = Event10, 'FB-Citizen' = Event11, 'FB-Non-Citizen' = Event12),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074',"#1ABC9C" ))
+
+# other color : "#61D04F", "#457B9D", "#F5c710"
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+figureA5<-ggarrange(Uninsured, Medicaid , Employer, DirPurchs, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA5,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+
+
+
+#### 5.2.2 FB Mexican vs FB Non Mexican vs Native
+
+here we devide the Foreign born into two-groups of Mexican FB and Other FB, let's see how it looks like
+
+```{r }
+
+# Foreig-born
+
+
+# All foreign born sample is  dfF
+
+# Mexican FB 
+dFBMex<- dfF[dfF$POBP == 303, ]
+
+# Non Mexican FB
+dFBO <- dfF[dfF$POBP != 303, ]
+
+
+
+
+```
+
+
+```{r Ap-fig5, fig.height = 4, fig.width = 9}
+
+# Uninsured
+
+  # NTV 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+  # Mexican FB 
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+
+# Medicaid
+
+
+  # NTV : No FB
+ 
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # Mexican FB 
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+# Employer
+
+  # Native
+
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # Mexican FB 
+
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+# directly purchased
+
+Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = dfN)
+
+  # Mexican FB 
+
+Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+             weights = ~PWGTP,
+               data = dFBO)
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1,"Mexican FB"  = Event2, 'Non-Mexican FB' = Event3),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+#+
+ # scale_color_manual(values=c('black','#B64074', "blue","green"))
+Medicaid<- ggiplot(list('US-born' = Event4, "Mexican FB" = Event5, 'Non-Mexican FB' = Event6),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+Employer<-ggiplot(list('US-born' = Event7, "Mexican FB" = Event8, "Non-Mexican FB" = Event9),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+DirPurchs<- ggiplot(list('US-born' = Event10, "Mexican FB" = Event11, 'Non-Mexican FB' = Event12),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074',"#1ABC9C" ))
+
+# other color : "#61D04F", "#457B9D", "#F5c710"
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+figureA6<-ggarrange(Uninsured, Medicaid , Employer, DirPurchs, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA6,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+
+#### 5.2.3 FB Undocumented vs FB Documented vs Native
+
+
+
 
