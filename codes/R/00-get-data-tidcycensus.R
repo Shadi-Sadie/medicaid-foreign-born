@@ -25,12 +25,14 @@ census_api_key("94b2e4e0fbd4ea5b12065dabc6c8b7292a615248", install = TRUE)
 
 ldf <- list() # creates a list
 
-for( i in 2009:2019)  {                            
+for( i in 2011:2019)  {                            
         ldf[[i]] <- get_pums(
                 variables = c ("REGION","AGEP", "CIT" , "ENG" , "FER","HINS1", 
                                "HINS2", "HINS3" , "HINS4","HINS5", "HINS6", "HINS7",
                                "MAR", "SCHL", "SEX", "YOEP","DIS","HICOV", "ESR", 
-                                "NATIVITY","HISP", "POVPIP", "RAC1P", "TYPE","LANP","LANX","POBP","PUMA"),
+                                "NATIVITY","HISP", "POVPIP", "RAC1P", "TYPE","LANP","LANX","POBP","PUMA",
+                               "COW","MIL","OCCP","SCH","HHT","RELP"
+                               ),
                 state = "all",
                 year = i, 
                 variables_filter = list(
@@ -46,7 +48,7 @@ for( i in 2009:2019)  {
 
 ### Bind all the annual date in a single data set 
 
-ACS<-rbind(ACS2009,ACS2010,ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS2017,ACS2018,ACS2019)
+ACS<-rbind(ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS2017,ACS2018,ACS2019)
 
 ### Change the data fromat from tbl-df to data frame 
 
@@ -54,13 +56,13 @@ ACS<-rbind(ACS2009,ACS2010,ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS20
 ACS=as.data.frame(ACS)
 
 
-#### Fixing the charachter to integer 
+#### Fixing the charachter to factro 
 
 classcol<-sapply(ACS, class)
 table(classcol)
 char_columns <- which(classcol=="character")   
 for (i in char_columns){
-        ACS[,i] <- as.numeric(ACS[,i])
+        ACS[,i] <- as.factor(ACS[,i])
 }
 
 
@@ -70,8 +72,8 @@ for (i in char_columns){
 
 # I can do it either in this way  
 
-ACS$YOEP<-ifelse(ACS$YEAR==2009 & ACS$YOEP==1918,NA,ACS$YOEP) #
-ACS$YOEP<-ifelse(ACS$YEAR==2010 & ACS$YOEP==1918,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2009 & ACS$YOEP==1918,NA,ACS$YOEP) #
+#ACS$YOEP<-ifelse(ACS$YEAR==2010 & ACS$YOEP==1918,NA,ACS$YOEP) # 
 ACS$YOEP<-ifelse(ACS$YEAR==2011 & ACS$YOEP==1918,NA,ACS$YOEP) # 
 ACS$YOEP<-ifelse(ACS$YEAR==2012 & ACS$YOEP==1920,NA,ACS$YOEP) # 
 ACS$YOEP<-ifelse(ACS$YEAR==2013 & ACS$YOEP==1920,NA,ACS$YOEP) # 
