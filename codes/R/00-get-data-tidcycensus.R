@@ -48,7 +48,7 @@ for( i in 2011:2019)  {
 
 ## Variable name for relation has deferent name should be changed
 names(ACS2019)[names(ACS2019) == "RELSHIPP"] <- "RELP"
-### Bind all the annual date in a single data set 
+### Bind all the anndata:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAbElEQVR4Xs2RQQrAMAgEfZgf7W9LAguybljJpR3wEse5JOL3ZObDb4x1loDhHbBOFU6i2Ddnw2KNiXcdAXygJlwE8OFVBHDgKrLgSInN4WMe9iXiqIVsTMjH7z/GhNTEibOxQswcYIWYOR/zAjBJfiXh3jZ6AAAAAElFTkSuQmCCual date in a single data set 
 
 ACS<-rbind(ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS2017,ACS2018,ACS2019)
 
@@ -63,10 +63,11 @@ ACS=as.data.frame(ACS)
 classcol<-sapply(ACS, class)
 table(classcol)
 char_columns <- which(classcol=="character")   
-for (i in char_columns){
-        ACS[,i] <- as.numeric(ACS[,i])
+for (i in char_columns) {
+        if (colnames(ACS)[i] != "SERIALNO") {
+                ACS[, i] <- as.numeric(ACS[, i])
+        }
 }
-
 ## don't worry warninig is because b in data are changing to NA
 
 
