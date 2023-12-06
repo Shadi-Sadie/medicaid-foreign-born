@@ -477,6 +477,11 @@ Data$LTINU<-ordered(Data$LTINU, labels=c("<25%", ">25%"))
 
 Data<-mutate(Data, UNINS=1-HICOV)
 
+### Create variable ttot for vent study later
+### 
+### 
+
+Data$ttot<-ifelse(is.na(Data$ExpansionY), 0, Data$YEAR - Data$ExpansionY)
 
 
 ### Creating UNDOC variable 
