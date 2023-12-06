@@ -98,7 +98,7 @@ ACS$YOEP<-ifelse(ACS$YEAR==2019 & ACS$YOEP==1928,NA,ACS$YOEP) #
 
 
 
-write.csv(RAW, file = paste0(wd$data,"RAWACS.csv"), row.names = FALSE)
+write.csv(Data, file = paste0(wd$data,"RAWACS.csv"), row.names = FALSE)
 
 
-save(RAW, file =paste0(wd$data,"RAWACS.RData"))
+save(Data, file =paste0(wd$data,"RAWACS.RData"))
