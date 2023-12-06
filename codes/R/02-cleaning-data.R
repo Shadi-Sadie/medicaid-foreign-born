@@ -248,7 +248,10 @@ var_label(Data$RACE1) <- "Race and Ethnicity"
 Data$ACA <- ifelse(Data$YEAR < 2014,1, 2)
 Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
 
-table(Data$ACA)
+# Create a variable ACA numeric binary
+Data$PostACA<- ifelse(Data$YEAR < 2014,0, 1)
+
+table(Data$PostACA)
 #####  expansion status
 #2015 Pennsylvania,  Indiana ,Alaska
 #2016, Montana, Louisiana
@@ -291,7 +294,12 @@ Data$ExpansionY <- ifelse(Data$ExpansionY == 0, NA, Data$ExpansionY)
 # the expansion treatment is not dynamic it only shows if the satet is among expansion or non expansion states
 # Thus I need to create another variable called treatment that is dynamice
 Data$treat<-ifelse(Data$YEAR>=Data$ExpansionY & !is.na(Data$ExpansionY) , 1,0)
-
+#Change adoptet to expansion values
+b<-Data$expansion
+levels(b) <- c("Non-expansion","Expansion")
+class(b)
+b<-as.factor(b)
+Data$expansion<-b
 
 #####  percentage of life spent in the US
 
@@ -331,7 +339,8 @@ Data$GEOR[Data$POBP %in% c(060, 130, 500:554)] <- 13 #Oceania and at Sea
 Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa", "Latin America","Northern Americ", "South  & Centeral Asia","Eastern Asia","South eaastern Asia",
                                           "Western Asia","Eastern Europe","Northen Europe","Southern Europe","Western Europe","Oceania and at Sea"))
 var_label(Data$GEOR) <- "Geographic region"
-
+Data$GEOR <- factor(ifelse(Data$NATIVITY == "US-born", "United States", as.character(Data$GEOR)))
+table(Data$GEOR,exclude = NULL)
 # TO DO : maybe put cenetal Asia in another group since thera are not much observation in that group 
 table(Data$ExpansionY, exclude = NULL)
 
@@ -366,35 +375,22 @@ table(Data$CULRG, exclude = NULL)
 
 # Read an Excel file named "IPC.xlsx" from the working directory, 
 # where the sheet named "Sheet1" will be read.
+# This is going to be the all IPC score
+IPCINDX<-read.csv(paste0(wd$data,"IPC_Final.csv"), header = TRUE, sep ="," , fill = TRUE)
+IPCINDX <- IPCINDX[, c("state", "year", "annual_score")] #subset
 
-IPC <- read_excel(paste0(wd$data,"IPC.xlsx"), sheet = "Sheet1")
+colnames(IPCINDX) <- c("StateN", "YEAR", "IPCINDX")
+sapply(IPCINDX, class)
+Data <- merge(Data, IPCINDX, by = c("StateN", "YEAR"), all.x = TRUE)
 
-# Change the format of data to make it easier to append 
-IPC <- pivot_longer(IPC, 
-                                cols = c(`2009`,`2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), 
-                                names_to = "Year", 
-                                values_to = "IPCINDX")
-#cheking the class of the variable in the dataset and change their class if needed
+# This is going to be IPC score without including Medicaid score 
+IPC <- read.csv(paste0(wd$data,"IPC.csv"), header = TRUE, sep ="," , fill = TRUE)
+#IPC <- read_excel(paste0(wd$data,"IPC.csv"), sheet = "Sheet1")
+#
 sapply(IPC, class)
+colnames(IPC) <- c("StateN", "YEAR", "IPC")
+Data <- merge(Data, IPC, by = c("StateN", "YEAR"), all.x = TRUE)
 
-#check the values of IPCINDX and Year
-#IPCIND and year are character. I need to change them to numeric
-# for IPCIND there is a negative sign behind some of the valuses, when converting to numeric because these value 
-# are non numeric value during the conversion values will convert to NA. The reason is that negative sign used here is not the regular ASCII hyphen "-" character. to fix this error
-# I copied the same symbol from my data, and replace it with the ASCII hyphen "-" and then did the conversion.
-IPC$IPCINDX <- as.numeric(gsub("−", "-", IPC$IPCINDX))
-IPC$Year<- as.numeric(IPC$Year)
-# droping the extra variables in this dataset and change the col names to match the names in my Dataset that I want to merge this data with
-
-#there is noting to drop
-#chaning the names
-colnames(IPC) <- c("ST", "StateN", "YEAR", "IPCINDX")
-
-## Now, I try to merge my data 
-
-Data <- merge(Data, IPC, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
-
-table(Data$IPCINDX,Data$YEAR,exclude=NaN)
 
                                             ## Political climate ##
 
@@ -461,37 +457,40 @@ table(UNEMPR$YEAR)
 
 Data <- merge(Data, UNEMPR, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
-                                                                #### Removing the extra variable  ####
+
+                                     ### ADDING FURTHER CLEANING WHICH was added later on to cleaning       ### 
+ 
+
+Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
+table(Data$NATIVITY)
+table(Data$ForeginBorn)
+names(Data)[names(Data) == "Foregin-born"] <- "ForeginBorn"
+colnames(Data)
+
+
+# Make a dummy for lifetime in US this would be based on Endeshaw et al. (2018)
+
+Data$LTINU<-ifelse(Data$PLIU>25,1,0)
+Data$LTINU<-ordered(Data$LTINU, labels=c("<25%", ">25%"))
+
+### Should calculate uninsured rather than insured therefore
+
+
+Data<-mutate(Data, UNINS=1-HICOV)
 
 
 
-Data <- subset(Data, select = -c(SCHL, ESR, RAC1P,LANP,LANX, MAR,HISP,TYPE ))
+
+                                                #### Exporting the data set into the new data sample both CSV and R ####
 
 
 
-colnames(Data) # Checking the names of all variable
-
-table(Data$StateN,  exclude = NaN)
-
-                                                #### Exporting the data set into the new data sample both CSV and Stata ####
+write.csv(Data, file = paste0(wd$data,"CLNACS.csv"), row.names = FALSE)
 
 
-
- write.csv(Data, file = "CLNACS.csv", row.names = FALSE)
-
-require(foreign)
-write.dta(Data, "CLNACS.dta")
+save(Data, file =paste0(wd$data,"CLNACS.RData"))
 
 
-# Divide dataset two to subset based on the nativity 
-
-NATV<- Data[Data$NATIVITY == 1, ]
-Forgn<- Data[Data$NATIVITY == 2, ]
-
-NATV <- subset(NATV, select = -c(ENG, YOEP, YLIU,PLIU,GEOR, CULRG))
-
-write.dta(NATV, "NATV.dta")
-write.dta(Forgn, "Forgn.dta")
 
 
 
