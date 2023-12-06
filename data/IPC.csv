@@ -1,0 +1,459 @@
+state,year,annual_score
+Alabama,2011,-5
+Alabama,2012,-6
+Alabama,2013,-6
+Alabama,2014,-6
+Alabama,2015,-5
+Alabama,2016,-5
+Alabama,2017,-6
+Alabama,2018,-5
+Alabama,2019,-5
+Alaska,2011,0
+Alaska,2012,-1
+Alaska,2013,-1
+Alaska,2014,-1
+Alaska,2015,0
+Alaska,2016,0
+Alaska,2017,-1
+Alaska,2018,0
+Alaska,2019,-2
+Arizona,2011,-3
+Arizona,2012,-3
+Arizona,2013,-3
+Arizona,2014,-3
+Arizona,2015,-4
+Arizona,2016,-4
+Arizona,2017,-5
+Arizona,2018,-4
+Arizona,2019,-4
+Arkansas,2011,0
+Arkansas,2012,0
+Arkansas,2013,0
+Arkansas,2014,0
+Arkansas,2015,-1
+Arkansas,2016,-1
+Arkansas,2017,-2
+Arkansas,2018,-1
+Arkansas,2019,-1
+California,2011,1
+California,2012,1
+California,2013,4
+California,2014,4
+California,2015,4
+California,2016,4
+California,2017,3
+California,2018,3
+California,2019,3
+Colorado,2011,-2
+Colorado,2012,-2
+Colorado,2013,0
+Colorado,2014,0
+Colorado,2015,0
+Colorado,2016,0
+Colorado,2017,-1
+Colorado,2018,0
+Colorado,2019,0
+Connecticut,2011,-2
+Connecticut,2012,-3
+Connecticut,2013,0
+Connecticut,2014,0
+Connecticut,2015,1
+Connecticut,2016,1
+Connecticut,2017,0
+Connecticut,2018,1
+Connecticut,2019,1
+Delaware,2011,-3
+Delaware,2012,-3
+Delaware,2013,-3
+Delaware,2014,-3
+Delaware,2015,0
+Delaware,2016,0
+Delaware,2017,-1
+Delaware,2018,0
+Delaware,2019,0
+DC,2011,-1
+DC,2012,-2
+DC,2013,0
+DC,2014,0
+DC,2015,0
+DC,2016,0
+DC,2017,0
+DC,2018,1
+DC,2019,1
+Florida,2011,-3
+Florida,2012,-3
+Florida,2013,-3
+Florida,2014,-3
+Florida,2015,-2
+Florida,2016,-2
+Florida,2017,-3
+Florida,2018,-2
+Florida,2019,-3
+Georgia,2011,-4
+Georgia,2012,-6
+Georgia,2013,-6
+Georgia,2014,-6
+Georgia,2015,-5
+Georgia,2016,-5
+Georgia,2017,-6
+Georgia,2018,-5
+Georgia,2019,-5
+Hawaii,2011,0
+Hawaii,2012,0
+Hawaii,2013,0
+Hawaii,2014,0
+Hawaii,2015,1
+Hawaii,2016,1
+Hawaii,2017,0
+Hawaii,2018,1
+Hawaii,2019,1
+Idaho,2011,-2
+Idaho,2012,-2
+Idaho,2013,-2
+Idaho,2014,-2
+Idaho,2015,-1
+Idaho,2016,-1
+Idaho,2017,-2
+Idaho,2018,-3
+Idaho,2019,-3
+Illinois,2011,-1
+Illinois,2012,0
+Illinois,2013,2
+Illinois,2014,2
+Illinois,2015,2
+Illinois,2016,2
+Illinois,2017,2
+Illinois,2018,3
+Illinois,2019,1
+Indiana,2011,-5
+Indiana,2012,-5
+Indiana,2013,-5
+Indiana,2014,-5
+Indiana,2015,-4
+Indiana,2016,-4
+Indiana,2017,-5
+Indiana,2018,-4
+Indiana,2019,-4
+Iowa,2011,-2
+Iowa,2012,-3
+Iowa,2013,-3
+Iowa,2014,-3
+Iowa,2015,-2
+Iowa,2016,-2
+Iowa,2017,-3
+Iowa,2018,-3
+Iowa,2019,-3
+Kansas,2011,-2
+Kansas,2012,-2
+Kansas,2013,-3
+Kansas,2014,-3
+Kansas,2015,-2
+Kansas,2016,-2
+Kansas,2017,-3
+Kansas,2018,-2
+Kansas,2019,-2
+Kentucky,2011,1
+Kentucky,2012,1
+Kentucky,2013,1
+Kentucky,2014,1
+Kentucky,2015,1
+Kentucky,2016,1
+Kentucky,2017,-1
+Kentucky,2018,0
+Kentucky,2019,1
+Louisiana,2011,-2
+Louisiana,2012,-2
+Louisiana,2013,-2
+Louisiana,2014,-2
+Louisiana,2015,-1
+Louisiana,2016,-3
+Louisiana,2017,-4
+Louisiana,2018,-3
+Louisiana,2019,-3
+Maine,2011,0
+Maine,2012,-1
+Maine,2013,-1
+Maine,2014,-1
+Maine,2015,0
+Maine,2016,0
+Maine,2017,-1
+Maine,2018,0
+Maine,2019,-2
+Maryland,2011,-2
+Maryland,2012,-2
+Maryland,2013,-1
+Maryland,2014,-1
+Maryland,2015,0
+Maryland,2016,0
+Maryland,2017,-1
+Maryland,2018,0
+Maryland,2019,0
+Massachusetts,2011,-3
+Massachusetts,2012,-2
+Massachusetts,2013,-2
+Massachusetts,2014,-2
+Massachusetts,2015,-2
+Massachusetts,2016,-2
+Massachusetts,2017,-2
+Massachusetts,2018,-2
+Massachusetts,2019,-2
+Michigan,2011,-1
+Michigan,2012,-2
+Michigan,2013,-2
+Michigan,2014,-2
+Michigan,2015,-1
+Michigan,2016,-1
+Michigan,2017,-4
+Michigan,2018,-3
+Michigan,2019,-3
+Minnesota,2011,-1
+Minnesota,2012,-2
+Minnesota,2013,-2
+Minnesota,2014,-2
+Minnesota,2015,-1
+Minnesota,2016,-1
+Minnesota,2017,-2
+Minnesota,2018,-3
+Minnesota,2019,-3
+Mississippi,2011,-2
+Mississippi,2012,-2
+Mississippi,2013,-3
+Mississippi,2014,-3
+Mississippi,2015,-2
+Mississippi,2016,-2
+Mississippi,2017,-4
+Mississippi,2018,-3
+Mississippi,2019,-3
+Missouri,2011,-2
+Missouri,2012,-2
+Missouri,2013,-2
+Missouri,2014,-2
+Missouri,2015,-1
+Missouri,2016,-1
+Missouri,2017,-2
+Missouri,2018,-1
+Missouri,2019,-3
+Montana,2011,-1
+Montana,2012,-1
+Montana,2013,-1
+Montana,2014,-1
+Montana,2015,0
+Montana,2016,0
+Montana,2017,-1
+Montana,2018,0
+Montana,2019,-2
+Nebraska,2011,-2
+Nebraska,2012,-2
+Nebraska,2013,-4
+Nebraska,2014,-4
+Nebraska,2015,-3
+Nebraska,2016,-3
+Nebraska,2017,-4
+Nebraska,2018,-3
+Nebraska,2019,-3
+Nevada,2011,0
+Nevada,2012,0
+Nevada,2013,2
+Nevada,2014,2
+Nevada,2015,1
+Nevada,2016,1
+Nevada,2017,0
+Nevada,2018,1
+Nevada,2019,1
+New Hampshire,2011,0
+New Hampshire,2012,-1
+New Hampshire,2013,-1
+New Hampshire,2014,-1
+New Hampshire,2015,0
+New Hampshire,2016,0
+New Hampshire,2017,-3
+New Hampshire,2018,-2
+New Hampshire,2019,-2
+New Jersey,2011,-1
+New Jersey,2012,-2
+New Jersey,2013,-2
+New Jersey,2014,-2
+New Jersey,2015,-1
+New Jersey,2016,-1
+New Jersey,2017,-2
+New Jersey,2018,-1
+New Jersey,2019,1
+New Mexico,2011,-1
+New Mexico,2012,-1
+New Mexico,2013,-1
+New Mexico,2014,-1
+New Mexico,2015,-1
+New Mexico,2016,-1
+New Mexico,2017,-2
+New Mexico,2018,-1
+New Mexico,2019,0
+New York,2011,-2
+New York,2012,-2
+New York,2013,-2
+New York,2014,-2
+New York,2015,-1
+New York,2016,-1
+New York,2017,-3
+New York,2018,-2
+New York,2019,1
+North Carolina,2011,-2
+North Carolina,2012,-2
+North Carolina,2013,-2
+North Carolina,2014,-2
+North Carolina,2015,-2
+North Carolina,2017,-3
+North Carolina,2018,-3
+North Carolina,2019,-3
+North Dakota,2011,0
+North Dakota,2012,-1
+North Dakota,2013,-1
+North Dakota,2014,-1
+North Dakota,2015,0
+North Dakota,2016,0
+North Dakota,2017,-1
+North Dakota,2018,-2
+North Dakota,2019,-2
+Ohio,2011,-2
+Ohio,2012,-3
+Ohio,2013,-3
+Ohio,2014,-3
+Ohio,2015,-2
+Ohio,2016,-2
+Ohio,2017,-3
+Ohio,2018,-2
+Ohio,2019,-2
+Oklahoma,2011,-2
+Oklahoma,2012,-2
+Oklahoma,2013,-2
+Oklahoma,2014,-2
+Oklahoma,2015,-1
+Oklahoma,2016,-1
+Oklahoma,2017,-2
+Oklahoma,2018,-1
+Oklahoma,2019,-1
+Oregon,2011,1
+Oregon,2012,1
+Oregon,2013,3
+Oregon,2014,1
+Oregon,2015,2
+Oregon,2016,2
+Oregon,2017,1
+Oregon,2018,2
+Oregon,2019,4
+Pennsylvania,2011,-1
+Pennsylvania,2012,-2
+Pennsylvania,2013,-2
+Pennsylvania,2014,-2
+Pennsylvania,2015,-1
+Pennsylvania,2016,-1
+Pennsylvania,2017,-2
+Pennsylvania,2018,-1
+Pennsylvania,2019,-3
+Rhode Island,2011,-2
+Rhode Island,2012,-2
+Rhode Island,2013,-2
+Rhode Island,2014,-1
+Rhode Island,2015,0
+Rhode Island,2016,0
+Rhode Island,2017,1
+Rhode Island,2018,-1
+Rhode Island,2019,-1
+South Carolina,2011,-4
+South Carolina,2012,-4
+South Carolina,2013,-4
+South Carolina,2014,-4
+South Carolina,2015,-3
+South Carolina,2016,-3
+South Carolina,2017,-4
+South Carolina,2018,-5
+South Carolina,2019,-5
+South Dakota,2011,-1
+South Dakota,2012,-3
+South Dakota,2013,-3
+South Dakota,2014,-3
+South Dakota,2015,-2
+South Dakota,2016,-2
+South Dakota,2017,-3
+South Dakota,2018,-2
+South Dakota,2019,-2
+Tennessee,2011,-2
+Tennessee,2012,-3
+Tennessee,2013,-3
+Tennessee,2014,-3
+Tennessee,2015,-2
+Tennessee,2016,-2
+Tennessee,2017,-3
+Tennessee,2018,-3
+Tennessee,2019,-3
+Texas,2011,-1
+Texas,2012,-1
+Texas,2013,-1
+Texas,2014,-2
+Texas,2015,-1
+Texas,2016,-2
+Texas,2017,-3
+Texas,2018,-3
+Texas,2019,-3
+Utah,2011,-1
+Utah,2012,-1
+Utah,2013,-3
+Utah,2014,-3
+Utah,2015,-2
+Utah,2016,-2
+Utah,2017,-3
+Utah,2018,-2
+Utah,2019,-2
+Vermont,2011,-1
+Vermont,2012,-2
+Vermont,2013,-1
+Vermont,2014,0
+Vermont,2015,1
+Vermont,2016,1
+Vermont,2017,0
+Vermont,2018,1
+Vermont,2019,1
+Virginia,2011,0
+Virginia,2012,-1
+Virginia,2013,-1
+Virginia,2014,-1
+Virginia,2015,0
+Virginia,2016,0
+Virginia,2017,-1
+Virginia,2018,-2
+Virginia,2019,-2
+Washington,2011,1
+Washington,2012,1
+Washington,2013,1
+Washington,2014,1
+Washington,2015,2
+Washington,2016,2
+Washington,2017,1
+Washington,2018,0
+Washington,2019,1
+West Virginia,2011,-2
+West Virginia,2012,-4
+West Virginia,2013,-4
+West Virginia,2014,-4
+West Virginia,2015,-3
+West Virginia,2016,-3
+West Virginia,2017,-4
+West Virginia,2018,-3
+West Virginia,2019,-3
+Wisconsin,2011,-2
+Wisconsin,2012,-2
+Wisconsin,2013,-3
+Wisconsin,2014,-3
+Wisconsin,2015,-2
+Wisconsin,2016,-2
+Wisconsin,2017,-3
+Wisconsin,2018,-2
+Wisconsin,2019,-2
+Wyoming,2011,-4
+Wyoming,2012,-4
+Wyoming,2013,-4
+Wyoming,2014,-4
+Wyoming,2015,-3
+Wyoming,2016,-3
+Wyoming,2017,-4
+Wyoming,2018,-3
+Wyoming,2019,-3
