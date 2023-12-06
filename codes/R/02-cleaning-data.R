@@ -64,13 +64,13 @@ Data$NATIVITY<-replace(Data$NATIVITY,Data$CIT==3,2)
 
 
 # additionaly I want my cit to have lable
-Data$CIT<- ordered(Data$CIT, labels = c("Born in US states", "Born in US Territories","US-citizen Born abroad ","Naturalized-citizen", "Non-citizen" )) # labeling the values 
+Data$CIT<- ordered(Data$CIT, labels = c("Born in US states", "Born in US Territories","US-citizen Born Abroad","Naturalized-citizen", "Non-citizen" )) # labeling the values 
 var_label(Data$CIT) <- "Citizenship Status"
 
 table(Data$NATIVITY)
 #Similarly I want to have lable for nativity
 
-Data$NATIVITY<- ordered(Data$NATIVITY, labels = c("US-born", " Foregin-born")) # labeling the values 
+Data$NATIVITY<- ordered(Data$NATIVITY, labels = c("US-born", "Foregin-born")) # labeling the values 
 var_label(Data$NATIVITY) <- "Forign-born Status"
 
 
@@ -464,8 +464,7 @@ Data <- merge(Data, UNEMPR, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
 table(Data$NATIVITY)
 table(Data$ForeginBorn)
-names(Data)[names(Data) == "Foregin-born"] <- "ForeginBorn"
-colnames(Data)
+
 
 
 # Make a dummy for lifetime in US this would be based on Endeshaw et al. (2018)
@@ -479,6 +478,52 @@ Data$LTINU<-ordered(Data$LTINU, labels=c("<25%", ">25%"))
 Data<-mutate(Data, UNINS=1-HICOV)
 
 
+
+### Creating UNDOC variable 
+
+Data$UNDOC <- 1
+
+# Set UNDOC to 0 based on various conditions:
+
+# The individual is a citizen.
+Data$UNDOC[Data$CIT %in% c("Born in US states", "Born in US Territories", "US-citizen Born Abroad", "Naturalized-citizen")] <- 0
+# The individual arrived before 1980.
+Data$UNDOC[Data$YOEP < 1980] <- 0
+# The individual was born in Cuba (as practically all Cuban immigrants were granted refugee status before 2017) 
+Data$UNDOC[Data$POBP == 327] <- 0
+# The individual is a veteran or is currently in the Armed Forces.
+Data$UNDOC[Data$ESR %in% c(4,5) ] <- 0
+Data$UNDOC[Data$MIL %in% c(1,2,3) ] <- 0
+#e. The individual works in the government sector.
+Data$UNDOC[Data$COW %in% c(3,4,5) ] <- 0
+# The individual's occupation requires some form of licensing based on borjas (such as physicians, registered nurses, air traffic controllers, and lawyers)
+Data$UNDOC[Data$OCCP %in% c (10, 120, 230, 350, 410, 800, 810, 820, 830, 845, 850, 860, 900, 910,
+                             930, 940, 2100, 2105, 2145, 2170, 2180, 2205, 2300,
+                             2310, 2320, 2330, 2350, 2360, 2400, 2435, 2440, 2545, 2555, 
+                             3000, 3010, 3030, 3040, 3050, 3090, 3100, 3110, 3120, 3140,
+                             3150, 3160, 3200, 3210, 3220, 3230, 3245, 3250, 3255, 3256, 
+                             3258, 3261, 3270, 3300, 3310, 3321, 3322, 3323, 3324, 3330,
+                             3401, 3402, 3421, 3422, 3423, 3424, 3430, 3500, 3515, 3520,
+                             3545, 3550, 3700, 3710, 3720, 3725, 3740, 3750, 3801, 3802, 
+                             3820, 3870, 3910, 3945, 3946, 3946, 6010, 6660, 9030, 9040, 9050, 
+                             9121, 9122, 9130, 9141, 9142, 9150, 9210, 9240, 9265, 9300, 9310)] <- 0
+
+# if spouse is legal
+# 
+# 
+
+Data$good <- ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==0, 1,
+                    ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==1, 0,
+                           ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==0, 1,
+                                  ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==1, 0, 0)
+                           )
+                    )
+)
+
+
+Data$slegal <- ave(Data$good , Data$YEAR, Data$SERIALNO, FUN = mean)
+
+Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
 
 
                                                 #### Exporting the data set into the new data sample both CSV and R ####
