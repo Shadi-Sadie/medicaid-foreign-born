@@ -179,6 +179,8 @@ Data$SEX<- ordered(Data$SEX, labels = c("Male", "Female" ))
 var_label(Data$SEX) <- "Sex"
 table(Data$SEX)
   Data$SEX<-PREACS$SEX
+  
+  Data$FEMALE<-ifelse(Data$SEX==2,1,0)
     
 ### 12. YEAR arrived in US  "YOEP"
 
