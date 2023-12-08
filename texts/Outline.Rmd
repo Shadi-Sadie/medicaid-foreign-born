@@ -39,6 +39,7 @@ knitr::opts_chunk$set(echo = FALSE,
 
 Data<-read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+NATV<-Data[Data$NATIVITY=="US-born",]
 
 allcontrols   <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA", "ENG", "LTINU", "CORIGIN", "NonCit")
 controlwof    <- c("SEX","DIS", "AGEP","SCHLG", "POVPIPG", "MARG", "RACE1", "ESRG","ADA") # (SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA)
@@ -811,6 +812,7 @@ Data$NonCit<- ifelse(Data$CIT == "Non-citizen",1,0)
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 
 NATV<- Data[Data$NATIVITY == "US-born", ]
+
 ```
 
 
@@ -884,7 +886,7 @@ table5<-etable(list(Event1, Event2, Event3,Event4),
                 digits = 3,
                title = "The Impact of Medicaid Expansion on Uninsured Rate ",
               headers = list("^:_:"= .("US-born" = 2, "Foreign-Born"=2)),
-              tex = T,
+              #tex = T,
                arraystretch = 0.5,
              vcov = "twoway",
             group = list("_^Controls"=c(controlwof,forcont)),
@@ -1479,10 +1481,11 @@ print(combined_plot_with_legend)
 Here, I'm going to add some other graphs and table requested by committee member.
 
 ### 5.1 Private insurance analysis 
+
 Other type on insurance to the analysis. 
 Fig A-in appendix will show the adjusted event study result for medicaid, uninsured rate, private insurance through employer and Insurance purchased directly from an insurance company 
  
- #### 5.1.1 Adjusted
+#### 5.1.1 Adjusted
  
 
 ```{r Ap-fig1, fig.height = 4, fig.width = 9}
@@ -1889,7 +1892,6 @@ On the isuse of having larger confidence interval prior the expansion, there are
 
 
 
-
 #### 5.2.1 FB (Citizen vs Immigrants vs Native)
 
 Let's first create a subsample for foreign born, I decided to put the Citizen born abroad in Foreign-born CIT category as it was before
@@ -1898,11 +1900,11 @@ Let's first create a subsample for foreign born, I decided to put the Citizen bo
 
 # Foreig-born
 
-dfF
+#dfF
 
-FBNC<- dfF[dfF$CIT == "Non-citizen", ]
+FBNC<-Forgn[Forgn$CIT == "Non-citizen", ]
 #FBC2<-  dfF[dfF$CIT == "Naturalized-citizen", ]
-FBC<- dfF[dfF$CIT %in%  c("Naturalized-citizen","US-citizen Born abroad "), ]
+FBC<- Forgn[Forgn$CIT %in%  c("Naturalized-citizen","US-citizen Born abroad "), ]
 #FBC3<-  dfF[dfF$CIT == "US-citizen Born abroad ", ]
 
 
@@ -1926,23 +1928,29 @@ Now which one of the even studies do I want to look at?? I say let's do all 4 wi
 # Uninsured
 
   # NTV : No FB
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] |                 
+                         
                        ST + YEAR,                             ## FEs
-               vcov= "hetero" ,
+              # vcov= "hetero" ,
+               cluster = "ST",
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
   # FB Citizen including abroad and naturlaized
 
-Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       
                        ST + YEAR,                             ## FEs
-               vcov="hetero" ,
+               #vcov="hetero" ,
+               cluster = ~ST,
                weights = ~PWGTP,
                data = FBC)
   # FB non citizen
 
-Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                        
                        ST + YEAR,                             ## FEs
-               vcov="hetero" ,
+               #vcov="hetero" ,
+              cluster =  "ST" ,
                weights = ~PWGTP,
                data = FBNC)
 
@@ -1957,7 +1965,7 @@ Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # FB Citizen including abroad and naturlaized
 
@@ -1981,7 +1989,7 @@ Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # FB Citizen including abroad and naturlaized
 
@@ -2004,7 +2012,7 @@ Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # FB Citizen including abroad and naturlaized
 
@@ -2071,10 +2079,10 @@ here we devide the Foreign born into two-groups of Mexican FB and Other FB, let'
 # All foreign born sample is  dfF
 
 # Mexican FB 
-dFBMex<- dfF[dfF$POBP == 303, ]
+dFBMex<- Forgn[Forgn$POBP == 303, ]
 
 # Non Mexican FB
-dFBO <- dfF[dfF$POBP != 303, ]
+dFBO <- Forgn[Forgn$POBP != 303, ]
 
 
 
@@ -2087,23 +2095,25 @@ dFBO <- dfF[dfF$POBP != 303, ]
 # Uninsured
 
   # NTV 
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
                        ST + YEAR,                             ## FEs
-               vcov= "hetero" ,
+               cluster =  "ST" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
   # Mexican FB 
 
-Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1) + ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
                        ST + YEAR,                             ## FEs
-               vcov="hetero" ,
+             #  vcov="hetero" ,
+                cluster =  "ST" ,
                weights = ~PWGTP,
                data = dFBMex)
   # Non Mexican FB
 
-Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                
                        ST + YEAR,                             ## FEs
-               vcov="hetero" ,
+               #vcov="hetero" ,
+                cluster =  "ST" ,
                weights = ~PWGTP,
                data = dFBO)
 
@@ -2114,22 +2124,22 @@ Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|
 
   # NTV : No FB
  
-Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                  
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # Mexican FB 
 
-Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
                data = dFBMex)
   # Non Mexican FB
 
-Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
@@ -2140,22 +2150,22 @@ Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|
 
   # Native
 
-Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof]|                
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # Mexican FB 
 
-Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)   +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|              
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
                data = dFBMex)
   # Non Mexican FB
 
-Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)  +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
@@ -2163,22 +2173,22 @@ Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|
 
 # directly purchased
 
-Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] |               
                        ST + YEAR,                             ## FEs
                vcov= "hetero" ,
                weights = ~PWGTP,
-               data = dfN)
+               data = NATV)
 
   # Mexican FB 
 
-Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|            
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
                weights = ~PWGTP,
                data = dFBMex)
   # Non Mexican FB
 
-Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
                        ST + YEAR,                             ## FEs
                vcov="hetero" ,
              weights = ~PWGTP,
@@ -2222,6 +2232,342 @@ annotate_figure(figureA6,
 
 #### 5.2.3 FB Undocumented vs FB Documented vs Native
 
+```{r}
+
+# Mexican FB 
+dFBMex<- Forgn[Forgn$UNDOC== 1, ]
+
+# Non Mexican FB
+dFBO <- Forgn[Forgn$UNDOC == 0 &Forgn$CIT== 'Non-citizen' ,]
+
+dFBOCIT <- Forgn[Forgn$UNDOC == 0 &!Forgn$CIT== 'Non-citizen' ,]
+
+table(Forgn$CIT)
+
+```
 
 
+
+```{r}
+
+
+# Uninsured
+
+  # NTV 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof] |             
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+  # Mexican FB 
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1) + ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|              
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1) + ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1) + ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBOCIT)
+
+
+# Medicaid
+
+
+  # NTV : No FB
+ 
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+# Employer
+
+  # Native
+
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+# directly purchased
+
+Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+             weights = ~PWGTP,
+               data = dFBO)
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1,"Undocumented FB"= Event2, 'Legalnoncit'= Event3, "FB CIT"=Event4),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C","blue"))
+#+
+ # scale_color_manual(values=c('black','#B64074', "blue","green"))
+Medicaid<- ggiplot(list('US-born' = Event4, "Undocumented FB" = Event5, 'Legal' = Event6),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+Employer<-ggiplot(list('US-born' = Event7, "Undocumented FB" = Event8, "Legal" = Event9),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+DirPurchs<- ggiplot(list('US-born' = Event10, "Undocumented FB" = Event11, 'Legal' = Event12),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074',"#1ABC9C" ))
+
+# other color : "#61D04F", "#457B9D", "#F5c710"
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+figureA7<-ggarrange(Uninsured, Medicaid , Employer, DirPurchs, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA6,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+
+```
+
+
+####5.2.4 FB Mexican Non-Citizen 
+
+
+```{r }
+
+# Foreig-born
+
+
+# All foreign born sample is  dfF
+
+# Mexican FB 
+dFBMex<- Forgn[Forgn$CIT == "Non-citizen"& Forgn$POBP == 303, ]
+
+# Non Mexican FB
+dFBO <- Forgn[Forgn$CIT == "Non-citizen"& Forgn$POBP != 303, ]
+
+
+FBC<- Forgn[Forgn$CIT %in%  c("Naturalized-citizen","US-citizen Born abroad "), ]
+
+
+```
+
+
+```{r Ap-fig5, fig.height = 4, fig.width = 9}
+
+# Uninsured
+
+  # NTV 
+Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+  # Mexican FB 
+
+Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1) + ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = FBC)
+
+# Medicaid
+
+
+  # NTV : No FB
+ 
+Event4 = feols(HINS4 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                  
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event5 = feols(HINS4 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event6 = feols(HINS4 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+
+# Employer
+
+  # Native
+
+Event7 = feols(HINS1 ~ i(ttot, expansion, ref = -1) +ADA+ IPC+ UnempR+.[controlwof]|                
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event8 = feols(HINS1 ~ i(ttot, expansion, ref = -1)   +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|              
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event9 = feols(HINS1 ~ i(ttot, expansion, ref = -1)  +ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|               
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBO)
+
+# directly purchased
+
+Event10 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] |               
+                       ST + YEAR,                             ## FEs
+               vcov= "hetero" ,
+               weights = ~PWGTP,
+               data = NATV)
+
+  # Mexican FB 
+
+Event11 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|            
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+               weights = ~PWGTP,
+               data = dFBMex)
+  # Non Mexican FB
+
+Event12 = feols(HINS2 ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
+                       ST + YEAR,                             ## FEs
+               vcov="hetero" ,
+             weights = ~PWGTP,
+               data = dFBO)
+
+
+
+Uninsured<-ggiplot(list('US-born' = Event1,"NON-CIT Mexican FB"  = Event2, 'Non-CITNon-Mexican FB' = Event3, "FB Citize"=Event4 ),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C", "blue"))
+#+
+ # scale_color_manual(values=c('black','#B64074', "blue","green"))
+Medicaid<- ggiplot(list('US-born' = Event4, "Mexican FB" = Event5, 'Non-Mexican FB' = Event6),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+Employer<-ggiplot(list('US-born' = Event7, "Mexican FB" = Event8, "Non-Mexican FB" = Event9),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074', "#1ABC9C"))
+
+DirPurchs<- ggiplot(list('US-born' = Event10, "Mexican FB" = Event11, 'Non-Mexican FB' = Event12),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074',"#1ABC9C" ))
+
+# other color : "#61D04F", "#457B9D", "#F5c710"
+#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
+
+
+figureA7<-ggarrange(Uninsured, Medicaid , Employer, DirPurchs, 
+                   ncol = 2, nrow = 2)
+
+annotate_figure(figureA7,
+                top = text_grob("Uninsured Rate", face = "bold", size = 14),
+                
+                fig.lab = "AP-1:Figure 1", fig.lab.face = "bold"
+)
+
+
+```
+
+###6. INFO NEEDED LATER
+
+In order to create an event study plot, we must first generate the cohort index and the relative time period for each observation in relation to treatment. These details are essential for various HTE-robust estimators, such as Sun and Abraham (2021) and Callaway and Sant’Anna (2021). We can use the function get.cohort in the package paneltools to generate these indices.
+
+```{r}
+df.use <- get.cohort(df.use,D="indirect",index=c("bfs","year"))
+head(df.use[,-5],19)
+
+```
+
+Collapse package can be used to aggregate dataset
 
