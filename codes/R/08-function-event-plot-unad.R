@@ -8,17 +8,17 @@ library(fixest)
 outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
-treatment_var<- c("ForeginBorn")
+treatment_var<- c("UNDOC")
 # controlvar<-C("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
-variable_list <- c("ForeginBorn") ########## To be removed from the draft table
-plotleglable<- c('Native','Foreign-born')
-Dataset<-Data
+variable_list <- c("UNDOC") ########## To be removed from the draft table
+plotleglable<- c('Legal FB','Undocumented FB')
+Dataset<-Forgn
 ### Changing the graph colors 
 #cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-# cbPalette <- c("#44AA99", "#999933", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbPalette <- c("#888888", "#999933", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-cbPalette  <- c("#000000","#B64074", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00" )
+# cbPalette  <- c("#000000","#B64074", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00" )
 
 safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
