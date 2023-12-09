@@ -1,0 +1,614 @@
+---
+title: "Notebook for Paper1: Medicaid and FB"
+output: html_notebook
+---
+
+
+## 1.Example for Event Study
+
+```{r}
+
+##################################################################################################
+git <- haven::read_dta("https://raw.githubusercontent.com/Mixtape-Sessions/Advanced-DID/main/Exercises/Data/ehec_data.dta")
+
+git$treated <- ifelse(is.na(git$yexp2), 0, 1 * (git$year >= git$yexp2))
+git$rel_year <- ifelse(is.na(git$yexp2), -100, git$year - git$yexp2)
+
+# Estimate did2s
+es_did2s <- did2s(
+    git,
+    yname = "dins",
+    first_stage = ~ 0 | stfips + year,
+    second_stage = ~ 0 + i(rel_year, ref = -100),
+    treatment = "treated",
+    cluster_var = "stfips"
+)
+
+###############################################################################################
+
+library(data.table) ## For some minor data wrangling
+library(fixest)     ## NB: Requires version >=0.9.0
+
+# Load and prepare data
+git2 = fread("https://raw.githubusercontent.com/LOST-STATS/LOST-STATS.github.io/master/Model_Estimation/Data/Event_Study_DiD/bacon_example.csv") 
+
+# Let's create a more user-friendly indicator of which states received treatment
+git2[, treat := ifelse(is.na(`_nfd`), 0, 1)]
+git2[, time_to_treat := ifelse(treat==1, year - `_nfd`, 0)]
+
+
+mod_twfe = feols(asmrs ~ i(time_to_treat, treat, ref = -1) + ## Our key interaction: time × treatment status
+                     pcinc + asmrh + cases |                    ## Other controls
+                     stfips + year,                             ## FEs
+                 cluster = ~stfips,                          ## Clustered SEs
+                 data = git2)
+
+iplot(mod_twfe, 
+      xlab = 'Time to treatment',
+      main = 'Event study: Staggered treatment (TWFE)')
+
+###############################################################################################
+library(tidyverse); library(fixest)
+git3 <- causaldata::organ_donations
+
+# Treatment variable
+git3 <- git3 %>% mutate(California = State == 'California')
+
+# Interact quarter with being in the treated group using
+# the fixest i() function, which also lets us specify
+# a reference perigit3 (using the numeric version of Quarter)
+clfe <- feols(Rate ~ i(Quarter_Num, California, ref = 3) | 
+                  State + Quarter_Num, data = git3)
+
+# And use coefplot() for a graph of effects
+coefplot(clfe)
+
+###############################################################################################
+
+
+```
+
+## 2. Attempt to Use did2 Package instead of fixest for event study estimation
+
+```{r}
+## Creating EVent study
+
+#install.packages("survey")
+library(survey)
+#install.packages("srvyr")
+library("srvyr")
+library(did2s) 
+install.packages("did2s")
+
+#### subseting 
+
+df <- subset(Data, select=c(ST,YEAR, treat, ttot,expansion, ExpansionY,  Expan_STS, UNINS, NATIVITY))
+
+
+df$ExpansionY <- ifelse(is.na(df$ExpansionY),10000, df$ExpansionY)
+df$ttot <- ifelse(df$ExpansionY==10000, 10000,df$ttot)
+
+df<-df[df$NATIVITY == "Foregin-born", ]
+
+
+#######################################################################
+## Fixest Package
+
+Event = feols(UNINS ~ i(ttot, expansion, ref = c(-1,10000)) |                
+                   
+                ST + YEAR,                             ## FEs
+              #vcov="hetero" ,
+              cluster = ~ST ,
+              # weights = ~PWGTP,
+               data = df)
+
+iplot(Event)
+
+
+
+##############################################################
+
+# did2 package
+
+df <- aggregate(. ~ ST+ YEAR, data=df, FUN=mean)
+
+
+dynamic = did2s(df,
+               yname = "UNINS", 
+               first_stage = ~ 0 | ST + YEAR,
+               second_stage = ~ i(ttot, ref = c(-1,10000)) ,treatment = "treat",
+              cluster_var = "ST"
+)
+
+iplot(dynamic)
+
+
+
+############ Plot both toghther#########
+
+ggiplot(list('dids' = dynamic, 'fixest' = Event),
+                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
+    scale_color_manual(values=c('black','#B64074'))
+
+
+
+
+
+
+```
+
+## 3.Create Variables
+### 3.1 Create Undocumented variable
+
+```{r}
+Data$UNDOC <- 1
+
+# Set UNDOC to 0 based on various conditions:
+
+# The individual is a citizen.
+Data$UNDOC[Data$CIT %in% c("Born in US states", "Born in US Territories", "US-citizen Born Abroad", "Naturalized-citizen")] <- 0
+# The individual arrived before 1980.
+Data$UNDOC[Data$YOEP < 1980] <- 0
+# The individual was born in Cuba (as practically all Cuban immigrants were granted refugee status before 2017) 
+Data$UNDOC[Data$POBP == 327] <- 0
+# The individual is a veteran or is currently in the Armed Forces.
+Data$UNDOC[Data$ESR %in% c(4,5) ] <- 0
+Data$UNDOC[Data$MIL %in% c(1,2,3) ] <- 0
+#e. The individual works in the government sector.
+Data$UNDOC[Data$COW %in% c(3,4,5) ] <- 0
+# The individual's occupation requires some form of licensing based on borjas (such as physicians, registered nurses, air traffic controllers, and lawyers)
+Data$UNDOC[Data$OCCP %in% c (10, 120, 230, 350, 410, 800, 810, 820, 830, 845, 850, 860, 900, 910,
+                             930, 940, 2100, 2105, 2145, 2170, 2180, 2205, 2300,
+                             2310, 2320, 2330, 2350, 2360, 2400, 2435, 2440, 2545, 2555, 
+                             3000, 3010, 3030, 3040, 3050, 3090, 3100, 3110, 3120, 3140,
+                             3150, 3160, 3200, 3210, 3220, 3230, 3245, 3250, 3255, 3256, 
+                             3258, 3261, 3270, 3300, 3310, 3321, 3322, 3323, 3324, 3330,
+                             3401, 3402, 3421, 3422, 3423, 3424, 3430, 3500, 3515, 3520,
+                             3545, 3550, 3700, 3710, 3720, 3725, 3740, 3750, 3801, 3802, 
+                             3820, 3870, 3910, 3945, 3946, 3946, 6010, 6660, 9030, 9040, 9050, 
+                             9121, 9122, 9130, 9141, 9142, 9150, 9210, 9240, 9265, 9300, 9310)] <- 0
+
+# if spouse is citize
+# 
+# 
+
+Data$good <- ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==0, 1,
+                    ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==1, 0,
+                           ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==0, 1,
+                                  ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==1, 0, 0)
+                           )
+                    )
+)
+
+
+Data$slegal <- ave(Data$good , Data$YEAR, Data$SERIALNO, FUN = mean)
+
+Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
+
+
+```
+
+
+## 4.Creating Descriptive Table
+> Note there is error for lableing expansion in these tables there are reveresed
+
+### 4.1 for all population comparison before treatment 
+```{r}
+df<-Data
+
+dummy<- subset(df, select=c(RACE1,ESRG,SCHLG ,POVPIPG ))
+dummy<-dummy(dummy)
+dummy <- dummy %>% mutate_all(as.numeric)
+colnm<-colnames(dummy)
+colnm<- gsub("RACE1_|SCHLG_|SEX_|ESRG_|POVPIPG_","" ,colnm)
+colnm <- gsub("\\.", "", colnm)
+colnm
+names(dummy)<-colnm
+head(dummy)
+df <- cbind(dummy, df)
+
+
+df %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,UNDOC ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+
+
+
+```
+
+same table but with weight
+```{r}
+svy %>% 
+    subset(ACA=="Pre-ACA")%>%
+    
+    tbl_svysummary(
+        by = expansion,
+        include= c(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+               AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+               Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+               Incomebelow100poverty, Income100to138poverty,
+               DIS,UNDOC ),
+        
+        
+        
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+       # stat_1 = '**Expansion**',
+        #stat_2 = '**Non Expansion**'
+    )
+
+
+```
+ 
+
+### 4.2 for native population
+
+```{r}
+NATV<-df[df$NATIVITY=="US-born",]
+
+
+NATV%>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,UNDOC ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    ) #%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+   # modify_header(
+     #   label = "**Variable**",
+     #   stat_1 = '**Expansion**',
+      #  stat_2 = '**Non Expansion**'
+  #  )
+
+
+```
+
+
+### 4.3 for whole foreignborn population
+
+```{r}
+Forgn<-Data[Data$NATIVITY=="Foregin-born",]
+dummy<- subset(Forgn, select=c(RACE1 ,ESRG,SCHLG ,POVPIPG, CORIGIN, ENG,LTINU ))
+dummy<-dummy(dummy)
+dummy <- dummy %>% mutate_all(as.numeric)
+colnm<-colnames(dummy)
+colnm<- gsub("RACE1_|SCHLG_|ESRG_|POVPIPG_|ENG_|CORIGIN_|LTINU_","" ,colnm)
+colnm <- gsub("\\.", "", colnm)
+colnm <- gsub("\\s+", " ", colnm)
+#colnm <- gsub("\\_", "", colnm)
+colnm
+names(dummy)<-colnm
+head(dummy)
+Forgn <- cbind(dummy, Forgn)
+
+
+Forgn %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,UNDOC,EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+           UnitedStates, WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall  ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+
+
+```
+
+####4.3.1 For Foreign-born citizen
+
+```{r}
+
+# NOW I want to take a look at the pre-trend for Naturalized Citizen
+
+NATCIT<-Forgn[Forgn$CIT=="Naturalized-citizen",]
+
+
+#NOW the pretrend table for NATCIT
+NATCIT %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+            WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall  ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+
+
+```
+
+####4.3.2 For Foreign-born Non-Citizen
+
+```{r}
+NONCIT<-Forgn[Forgn$CIT=="Non-citizen",]
+
+NONCIT %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,UNDOC,EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+           UnitedStates, WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall  ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+                   #  UnempR ~"State's Unemployment Rate",
+                   #  IPC ~ "Immigration Policy Climate", 
+                    # AGEP ~ "Age", UNINS ~ "Uninsured",
+                    # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+                    # ESRG~"Employment status", MARG ~"Married",
+                    # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+```
+
+
+
+##### 4.3.2.1 Foreign-born Non-Citizen Undocumented
+
+```{r}
+
+UNDOCFB<-NONCIT[NONCIT$UNDOC==1,]
+
+
+#NOW the pretrend table for NATCIT
+UNDOCFB %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+           WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall  ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+
+
+```
+
+
+##### 4.3.2.2 Foreign-born Non-Citizen Hispanic
+
+```{r}
+
+NONCITHISP<-NONCIT[NONCIT$Hispanic==1,]
+
+
+#NOW the pretrend table for NATCIT
+NONCITHISP %>% 
+    filter(ACA=="Pre-ACA")%>%
+    select(ADA,IPC, UnempR,expansion,UNINS, HINS1,HINS2, HINS4, 
+           AGEP, White, Black, Asian, Hispanic, Other, FEMALE,  MARG  ,
+           Employed, Unemployed, Notinlaborforce,Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           DIS,EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+           WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall  ) %>%
+    tbl_summary(
+        by = expansion,
+        #label = list(ADA ~ "State's Political Liberalism",
+        #  UnempR ~"State's Unemployment Rate",
+        #  IPC ~ "Immigration Policy Climate", 
+        # AGEP ~ "Age", UNINS ~ "Uninsured",
+        # HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
+        # ESRG~"Employment status", MARG ~"Married",
+        # SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty"),
+        statistic = list(all_categorical() ~ "{p}",  all_continuous() ~ "{mean} ({sd})")
+    )%>%
+    add_difference() %>%
+    add_significance_stars(
+        pattern= "{estimate}{stars}",
+        hide_ci = TRUE,
+        hide_p = TRUE
+    ) %>%
+    modify_table_styling(
+        columns = estimate,
+        rows = p.value < 0.05,
+        text_format = "bold"
+    )%>%
+    
+    # modify_spanning_header(all_stat_cols() ~ "**Table 1.Baseline Comparison of States**") %>%
+    modify_header(
+        label = "**Variable**",
+        stat_1 = '**Expansion**',
+        stat_2 = '**Non Expansion**'
+    )
+
+```
+
