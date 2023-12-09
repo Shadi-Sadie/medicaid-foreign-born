@@ -827,56 +827,13 @@ Black line with circles: Represents foreign-borns.
 Purple line with triangles: Represents US-born.
 
 
+
 ```{r fig1, fig.height = 4, fig.width = 9}
-
-
-Event1 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
-                       ST + YEAR,                             ## FEs
-               vcov="hetero",
-               weights = ~PWGTP,
-               data = NATV)
-
-Event2 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof]|                 
-                       ST + YEAR,                             ## FEs
-               vcov= "hetero" ,
-               weights = ~PWGTP,
-               data = NATV)
-
-Event3 = feols(UNINS ~ i(ttot, expansion, ref = -1)|                 
-                       ST + YEAR,                             ## FEs
-               vcov="hetero" ,
-               weights = ~PWGTP,
-               data = Forgn)
-
-Event4 = feols(UNINS ~ i(ttot, expansion, ref = -1)+ADA+ IPC+ UnempR+.[controlwof] + .[forcont]|                 
-                       ST + YEAR,                             ## FEs
-               vcov="hetero" ,
-               weights = ~PWGTP,
-               data = Forgn)
-
-UNINSUN<-ggiplot(list('US-born' = Event1, 'Foreign-born' = Event3),
-                 ref.line = -1, main = 'Unadjusted',xlab='Event Time')+
-  scale_color_manual(values=c('black','#B64074'))
-
-#UNINSUS<-UNINSUS+scale_y_continuous(breaks = seq(-0.10, 0.10, by = 0.05))
-
-UNINSADJ<-ggiplot(list('US-born' = Event2, 'Foreign-born' = Event4),
-                  ref.line = -1, main = 'Adjusted',xlab='Event Time') +
-                           scale_color_manual(values=c('black','#B64074'))
-
-#UNINSFOR<-UNINSFOR+scale_y_continuous(breaks = seq(-0.15, 0.10, by = 0.05))
-
-figure1<-ggarrange(UNINSUN, UNINSADJ , 
-                   ncol = 2, nrow = 1)
-
-annotate_figure(figure1,
-                top = text_grob("Uninsured Rate", face = "bold", size = 14),
-                
-                fig.lab = "Figure 1", fig.lab.face = "bold"
-)
-
-
+source("data/08-function-event-plot-unad.R", local = knitr::knit_global())
+# or sys.source("your-script.R", envir = knitr::knit_global())
 ```
+
+
 
 
 ```{r tab5, results='asis',cache=TRUE}
