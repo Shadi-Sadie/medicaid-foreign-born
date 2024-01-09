@@ -188,6 +188,47 @@ Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
 
 ```
 
+### 3.2 More Cleaning
+
+```{r}
+
+# Data cleaning
+# 
+table(Data$IPC,exclude=NaN)
+
+head(which(is.na(Dataset$IPC)),10)
+
+
+Data[887376, 1:8]
+
+Data[Data$StateN=="North Carolina"]
+
+table(Data$YEAR[Data$StateN == "North Carolina"])
+
+Data$IPC<-ifelse(Data$StateN == "North Carolina" & Data$YEAR==2016 & is.na(Data$IPC), -3, Data$IPC)
+
+Data$LTINU<-ifelse(Data$NATIVITY=="US-born",9,Data$LTINU) 
+
+table(Data$CORIGIN)
+
+table(Data$LTINU)
+
+#### Creating new variable for this function
+
+Data$CITSTAT<-0
+Data$CITSTAT<-ifelse(Data$CIT == "Born in US states" | Data$CIT =="Born in US Territories", "US-Born", Data$CITSTAT)
+Data$CITSTAT<-ifelse(Data$CIT == "US-citizen Born Abroad" | Data$CIT == 'Naturalized-citizen', "FB-Citizen", Data$CITSTAT)
+Data$CITSTAT<-ifelse(Data$CIT == "Non-citizen", "FB-Non-citizen", Data$CITSTAT)
+table(Data$CITSTAT)
+
+
+```
+this is for the sun and abarahm 
+```{r}
+Data$year_treated <- ifelse(Data$expansion == 0, 10000, df$ExpansionY)
+
+```
+
 
 ## 4.Creating Descriptive Table
 > Note there is error for lableing expansion in these tables there are reveresed
@@ -611,4 +652,6 @@ NONCITHISP %>%
     )
 
 ```
+
+
 
