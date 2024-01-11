@@ -533,6 +533,25 @@ Data$slegal <- ave(Data$good , Data$YEAR, Data$SERIALNO, FUN = mean)
 Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
 
 
+### Fixing NA values:
+table(Data$IPC,exclude=NaN)
+
+
+
+#Data[887376, 1:8]
+
+#Data[Data$StateN=="North Carolina"]
+
+table(Data$YEAR[Data$StateN == "North Carolina"])
+
+Data$IPC<-ifelse(Data$StateN == "North Carolina" & Data$YEAR==2016 & is.na(Data$IPC), -3, Data$IPC)
+
+Data$LTINU<-ifelse(Data$NATIVITY=="US-born",9,Data$LTINU) 
+
+table(Data$CORIGIN)
+
+table(Data$LTINU)
+
                                                 #### Exporting the data set into the new data sample both CSV and R ####
 
 
@@ -540,7 +559,7 @@ Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
 write.csv(Data, file = paste0(wd$data,"CLNACS.csv"), row.names = FALSE)
 
 
-save(Data, file =paste0(wd$data,"CLNACS.RData"))
+save(Data, file =paste0(wd$data,"CLNACS2.RData"))
 
 
 
