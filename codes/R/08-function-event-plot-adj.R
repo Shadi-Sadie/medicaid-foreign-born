@@ -1,23 +1,33 @@
 library(ggplot2)
 library(fixest)
 
-##This is the code for creating Unadjsted event study for all outcome variables.
+
+
+################################################################################
+#### Fig 1
+#### Adjusted Event study plot without spliting
+#### (OLS Weighted) for all low-income adult aged 26-65
+################################################################################
+
+
 
 ################## Starting the Function with variable  ###########################
 
 outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
-controlvar<-c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU") # RACE1"
-variable_list<- c("UNDOC"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
+controlvar<-c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA") 
+variable_list<- c("ForeginBorn"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
                   "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
-                   "ENG.C" ,  "ENG^4" ,  "LTINU"  )
-treatment_var<- c("UNDOC")
+                  "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ForeginBorn:LTINU", "ForeginBorn:RACE1.L", "ForeginBorn:RACE1.Q", 
+                  "ForeginBorn:RACE1.C", "ForeginBorn:RACE1^4", "ForeginBorn:SCHLG.L", "ForeginBorn:SCHLG.Q" ,"ForeginBorn:SCHLG.C", "ForeginBorn:SCHLG^4", 'ForeginBorn:MARG',
+                  "ForeginBorn:IPC", "ForeginBorn:ESRG.L" , "ForeginBorn:ESRG.Q","ADA","ForeginBorn:ADA","ForeginBorn:UnempR" )
+treatment_var<- c("ForeginBorn")
 # controlvar<-C("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
-plotleglable<- c('All other','Undocumented FB')
+plotleglable<- c('US-Born','Foregin-born')
 Dataset<-Data
 ### Changing the graph colors 
-cbPalette <- c("#999999", "#CC6677", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbPalette <- c("#232424", "#CC6677", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 # cbPalette <- c("#888888", "#F0E442", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -34,7 +44,7 @@ regression_models <- list()
 plot_list <- list()
 
 for (outcome_var in outcome_vars) {
-  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+.[controlvar] | ST + YEAR")) # if adjusted need to be added #
+  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
   
   ##### Need to change #########
   Event= feols( formula   ,                        ## FEs
@@ -149,6 +159,77 @@ for (outcome_var in outcome_vars) {
 # geom_vline(xintercept =-1, col = ref.line.par$col, lwd = ref.line.par$lwd, lty = ref.line.par$lty)        geom_ribbon()
 ################################################################# Other
 
-ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom")
+
+
+fig<-ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom")
+
+
+
+
+################################################################################
+#### Fig 1
+#### Adjusted Event study plot  splitting
+#### (OLS Weighted) for all low-income adult aged 26-65
+################################################################################
+#outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
+
+
+
+Event1= feols( UNINS ~ i(ttot, expansion, ref = -1) +
+                SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                ST + YEAR   ,                        ## FEs
+              vcov="hetero",
+              #  cluster = "ST",
+              weights = ~PWGTP,
+              data = Data,
+              split= ~NATIVITY)
+
+plot1<-ggiplot(Event1,
+               ref.line = -1, main = 'Uninsured',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+
+
+Event2= feols( HINS4 ~ i(ttot, expansion, ref = -1) +
+                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                 ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+plot2<-ggiplot(Event2, ref.line = -1, main = 'Medicaid',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+
+Event3= feols( HINS1 ~ i(ttot, expansion, ref = -1) +
+                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                 ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+plot3<-ggiplot(Event3,ref.line = -1, main = 'Employer-Sponsored',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+
+Event4= feols( HINS2 ~ i(ttot, expansion, ref = -1) +
+                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                 ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+plot4<-ggiplot(Event4,ref.line = -1, main = 'Directly Purchased',xlab='Event Time')+
+  scale_color_manual(values=c('black','#B64074'))
+
+
+ggarrange(plot1,plot2,plot3, plot4 , 
+          ncol = 2, nrow = 2,common.legend = TRUE, legend = "bottom")
 
 
