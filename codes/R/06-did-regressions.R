@@ -38,51 +38,35 @@ data[factor_columns] <- lapply(data[factor_columns], as.factor)
 #  # # #"https://stackoverflow.com/questions/25849814/rstudio-rmarkdown-both-portrait-and-landscape-layout-in-a-single-pdf
 
 
-## OLS Regressions Result
 
-reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-reg2 = feols(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-reg3 = feols(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg4 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg5 = feols(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-etable(reg1, reg2, reg3,reg4,reg5, 
-       vcov = "twoway", markdown=TRUE)
+outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 
-## Logit Regressions Result
-reg6 = feglm(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-reg7 = feglm(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-reg8 = feglm(UNINS ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
 
-reg9 = feglm(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
+################################################################################
+#### Table 1
+#### Unadjusted table
+#### (OLS Weighted) for all low-income adult aged 26-65
+################################################################################
+reg = feols(c(UNINS,HINS4,HINS1,HINS2) ~ treat*ForeginBorn  | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
 
-reg0 = feglm(UNINS ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-
-
-etable(reg6, reg7, reg3,reg8,reg9,reg0, 
-       vcov = "twoway", markdown=TRUE)
-
-
-## Full table result
-
-tab<-
-        etable(list(reg1,reg2,reg3, reg4,reg5,reg6,reg7,reg8, reg9,reg0), 
-               title = "The Effect of Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation)",
-               headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+table1<-
+        etable(reg, 
+               title = "Difference-in-Differences Result Without Controls",
+               #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
                # extralines=list("^^Uninsured"=.(" ")) ,
-               group = list("-^Controls"=c(controls,foriegn)),
+               #  group = list("-^Controls"=c(NICont, Intcontrol )),
+               # extralines = list("-^Controls x Foreign-born" = c("No", "No", "No", "Yes", "Yes")), 
                digits = 3,
-               adjustbox= 1.5,
+               #  adjustbox= 1.5,
                tex= TRUE,
                se.row = TRUE, 
                depvar= FALSE,
                family = FALSE,
-               arraystretch = 1,
-               convergence = T,
-               fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+               # arraystretch = 1,
+               #convergence = T,
+               fixef.group = T,
+               # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
                # notes = c("note 1", "source 1"),
                style.tex = style.tex(
                        main = "base",
@@ -105,63 +89,38 @@ tab<-
                )
         )
 
-print(tab)
+#"UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA"
+
+## 
 
 
 ################################################################################
 #### Table 2
-#### The effect of the Medicaid expansion on medicaid take-up.
+#### Adjusted  table
 #### (OLS Weighted) for all low-income adult aged 26-65
 ################################################################################
 
-## OLS Regression 
-
-reg1 = feols(HINS4 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-reg2 = feols(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-reg3 = feols(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg4 = feols(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-
-reg5 = feols(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
-etable(reg1, reg2, reg3,reg4, reg5,
-       vcov = "twoway", headers = c("(1)", "(2)", "(3)", "(4)"))
-
-
-## Logit regressions
-
-
-reg6 = feglm(HINS4 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-reg7 = feglm(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR+ sw0(REGION^YEAR) , vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-reg8 = feglm(HINS4 ~treat*ForeginBorn+.[adjs]  | ST + YEAR + ST[YEAR],vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-
-reg9 = feglm(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn]| ST + YEAR +sw0(REGION^YEAR), cluster = ~ST, weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-
-reg0 = feglm(HINS4 ~ treat*ForeginBorn + ForeginBorn*.[controls]+ ForeginBorn*.[foriegn] | ST + YEAR + ST[YEAR], vcov = "hetero", weights = ~PWGTP, data = data, family = 'logit') # state and year fixed effect
-
-etable(reg6, reg7, reg3,reg8,reg9,reg0, 
-       vcov = "twoway", markdown=TRUE)
-
-
-#### Full table Result
+regadj = feols(c(UNINS,HINS4,HINS1,HINS2) ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
 
 table2<-
-        etable(list(reg1,reg2,reg3, reg4,reg5,reg6,reg7,reg8, reg9,reg0), 
-               title = "The Effect of Medicaid Expansion on Medicaid Covergare Rate (Difference-in-Differences Estimation)",
-               headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
-               
+        etable(regadj, 
+               title = "Difference-in-Differences Result Without Controls",
+               #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
                # extralines=list("^^Uninsured"=.(" ")) ,
-               group = list("-^Controls"=c(controls,foriegn)),
+               group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology", "Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+               # extralines=list("__otherControls"=c("Foreign-Born x State Political Ideology","Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+               #extralines = list("-^Controls x Foreign-born" = c("No", "No", "No", "Yes", "Yes")), 
                digits = 3,
-               vcov = "hetero",
-               adjustbox= 1.5,
+               #  adjustbox= 1.5,
+               headers = c("Uninsured","Medicaid", "Employer-Sponsored", "Directly Purchased"),
                tex= TRUE,
+               # se.row = TRUE, 
                depvar= FALSE,
                family = FALSE,
                arraystretch = 1,
-               convergence = T,
-               se.row = TRUE, 
-               
-               fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+               #convergence = T,
+               #fixef.group = T,
+               # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
                # notes = c("note 1", "source 1"),
                style.tex = style.tex(
                        main = "base",
@@ -170,8 +129,8 @@ table2<-
                        stats.title = "\\midrule",
                        # tabular = "*",
                        model.title = "",
-                       #  model.format = "[i]",
-                       fontsize= 'large', 
+                       model.format = "[i]",
+                       fontsize= 'normalsize', 
                        tpt=T,
                        depvar.title= " ",
                        var.title = "\\midrule",
@@ -183,5 +142,215 @@ table2<-
                       ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
                )
         )
+table2
 
-print(table2)
+
+
+
+################################################################################
+#### Table 2
+#### Specification  table appendix
+#### (OLS Weighted) for all low-income adult aged 26-65
+################################################################################
+
+
+reg1 = feols(UNINS ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # state and year fixed effect
+
+
+reg2 = feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = data) # Control for demographic + immigrants + state
+
+
+reg3 = feols(UNINS ~ treat*ForeginBorn  + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = data) # Interaction with state + immigrants
+
+
+
+table7<-  etable(list(reg1,reg2,reg3,reg4.reg5,reg6), 
+                 title = "Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation Specifications)",
+                 #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+                 # extralines=list("^^Uninsured"=.(" ")) ,
+                 group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology","Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+                 extralines = list("-^Controls x Foreign-born" = c("No", "No", "Yes")), 
+                 digits = 3,
+                 #  adjustbox= 1.5,
+                 tex= TRUE,
+                 #se.row = TRUE, 
+                 depvar= FALSE,
+                 family = FALSE,
+                 # arraystretch = 1,
+                 #convergence = T,
+                 fixef.group = T,
+                 # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+                 # notes = c("note 1", "source 1"),
+                 style.tex = style.tex(
+                         main = "base",
+                         fixef.suffix = " FE",
+                         fixef.title = "\\midrule",
+                         stats.title = "\\midrule",
+                         # tabular = "*",
+                         model.title = "",
+                         #  model.format = "[i]",
+                         # fontsize= 'normalsize', 
+                         tpt=T,
+                         depvar.title= " ",
+                         var.title = "\\midrule",
+                         slopes.title = "",
+                         slopes.format = "State-Specific Linear Time Trends",
+                         yesNo = "yes"
+                 ) ,
+                 dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+                        ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+                 )
+)
+
+
+table7
+
+
+
+reg4 = feols(HINS4 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # state and year fixed effect
+
+
+reg5 = feols(HINS4 ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+
+
+reg6 = feols(HINS4 ~ treat*ForeginBorn  + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # Interaction with state + immigrants
+
+
+table7<-  etable(list(reg4,reg5,reg6), 
+                 title = "Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation Specifications)",
+                 #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+                 # extralines=list("^^Uninsured"=.(" ")) ,
+                 group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology","Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+                 extralines = list("-^Controls x Foreign-born" = c("No", "No", "Yes")), 
+                 digits = 3,
+                 #  adjustbox= 1.5,
+                 tex= TRUE,
+                 #se.row = TRUE, 
+                 depvar= FALSE,
+                 family = FALSE,
+                 # arraystretch = 1,
+                 #convergence = T,
+                 fixef.group = T,
+                 # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+                 # notes = c("note 1", "source 1"),
+                 style.tex = style.tex(
+                         main = "base",
+                         fixef.suffix = " FE",
+                         fixef.title = "\\midrule",
+                         stats.title = "\\midrule",
+                         # tabular = "*",
+                         model.title = "",
+                         #  model.format = "[i]",
+                         # fontsize= 'normalsize', 
+                         tpt=T,
+                         depvar.title= " ",
+                         var.title = "\\midrule",
+                         slopes.title = "",
+                         slopes.format = "State-Specific Linear Time Trends",
+                         yesNo = "yes"
+                 ) ,
+                 dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+                        ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+                 )
+)
+
+## Panel C
+
+reg4 = feols(HINS2 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # state and year fixed effect
+
+
+reg5 = feols(HINS2 ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+
+
+reg6 = feols(HINS2 ~ treat*ForeginBorn  + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # Interaction with state + immigrants
+
+
+table7<-  etable(list(reg4,reg5,reg6), 
+                 title = "Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation Specifications)",
+                 #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+                 # extralines=list("^^Uninsured"=.(" ")) ,
+                 group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology","Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+                 extralines = list("-^Controls x Foreign-born" = c("No", "No", "Yes")), 
+                 digits = 3,
+                 #  adjustbox= 1.5,
+                 tex= TRUE,
+                 #se.row = TRUE, 
+                 depvar= FALSE,
+                 family = FALSE,
+                 # arraystretch = 1,
+                 #convergence = T,
+                 fixef.group = T,
+                 # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+                 # notes = c("note 1", "source 1"),
+                 style.tex = style.tex(
+                         main = "base",
+                         fixef.suffix = " FE",
+                         fixef.title = "\\midrule",
+                         stats.title = "\\midrule",
+                         # tabular = "*",
+                         model.title = "",
+                         #  model.format = "[i]",
+                         # fontsize= 'normalsize', 
+                         tpt=T,
+                         depvar.title= " ",
+                         var.title = "\\midrule",
+                         slopes.title = "",
+                         slopes.format = "State-Specific Linear Time Trends",
+                         yesNo = "yes"
+                 ) ,
+                 dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+                        ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+                 )
+)
+
+
+
+## Panel D
+
+
+reg4 = feols(HINS1 ~treat*ForeginBorn | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # state and year fixed effect
+
+
+reg5 = feols(HINS1 ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+
+
+reg6 = feols(HINS1 ~ treat*ForeginBorn  + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data) # Interaction with state + immigrants
+
+
+etable(list(reg4,reg5,reg6), 
+       title = "Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation Specifications)",
+       #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
+       # extralines=list("^^Uninsured"=.(" ")) ,
+       group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology","Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
+       extralines = list("-^Controls x Foreign-born" = c("No", "No", "Yes")), 
+       digits = 3,
+       #  adjustbox= 1.5,
+       tex= TRUE,
+       #se.row = TRUE, 
+       depvar= FALSE,
+       family = FALSE,
+       # arraystretch = 1,
+       #convergence = T,
+       fixef.group = T,
+       # fitstat = ~ n +r2 +ar2 + pr2+  aic + bic ,
+       # notes = c("note 1", "source 1"),
+       style.tex = style.tex(
+               main = "base",
+               fixef.suffix = " FE",
+               fixef.title = "\\midrule",
+               stats.title = "\\midrule",
+               # tabular = "*",
+               model.title = "",
+               #  model.format = "[i]",
+               # fontsize= 'normalsize', 
+               tpt=T,
+               depvar.title= " ",
+               var.title = "\\midrule",
+               slopes.title = "",
+               slopes.format = "State-Specific Linear Time Trends",
+               yesNo = "yes"
+       ) ,
+       dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+              ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
+       )
+)
