@@ -10,9 +10,10 @@ outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 treatment_var<-c("UNDOC", "FBLEG")
-variable_list <-c("UNDOC", "FBLEG", "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
-"ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
-"ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ADA",
+variable_list <-c("UNDOC", "FBLEG",
+                  "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
+                    "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
+                    "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ADA",
 
 "UNDOC:LTINU", "UNDOC:RACE1.L", "UNDOC:RACE1.Q", 
 "UNDOC:RACE1.C", "UNDOC:RACE1^4", "UNDOC:SCHLG.L", 
@@ -178,13 +179,13 @@ for (outcome_var in outcome_vars) {
                      x =x_year, y =estimate,group =as.factor(id),
                      ymin = prms.ci_low , ymax = prms.ci_high ,col=as.factor(id)
                  ))+
-        #labs(title = outcome_labels[outcome_var], x="Time to Treatment", y="Estimate and 95% Conf. Int")+
+        labs(title = outcome_labels[outcome_var], x="Time to Treatment", y="Estimate and 95% Conf. Int")+
         geom_hline(yintercept = 0)+
         geom_point(aes(shape=as.factor(id)),size=3) +
         geom_errorbar(width = 0.07) +
         geom_vline(xintercept = -1, lty =  "dashed")+
         # geom_ribbon(alpha = 0.2) +
-        labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
+        #labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
         scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
         scale_shape_discrete(labels=plotleglable,name="Population")+
         scale_y_continuous(breaks = scales::breaks_pretty()) +
