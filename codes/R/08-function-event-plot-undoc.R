@@ -1,44 +1,51 @@
+
+
 library(ggplot2)
 library(fixest)
 library(ggpubr)
+
+
+################################################################################
+#### Creating 
+#### Controlled Event study plot without spliting for UNdoum
+#### (OLS Weighted) for all low-income adult aged 26-65
+################################################################################
 ##This is the code for creating Unadjsted event study for all outcome variables.
-table(Data$CITSTAT)
-
-################## Creating new variable for this function  ###########################
-Data$CITSTAT<-0
-Data$CITSTAT<-ifelse(Data$CIT == "Born in US states" | Data$CIT =="Born in US Territories", "US-Born", Data$CITSTAT)
-Data$CITSTAT<-ifelse(Data$CIT == "US-citizen Born Abroad" | Data$CIT == 'Naturalized-citizen', "FB-Citizen", Data$CITSTAT)
-Data$CITSTAT<-ifelse(Data$CIT == "Non-citizen", "FB-Non-citizen", Data$CITSTAT)
-table(Data$CITSTAT)
-Data$CITSTAT<-as.factor(Data$CITSTAT)
-
-# Create a dummy for foreign born citzien
-Data$FBCIT<-0
-Data$FBCIT<-ifelse(Data$CIT == "US-citizen Born Abroad" | Data$CIT == 'Naturalized-citizen', 1, Data$FBCIT)
-
-Data$FBCIT<-0
-Data$FBCIT<-ifelse(Data$CIT == "US-citizen Born Abroad" | Data$CIT == 'Naturalized-citizen', 1, Data$FBCIT)
-
-Data$FBLEG<-55
-Data$FBLEG<-ifelse(Data$ForeginBorn==1 & Data$UNDOC == 0, 1, 0)
-
 
 ################## Starting the Function with variable  ###########################
 
 outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
-
 treatment_var<-c("FBCIT", "NonCit")
-controlvar<-("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
-variable_list <- c("FBCIT", "NonCit") ########## To be removed from the draft table
-plotleglable<- c('FB-Citizen', 'FB-Non-citizen', 'US-Born'  )
+variable_list <- c("FBCIT", "NonCit",
+                   "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
+                   "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
+                   "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ADA",
+                   
+                   "FBCIT:LTINU", "FBCIT:RACE1.L", "FBCIT:RACE1.Q", 
+                   "FBCIT:RACE1.C", "FBCIT:RACE1^4", "FBCIT:SCHLG.L", 
+                   "FBCIT:SCHLG.Q" ,"FBCIT:SCHLG.C", "FBCIT:SCHLG^4", 
+                   'FBCIT:MARG',"FBCIT:IPC", "FBCIT:ESRG.L" , 
+                   "FBCIT:ESRG.Q","FBCIT:ADA","FBCIT:UnempR",
+                   
+                   "NonCit:LTINU", "NonCit:RACE1.L", "NonCit:RACE1.Q", 
+                   "NonCit:RACE1.C", "NonCit:RACE1^4", "NonCit:SCHLG.L", 
+                   "NonCit:SCHLG.Q" ,"NonCit:SCHLG.C", "NonCit:SCHLG^4", 
+                   'NonCit:MARG',"NonCit:IPC", "NonCit:ESRG.L" , 
+                   "NonCit:ESRG.Q","NonCit:ADA","NonCit:UnempR") ########## To be removed from the draft table     
+                   
+                   
+                   
+                  
+plotleglable<- c('US-Born' ,'FB-Citizen', 'FB-Non-citizen' )
 Dataset<-Data
+
 ### Changing the graph colors 
 #cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-cbPalette <- c("#888888", "#999933", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbPalette <- c("#000021", "#88CCEE", "#661100", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-# cbPalette  <- c("#000000","#B64074", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00" )
+ #cbPalette  <- c("#000000","#B64074", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00" )
 
 safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499", 
                              "#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888")
@@ -47,28 +54,25 @@ safe_colorblind_palette <- c("#88CCEE", "#CC6677", "#DDCC77", "#117733", "#33228
 #################################### Regression tables  ########################################
 
 
-#regression_models <- list()
-#plot_list <- list()
+regression_models <- list()
+plot_list <- list()
 
-#for (outcome_var in outcome_vars) {
-    #formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1) | ST + YEAR")) # if adjusted need to be added .[controlvar]#
-  #  
-    ##### Need to change #########
-    Event= feols(UNINS ~ FBCIT*i(ttot, expansion, ref = -1) + NonCit*i(ttot, expansion, ref = -1) | ST + YEAR,
-                  vcov="hetero",
-                  #  cluster = "ST",
-                  weights = ~PWGTP,
-                  data = Dataset)
+for (outcome_var in outcome_vars) {
+  formula <- as.formula(paste(outcome_var, "~", treatment_var[1]," * i(ttot, expansion, ref = -1) +" ,   treatment_var[2]," * i(ttot, expansion, ref = -1) + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+",
+                              treatment_var[1],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) +",
+                              treatment_var[2],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR")) 
+  
+  
+  Event= feols( formula   ,  
+                vcov="hetero",
+                #  cluster = "ST",
+                weights = ~PWGTP,
+                data = Dataset)
+  
+  
+  regression_models[[outcome_var]] <- Event
+  
 
-Event= feols(UNINS ~ FBLEG*i(ttot, expansion, ref = -1) + UNDOC*i(ttot, expansion, ref = -1) +.[controlvar] | ST + YEAR,
-             vcov="hetero",
-             #  cluster = "ST",
-             weights = ~PWGTP,
-             data = Dataset)
-
-
-
-   # regression_models[[outcome_var]] <- Event
     
 
     ################ Get info from regression to create basic for est and sd calculation ####################
@@ -179,31 +183,31 @@ plot<-rbind(plot,cosd,cosd2)
    # plot$x_year<-plot$label
     plot$label<-plot$x_year
     nrplot<-nrow(plot)
-    plot$x_year<-ifelse(1:nrplot < (nrplot/3)+1 , plot$x_year-0.1, plot$x_year)
+    plot$x_year<-ifelse(1:nrplot < (nrplot/3)+1 , plot$x_year-0.2, plot$x_year)
    # plot$x_year<-ifelse(2*nrplot/3:nrplot, plot$x_year+0.1, plot$x_year)
-    plot$x_year[14:26] <- plot$x_year[14:26] + 0.1
+    plot$x_year[14:26] <- plot$x_year[14:26] + 0.2
     
     ########################## Now plot it ####################################### 
     
-    plots<-ggplot(plot,
+    plot<-ggplot(plot,
                  aes(
                      x =x_year, y =estimate,group =as.factor(id),
                      ymin = prms.ci_low , ymax = prms.ci_high ,col=as.factor(id)
                  ))+
-        #labs(title = outcome_labels[outcome_var], x="Time to Treatment", y="Estimate and 95% Conf. Int")+
+        labs(title = outcome_labels[outcome_var], x="Time to Treatment", y="Estimate and 95% Conf. Int")+
         geom_hline(yintercept = 0)+
         geom_point(aes(shape=as.factor(id)),size=3) +
         geom_errorbar(width = 0.07) +
         geom_vline(xintercept = -1, lty =  "dashed")+
         # geom_ribbon(alpha = 0.2) +
         #labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
-       # scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
-       # scale_shape_discrete(labels=plotleglable,name="Population")+
+       scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
+        scale_shape_discrete(labels=plotleglable,name="Population")+
         scale_y_continuous(breaks = scales::breaks_pretty()) +
         theme(panel.background = element_rect(fill = "white", colour = "grey50"),legend.position="bottom", plot.title = element_text(hjust = 0.5))
     
     plot_list[[outcome_var]] <- plot
-}       #  geom_style
+}
 # geom_vline(xintercept =-1, col = ref.line.par$col, lwd = ref.line.par$lwd, lty = ref.line.par$lty)        geom_ribbon()
 ################################################################# Other
 
