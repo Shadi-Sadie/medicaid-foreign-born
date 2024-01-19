@@ -1,0 +1,576 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Event study
+For event study to see how the effect of the expansion differ between two groups I did it in two different ways.
+
+1. Running the equation 1 on two sample of Foreign and Native
+
+
+
+2. Use the interaction term for Foreign-born following the equation 2
+
+ problem with using the second method is that the power of the analysis might reduce dramaticly. Maybe I can do the power analysis instead of checking all these 
+ 
+ 
+ I want to see how these two approach differ here is how
+ 
+ when I use no adjustment 
+ 
+### Event study table  no adjustment Check different specifications
+
+```{r}
+
+# with no adjustment on two samples
+Event= feols( UNINS ~ i(ttot, expansion, ref = -1) | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+# with no adjustment with interaction 
+
+Event1= feols( UNINS ~ ForeginBorn*i(ttot, expansion, ref = -1) | 
+                ST + YEAR   ,                        ## FEs
+              vcov="hetero",
+              #  cluster = "ST",
+              weights = ~PWGTP,
+              data = Data)
+
+etable(Event, Event1)
+
+
+
+```
+Plotting the same thing in a graph:
+
+### Graph Event study   no adjustment
+
+```{r, echo=FALSE}
+
+# with no adjustment on two samples
+
+plot1<-ggiplot(Event)
+
+
+# with no adjustment with interaction 
+treatment_var<- c("ForeginBorn")
+plotleglable<- c('US-Born','Foregin-born')
+
+
+
+draft<-coeftable(Event1) 
+draft<-as.data.frame(draft)
+    
+    existing_rows <- variable_list[variable_list %in% rownames(draft)]
+    
+    if (length(existing_rows) > 0) {
+        dropOutFtab <- which(rownames(draft) %in% existing_rows)
+        draft <- draft[-dropOutFtab, ]
+    }
+    
+    #grep("ttot",rownames(draft)))
+    checkmark<-any(grepl(treatment_var,rownames(draft)))    
+    if (checkmark) {
+        plot<-draft[1:(nrow(draft)/2),1:2] 
+    } else {
+        plot<-draft[,1:2]   
+    }
+    
+    plot$id<-1
+    plot$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot))) # extracting year variable from row names
+    colnams<-c("estimate","sd","id", "x_year") #assigning names
+    colnames(plot)<- colnams
+    ############## Calculating the est of interaction #############
+    #
+    est1<-draft[1:(nrow(draft)/2),1]
+    est2<-draft[((nrow(draft)/2)+1):nrow(draft),1]
+    est3<-est2+est1
+    
+    ############## # Calculate standard error for each pair of rows and columns#############
+    
+    cov<-vcov(Event1, "hetero")
+    
+    if (length(existing_rows) > 0) {
+        dropOutFtab <- which(rownames(cov) %in% existing_rows)
+        cov<-cov[-dropOutFtab,-dropOutFtab]
+    }
+    
+    #se_treat_male <- sqrt(cov[1, 1] + cov[2, 2] + 2 * cov[1, 2]) ->
+    if (checkmark) { 
+        i <- 1    
+        j <- nrow(cov)/2
+        se_list <-list()  # numeric(nrow(cov)/2) ## initiating a vector for calculating SE for the desired plot
+        while (i <= j) {
+            #for (i in 1:row(cov)/2) {
+            se_list[[i]] <- sqrt(cov[i, i] + cov[i+j, i+j] + 2 * cov[i, i+j])
+            i <- i + 1
+        }
+        
+        cosd<-data.frame(se = unlist(se_list))
+        cosd<-data.frame(estimate= est3)
+        cosd$se<-unlist(se_list)
+        cosd$id<-2
+        cosd$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot)))
+        
+        colnames(cosd)<- colnams
+        
+        plot<-rbind(plot,cosd)
+        
+    }
+    
+    
+    ############## Calculating the est of interaction #############
+    
+    plot$prms.ci_low<- plot$estimate - qnorm(0.975) * plot$sd
+    plot$prms.ci_high<- plot$estimate + qnorm(0.975) * plot$sd
+    
+    
+    
+    #plot$ci_treat_male <- est1 + c(-1,1) * qnorm(0.975) * 0.001735147
+    
+    
+    #############################Prepare the table for ploting ################################## 
+    
+    plot$label<-plot$x_year
+    nrplot<-nrow(plot)
+    plot$x_year<-ifelse(1:nrplot < nrplot/2 , plot$x_year-0.1, plot$x_year+0.1)
+
+plot2<-ggplot(plot,
+                 aes(
+                     x =x_year, y =estimate,group =as.factor(id),
+                     ymin = prms.ci_low , ymax = prms.ci_high ,col=as.factor(id)
+                 ))+
+        labs(title = "Effec on UNINS", x="Time to Treatment", y="Estimate and 95% Conf. Int")+
+        geom_hline(yintercept = 0)+
+        geom_point(aes(shape=as.factor(id)),size=3) +
+        geom_errorbar(width = 0.07) +
+        geom_vline(xintercept = -1, lty =  "dashed")+
+        # geom_ribbon(alpha = 0.2) +
+        #labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
+        scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
+        scale_shape_discrete(labels=plotleglable,name="Population")+
+        scale_y_continuous(breaks = scales::breaks_pretty()) +
+        theme(panel.background = element_rect(fill = "white", colour = "grey50"),legend.position="bottom", plot.title = element_text(hjust = 0.5))
+         #  geom_styl
+
+
+ggarrange(plot1, plot2, ncol = 2, nrow = 1)
+
+
+```
+
+
+
+
+
+
+Now I wannt see if I use the same set of covariate for both regression or use different for each what would be the difference
+
+### Checking how adjustment affect estimate on splited result 
+```{r}
+
+# with adjustment on two samples
+Event= feols( UNINS ~ i(ttot, expansion, ref = -1)+ SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+
+Event1= feols( UNINS ~ i(ttot, expansion, ref = -1)+ SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ADA+UnempR  | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = NATV)
+
+
+Event2= feols( UNINS ~ i(ttot, expansion, ref = -1)+ SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Forgn
+               )
+etable(Event,Event1,Event2)
+
+```
+ 
+ While it might have influnce the power it didn't affect the estimation so, I will keep using the split version with all control now checkin how it would differ if I include adjustment
+ 
+### Event study table with adjustment Check different specifications
+
+```{r}
+# with adjustment on two samples including IPC & NonCit
+# 
+
+Event= feols( UNINS ~ i(ttot, expansion, ref = -1) +
+               SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+Event1= feols( UNINS ~ ForeginBorn*i(ttot, expansion, ref = -1)+
+               SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data)
+
+Event2= feols( UNINS ~ ForeginBorn*i(ttot, expansion, ref = -1) 
+               + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | 
+                ST + YEAR   ,                        ## FEs
+              vcov="hetero",
+              #  cluster = "ST",
+              weights = ~PWGTP,
+              data = Data)
+
+
+
+
+etable(Event,Event1,Event2)
+```
+
+
+
+
+ 
+### plot all adj Event study splited and non splited
+ 
+```{r,  fig.height = 8, fig.width = 9 , echo=FALSE}
+plot1<-ggiplot(Event)
+
+
+
+### for interaction including IPC and NonCit
+
+controlvar<-c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA") 
+variable_list<- c("ForeginBorn"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
+                  "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
+                   "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L","ADA")
+treatment_var<- c("ForeginBorn")
+plotleglable<- c('US-Born','Foregin-born')
+
+
+
+  draft<-coeftable(Event1) 
+  draft<-as.data.frame(draft)
+  
+  existing_rows <- variable_list[variable_list %in% rownames(draft)]
+  
+  if (length(existing_rows) > 0) {
+    dropOutFtab <- which(rownames(draft) %in% existing_rows)
+    draft <- draft[-dropOutFtab, ]
+  }
+  
+  #grep("ttot",rownames(draft)))
+  checkmark<-any(grepl(treatment_var,rownames(draft)))    
+  if (checkmark) {
+    plot<-draft[1:(nrow(draft)/2),1:2] 
+  } else {
+    plot<-draft[,1:2]   
+  }
+  
+  plot$id<-1
+  plot$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot))) # extracting year variable from row names
+  colnams<-c("estimate","sd","id", "x_year") #assigning names
+  colnames(plot)<- colnams
+  ############## Calculating the est of interaction #############
+  #
+  est1<-draft[1:(nrow(draft)/2),1]
+  est2<-draft[((nrow(draft)/2)+1):nrow(draft),1]
+  est3<-est2+est1
+  
+  ############## # Calculate standard error for each pair of rows and columns#############
+  
+  cov<-vcov(Event1, "hetero")
+  
+  if (length(existing_rows) > 0) {
+    dropOutFtab <- which(rownames(cov) %in% existing_rows)
+    cov<-cov[-dropOutFtab,-dropOutFtab]
+  }
+  
+  #se_treat_male <- sqrt(cov[1, 1] + cov[2, 2] + 2 * cov[1, 2]) ->
+  if (checkmark) { 
+    i <- 1    
+    j <- nrow(cov)/2
+    se_list <-list()  # numeric(nrow(cov)/2) ## initiating a vector for calculating SE for the desired plot
+    while (i <= j) {
+      #for (i in 1:row(cov)/2) {
+      se_list[[i]] <- sqrt(cov[i, i] + cov[i+j, i+j] + 2 * cov[i, i+j])
+      i <- i + 1
+    }
+    
+    cosd<-data.frame(se = unlist(se_list))
+    cosd<-data.frame(estimate= est3)
+    cosd$se<-unlist(se_list)
+    cosd$id<-2
+    cosd$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot)))
+    
+    colnames(cosd)<- colnams
+    
+    plot<-rbind(plot,cosd)
+    
+  }
+  
+ 
+  ############## Calculating the est of interaction #############
+  
+  plot$prms.ci_low<- plot$estimate - qnorm(0.975) * plot$sd
+  plot$prms.ci_high<- plot$estimate + qnorm(0.975) * plot$sd
+  
+  
+  
+  #plot$ci_treat_male <- est1 + c(-1,1) * qnorm(0.975) * 0.001735147
+  
+  
+  #############################Prepare the table for ploting ################################## 
+  
+  plot$label<-plot$x_year
+  nrplot<-nrow(plot)
+  plot$x_year<-ifelse(1:nrplot < nrplot/2 , plot$x_year-0.1, plot$x_year+0.1)
+  
+  
+plot2<-ggplot(plot,
+                 aes(
+                     x =x_year, y =estimate,group =as.factor(id),
+                     ymin = prms.ci_low , ymax = prms.ci_high ,col=as.factor(id)
+                 ))+
+        labs(title = "Effec on UNINS", x="Time to Treatment", y="Estimate and 95% Conf. Int")+
+        geom_hline(yintercept = 0)+
+        geom_point(aes(shape=as.factor(id)),size=3) +
+        geom_errorbar(width = 0.07) +
+        geom_vline(xintercept = -1, lty =  "dashed")+
+        # geom_ribbon(alpha = 0.2) +
+        #labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
+        scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
+        scale_shape_discrete(labels=plotleglable,name="Population")+
+        scale_y_continuous(breaks = scales::breaks_pretty()) +
+        theme(panel.background = element_rect(fill = "white", colour = "grey50"),legend.position="bottom", plot.title = element_text(hjust = 0.5))
+         #  geom_styl
+
+
+
+
+
+### Plot 3
+
+
+controlvar<-c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA") 
+variable_list<- c("ForeginBorn"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
+                  "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
+                   "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ForeginBorn:LTINU", "ForeginBorn:RACE1.L", "ForeginBorn:RACE1.Q", "ForeginBorn:RACE1.C", "ForeginBorn:RACE1^4", "ForeginBorn:SCHLG.L", "ForeginBorn:SCHLG.Q" ,"ForeginBorn:SCHLG.C", "ForeginBorn:SCHLG^4", 'ForeginBorn:MARG', "ForeginBorn:IPC", "ForeginBorn:ESRG.L" , "ForeginBorn:ESRG.Q","ADA","ForeginBorn:ADA","ForeginBorn:UnempR" )
+treatment_var<- c("ForeginBorn")
+plotleglable<- c('US-Born','Foregin-born')
+
+
+
+
+  draft<-coeftable(Event2) 
+  draft<-as.data.frame(draft)
+  
+  existing_rows <- variable_list[variable_list %in% rownames(draft)]
+  
+  if (length(existing_rows) > 0) {
+    dropOutFtab <- which(rownames(draft) %in% existing_rows)
+    draft <- draft[-dropOutFtab, ]
+  }
+  
+  #grep("ttot",rownames(draft)))
+  checkmark<-any(grepl(treatment_var,rownames(draft)))    
+  if (checkmark) {
+    plot<-draft[1:(nrow(draft)/2),1:2] 
+  } else {
+    plot<-draft[,1:2]   
+  }
+  
+  plot$id<-1
+  plot$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot))) # extracting year variable from row names
+  colnams<-c("estimate","sd","id", "x_year") #assigning names
+  colnames(plot)<- colnams
+  ############## Calculating the est of interaction #############
+  #
+  est1<-draft[1:(nrow(draft)/2),1]
+  est2<-draft[((nrow(draft)/2)+1):nrow(draft),1]
+  est3<-est2+est1
+  
+  ############## # Calculate standard error for each pair of rows and columns#############
+  
+  cov<-vcov(Event2, "hetero")
+  
+  if (length(existing_rows) > 0) {
+    dropOutFtab <- which(rownames(cov) %in% existing_rows)
+    cov<-cov[-dropOutFtab,-dropOutFtab]
+  }
+  
+  #se_treat_male <- sqrt(cov[1, 1] + cov[2, 2] + 2 * cov[1, 2]) ->
+  if (checkmark) { 
+    i <- 1    
+    j <- nrow(cov)/2
+    se_list <-list()  # numeric(nrow(cov)/2) ## initiating a vector for calculating SE for the desired plot
+    while (i <= j) {
+      #for (i in 1:row(cov)/2) {
+      se_list[[i]] <- sqrt(cov[i, i] + cov[i+j, i+j] + 2 * cov[i, i+j])
+      i <- i + 1
+    }
+    
+    cosd<-data.frame(se = unlist(se_list))
+    cosd<-data.frame(estimate= est3)
+    cosd$se<-unlist(se_list)
+    cosd$id<-2
+    cosd$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot)))
+    
+    colnames(cosd)<- colnams
+    
+    plot<-rbind(plot,cosd)
+    
+  }
+  
+  
+  ############## Calculating the est of interaction #############
+  
+  plot$prms.ci_low<- plot$estimate - qnorm(0.975) * plot$sd
+  plot$prms.ci_high<- plot$estimate + qnorm(0.975) * plot$sd
+  
+  
+  
+  #plot$ci_treat_male <- est1 + c(-1,1) * qnorm(0.975) * 0.001735147
+  
+  
+  #############################Prepare the table for ploting ################################## 
+  
+  plot$label<-plot$x_year
+  nrplot<-nrow(plot)
+  plot$x_year<-ifelse(1:nrplot < nrplot/2 , plot$x_year-0.1, plot$x_year+0.1)
+  
+  
+plot3<-ggplot(plot,
+                 aes(
+                     x =x_year, y =estimate,group =as.factor(id),
+                     ymin = prms.ci_low , ymax = prms.ci_high ,col=as.factor(id)
+                 ))+
+        labs(title = "Effec on UNINS", x="Time to Treatment", y="Estimate and 95% Conf. Int")+
+        geom_hline(yintercept = 0)+
+        geom_point(aes(shape=as.factor(id)),size=3) +
+        geom_errorbar(width = 0.07) +
+        geom_vline(xintercept = -1, lty =  "dashed")+
+        # geom_ribbon(alpha = 0.2) +
+        #labs(title = "Your Title", x = "X-axis Label", y = "Y-axis Label") +
+        scale_colour_manual(labels=plotleglable,name="Population",values=cbPalette)+
+        scale_shape_discrete(labels=plotleglable,name="Population")+
+        scale_y_continuous(breaks = scales::breaks_pretty()) +
+        theme(panel.background = element_rect(fill = "white", colour = "grey50"),legend.position="bottom", plot.title = element_text(hjust = 0.5))
+         #  geom_styl
+
+
+
+ggarrange(plot1, plot2,plot3)
+
+
+```
+ 
+ given that removing IPC and NonCit didn't affact the result in neither of example I will keep these in model. I want to also run another event study that interaction for Foreignborn and IPC . I suspect to see that it become more like the DID. but let's see
+ 
+## Static TWFE
+ Now I started feeling that maybe if I take a look at the samples in the TWFE model two samples then I can chose between model two and three as well.
+ 
+ let's see:
+ 
+ 
+### TWFE with not adjustment
+
+```{r}
+
+
+reg1 = feols(UNINS ~ treat  | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data,split= ~NATIVITY) # Control for demographic + immigrants + state
+
+reg2 = feols(UNINS ~ treat*ForeginBorn  | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+
+
+etable(list(reg1,reg2))
+
+
+```
+
+
+## Run the Sun&Abraham
+
+```{r}
+
+
+Data$year_treated <- ifelse(Data$expansion == 0, 10000, Data$ExpansionY)
+
+
+
+san= feols( UNINS ~ sunab(year_treated, YEAR) +
+               SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data,
+               split= ~NATIVITY)
+
+San1= feols( UNINS ~ ForeginBorn*sunab(year_treated, YEAR)+
+               SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+                   ST + YEAR   ,                        ## FEs
+               vcov="hetero",
+               #  cluster = "ST",
+               weights = ~PWGTP,
+               data = Data)
+
+San2= feols( UNINS ~ ForeginBorn sunab(year_treated, YEAR) 
+               + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | 
+                ST + YEAR   ,                        ## FEs
+              vcov="hetero",
+              #  cluster = "ST",
+              weights = ~PWGTP,
+              data = Data)
+
+etable(san,San1,San2)
+
+```
+
+
+
+### TWFE with adjustment
+
+
+```{r}
+
+reg1 = feols(UNINS ~ treat + SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data,split= ~NATIVITY) # Control for demographic + immigrants + state
+
+reg2=  feols(UNINS ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data)
+
+reg3=  feols(UNINS ~ treat*ForeginBorn +SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC  | ST + YEAR , vcov = "hetero", weights = ~PWGTP, data = Data)
+
+
+etable(list(reg1,reg2,reg3),fitstat=c('n', 'cor2', 'ar2', 'war2',"aic"))
+```
+ 
+ 
+ checking different specification strategy again
+```{r}
+
+Event= feols( UNINS ~ ForeginBorn*i(ttot, expansion, ref = -1) + SEX +DIS+AGEP+POVPIPG+ADA+LTINU+ ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG+ UnempR+IPC)| 
+                ST + YEAR  ,                        ## FEs
+              vcov="hetero",
+              #  cluster = "ST",
+              weights = ~PWGTP,
+              data = Data)
+
+
+```
+ 
+ 
+ 
