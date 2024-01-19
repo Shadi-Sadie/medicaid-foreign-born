@@ -29,7 +29,7 @@ outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Empl
 
 treatment_var<-c("UNDOC", "FBLEG")
 variable_list <- c("UNDOC", "FBLEG") ########## To be removed from the draft table
-plotleglable<- c('US-Born', 'FB-Non-citizen', 'FB-Citizen'  )
+plotleglable<- c('US-Born', 'Undocumented', 'Legal-Foreign-born')
 Dataset<-Data
 ### Changing the graph colors 
 cbPalette <- c("#000000", "#E69F00", "#999933", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
