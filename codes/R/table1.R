@@ -1,3 +1,19 @@
+dummy<- subset(NONCIT, select=c(RACE1 ,ESRG,SCHLG ,POVPIPG, CORIGIN, ENG,LTINU ))
+dummy<-dummy(dummy)
+dummy <- dummy %>% mutate_all(as.numeric)
+colnm<-colnames(dummy)
+colnm<- gsub("RACE1_|SCHLG_|ESRG_|POVPIPG_|ENG_|CORIGIN_|LTINU_","" ,colnm)
+colnm <- gsub("\\.", "", colnm)
+colnm <- gsub("\\s+", " ", colnm)
+#colnm <- gsub("\\_", "", colnm)
+colnm
+names(dummy)<-colnm
+head(dummy)
+NONCIT <- cbind(dummy, NONCIT)
+
+
+
+library(dummy)
 
 svy <- svydesign(
     id=~1,
@@ -12,36 +28,47 @@ svy <- svydesign(
 
 
 # Data for table
-
 df<-Data
-df$ACA <- factor(df$ACA, levels = c("Pre-ACA", "Post-ACA"))
 
-dummy<- subset(Data, select=c(RACE1, SEX ,ESRG,SCHLG ,POVPIPG)  
-               )
-library(dummy)
+dummy<- subset(Data, select=c(RACE1, SEX ,ESRG,SCHLG ,POVPIPG, CORIGIN, ENG ))
 dummy<-dummy(dummy)
 dummy <- dummy %>% mutate_all(as.numeric)
 colnm<-colnames(dummy)
-colnm<- gsub("RACE1_|SCHLG_|SEX_|ESRG_|POVPIPG_", "", colnm)
-colnm <- gsub("\\.", " ", colnm)
+colnm<- gsub("RACE1_|SCHLG_|SEX_|ESRG_|POVPIPG_|ENG_|CORIGIN_","" ,colnm)
+colnm <- gsub("\\.", "_", colnm)
 colnm <- gsub("\\s+", " ", colnm)
+colnm <- gsub("\\_", "", colnm)
+
 colnm
 names(dummy)<-colnm
 head(dummy)
 df <- cbind(dummy, df)
-
-colnm<-c("UNINS","HINS4","HINS2","HINS1","AGEP", colnm, "MARG", "DIS")
-al<-c( NATIVITY,ACA, expansion,UNINS,HINS4,HINS2,HINS1,AGEP, Asian,Black,Hispanic,Other, White, Female ,Male,  MARG ,DIS )
+#colnm<-c("UNINS","HINS4","HINS2","HINS1","AGEP", colnm, "MARG", "DIS")
+#al<-c( NATIVITY,ACA, expansion,UNINS,HINS4,HINS2,HINS1,AGEP, Asian,Black,Hispanic,Other, White, MARG ,DIS )
       
     
 tab<- df %>% filter(ACA=="Pre-ACA")%>%
-    select(NATIVITY,ACA, expansion,UNINS,HINS4,HINS2,HINS1,AGEP, Asian,Black,Hispanic,Other, White, Female ,Male,  MARG ,DIS ) %>%  
-    tbl_strata(
+    select(NATIVITY,ACA, expansion,UNINS,HINS4,HINS2,HINS1,AGEP,SEX,MARG,DIS,White, Black, Asian, Hispanic, Other,
+           Employed, Unemployed, Notinlaborforce,
+           Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+           Incomebelow100poverty, Income100to138poverty,
+           EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+           OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+           UnitedStates, WesternEurope,
+           Onlyenglish, Verywell, Well, Notwell, Notatall) %>%  
+      tbl_strata(
         strata = NATIVITY,
         .tbl_fun = ~ .x %>% 
             tbl_summary(
                 by = expansion,
-                include = c(UNINS,HINS4,HINS2,HINS1,AGEP, Asian,Black,Hispanic,Other, White, Female ,Male,  MARG ,DIS) ) %>%  
+                include = c(UNINS,HINS4,HINS2,HINS1,AGEP,SEX,MARG,DIS,White, Black, Asian, Hispanic, Other,
+                            Employed, Unemployed, Notinlaborforce,
+                            Lessthanhighschool, Highschool, SomecollegeorAssociatedegree, Collegedegree, Graduateandbeyond,
+                            Incomebelow100poverty, Income100to138poverty,
+                            EasternAsia, EasternEurope, LatinAmerica, MiddleEast, NorthernAmeric,
+                            OceaniaandatSea, SouthCenteralAsia, SoutheaasternAsia, SubSaharanAfrica,
+                            UnitedStates, WesternEurope,
+                            Onlyenglish, Verywell, Well, Notwell, Notatall)  %>%  
                     tbl_strata( Female ,Male,  MARG ,DIS),
                 missing = "no",
                 label = list(
@@ -62,7 +89,7 @@ tab<- df %>% filter(ACA=="Pre-ACA")%>%
                                    hide_se =TRUE,
                                    pattern = "{estimate}{stars}"
                                   ) 
-            )
+            
 #%>%
 #  add_p()                  %>%
 #  add_stat_label()        %>%
