@@ -1,11 +1,6 @@
 # Medicaid expansion effects on immigrants insurance gain
  
-This repository contains information about my research project on the effect of Medicaid expansion on immigrant insurance coverage. I aim to reach two   goals by creating this repository:
-
-1. To make my research reproducible in such a way that other researchers could reuse my codes and data.
-2. To make my life easier by documenting every step I take ( Remembering what I have done).
-
-For this purpos I divided this repo into 4 chunks, data, text, figures and tables, and codes. I will provide more details for each section.
+This repository contains all necessary resources for the research project on the effect of Medicaid expansion on foreign-born vs US-born insurance coverage. 
  
 ## Table of content
 
@@ -18,14 +13,24 @@ For this purpos I divided this repo into 4 chunks, data, text, figures and table
 
 ## Data
 
-I will discuss where I gathered the data for this analysis and what the data folder consists of.
+This project uses ACS 1-year PUMS (2011–2019) at the person level, plus three state-year contextual datasets (BLS unemployment, Medicaid expansion status/timing, IPC Index). We store data in two tiers:
+
+* data/raw/ — Immutable source files (exactly as downloaded; no edits).
+
+* data/processed/ — Derived, cleaned, and analysis-ready datasets (subsets, recodes, merges).
+
+> Large files are not committed to GitHub. Regenerate them via scripts or track them with Git LFS if needed.
+
+
 
 ### Raw data
 
-The raw data for this analysis can be derived from the American Community Survey(ACS) Public Use Microdata Sample (PUMS) for the years 2009-2019, and it is available on their [website](https://www.census.gov/programs-surveys/acs/microdata/access.html) along with detailed [documentation](https://www.census.gov/programs-surveys/acs/microdata/documentation.html). This annual raw data can be downloaded in either SAS or CSV format from their File Transfer Protocol (FTP) site. These data are also available via the web API( Application Programming Interface), and the R package [tidcycensus](https://walker-data.com/tidycensus/index.html) can be used to download and handle this dataset more efficiently by using mentioned APIs. 
+#### 1. *American Community Survey(ACS) Public Use Microdata Sample (PUMS)* Core dataset
 
-Using API and tidycensus R package, I downloaded each year's dataset with only variables I needed; these included variables are as follows:
+I retrieve person-level ACS 1-year PUMS files for 2011–2019 via the API using the R package [tidcycensus](https://walker-data.com/tidycensus/index.html) and append them in one single file called RAW.CSV
+For the full data access use [website](https://www.census.gov/programs-surveys/acs/microdata/access.html) along with detailed [documentation](https://www.census.gov/programs-surveys/acs/microdata/documentation.html).
 
+Each year’s person-level PUMS file includes:
 * ST: State
 * TYPE: Type of unit show if individual belong to group quarters or not ( This is a temporary variable for the purpose of subseting) 
 * REGION: Region code based on 2010 Census definitions ( Northeast, Midwest, South, West, Puerto Rico ).
@@ -57,53 +62,83 @@ Using API and tidycensus R package, I downloaded each year's dataset with only v
 * PUMA: Public use microdata area code (PUMA) based on 2010 Census definition
 (areas with population of 100,000 or more, use with ST for unique code)
 * POBP: Place of Birth
+* RELP: 
 
 
 >In 2019 ACS introduced a new variable HIMRKS which provides estimates of the number and proportion of people with subsidized Marketplace coverage. However, since this variable in not there for the rest of the years between 2015-2019 I didn't include it for our analysis, but it would be good for future analysis, Other variable that can be used for the future study are ANC1P (Recoded Detailed Ancestry - first entry) , NOP (Nativity of parent for individual less than 17-- both parent native, mother FB, father FB, both FB)
 
-For my RAM to handle the operation, I only downloaded data for low-income ( less than 138% income/poverty) individuals aged between 18-65. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
+#### 2. *BLS State Unemployment*
+
+* LS State Unemployment (LAUS)
+
+* Source: [Bureau of Labor Statistics (LAUS)](https://www.bls.gov/lau/)
+
+* Description: Annual state-level unemployment rates (or monthly averaged to annual).
+
+* Key Variables: state_fips, state, year, unemp_rate
+
+* Usage: Merged with ACS by state-year to control for economic context.
+
+
+KFF, state's health fact for the dynamics status of medicaid expansion
+
+
+#### 3. _Medicaid Expansion Status & Timing_
+
+ * Source: [KFF Medicaid Expansion Tracker](https://www.kff.org/medicaid/issue-brief/status-of-state-medicaid-expansion-decisions/)
+
+ * Description: State decisions and effective dates for Medicaid expansion under the ACA.
+
+ * Key Variables: state_fips, state, expansion_effective_date, year, expanded_in_year
+
+ * Usage: Used to create the main policy variable (expanded_in_year) in DiD models.
+
+#### 4. _The Immigration Policy Climate (IPC) Index_
+
+ * Source: [IPC Index Dataset](https://www.goleensamari.com/data)
+
+ * Description: A longitudinal measure of state immigration policy climate (50 states + DC, 2009–2023).
+
+ * Key Variables: state_fips, state, year, ipc_score
+
+ * Usage: Captures state-level xenophobia/policy restrictiveness to account for structural context.
 
 ### Cleaned data 
 
-In the next step, using my inclusion criteria I created a subset of data, called PREACS with 
-
-fixed the mismatch, changed the vacant values with NA a this would be the 
-
-But, you will also find cleaneddata2 in the folder that would be the final data set whihch includes my created variable as well and exported it to Stata format for future use.
-
-I will use both R and Stata for running analyses. For now, I only used R for cleaning and preparing the data set for the main analysis in Stata.
-
-
-## Codes
-
-### R codes
-
-* **Getting Data** 
-GetDataTideyCensus.R: This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final 
-
-* **Subsesting Based on Inclusion**
-   Binding amd Subesting.R: I created a subset of the data using my inclusion criteria as below.
+The raw data were merged and cleaned to create analysis-ready datasets.
+#### PREACS (Intermedicate File)
+Filtered according to inclusion criteria:
     1. *Income below 138%* which I already applied it when I was downloading the data.
     2. *Age being between 26 to 64*
     3. *Removing the institutionlized and unistitulionalized group quarters population* this is because there is no reported income for these groups.
     4. *Droping the non citizen with less than 5 years of residency* since this group are not eligible for mediacid benefit at all. 
     5. *Removing the data for the states that have adopted policies similar to Medicaid expansion before the Medicaid expansion went into effect in      2014* these states are Delaware, Massachusetts, New York, Vermont and  District of Columbia. 
 
-* **Cleaning the Variable**
+#### CLNACS (Final File)
+Further cleaned dataset including created and recoded variables ready to be used for the analysis
+
+
+Codes
+:
+
+* **GetDataTideyCensus.R:** This script includes codes for getting data set with only required variable from the ACS'API, appending annual data's in one dataset, chaning the format of dataset to a data frame and class of variables from charachter to numeric ,and exporting the data to CSV file Called RAWACS. 
+I filtered out the  low-income ( less than 138% income/poverty) and individuals aged between 18-65 at the source for spead. I then assigned a variable YEAR to each of the datasets, merged all these annual datasets into one single dataset by year and saved it as RAWACS, it includes 3,578,567 observation and 109 variable which 82 of them are weights. The raw data can be find here and the code [here](https://github.com/Shadi-Sadie/Paper-1-Cancer-Screening-and-Immigrants/blob/master/Codes/R/00-GetDataTidcyCensus.R).
+
+
+* **Binding amd Subesting.R:**
+    Mergeded raw dataset and created a subset of the data using my inclusion criteria as below.
+* **Cleaning Data-03.R**
    Cleaning Data-03.R: Some variables were recoded to binary variables with 0 and 1 values instead of 1 and 2. The variables that were recoded include insurance, marriage status, disability, sex, and Hispanic. Additionally, new variables were created by recoding other variables such as age, race, education, employment, and poverty rate.
    Coding for variables ENG and FER had problem I fixed so that the values be consistent for all years.  From AGEP I created a categorical variable called AGEG to set up diffrent age into diffrent categories. Because the variable for the schooling had many categories created a new variable SCHLG, to group the schooling year into the conventional categories. I have done a similar recoding for the employmentant,race and poverty rate  to create more manageable and meaningful variables for analysis. 
-   
+
+   Additonaly, I also dealt with observed problem of YOEP (Year of entry) in the dataset. For people borned in US the downloaded value were bottom codeded and were diffrent for each year,I fixed this error by changing the value of YOEP for people borned in US to NA since there were mistakenly bottom coded for each year. Final
+
    In the next section of this script, I created additional variables that would be necessary for my analysis. These included two regional variables for categorizations for the country of origin, a variable for the percentage of life spent in the US, and a variable for expansion.
    
 Following this section, I exported data for the IPC index, political climate, and state's unemployment rate, and then appended these data to the original data set.
 
 In the final section, I removed variables that I deemed unnecessary for my analysis. This included variables that were only used to create other variables that were necessary for my analysis. Finally, I exported the cleaned data in both CSV and DAT formats for use in the main analysis.
 
-
-### Stata codes
-
+* fixed the mismatch, changed the vacant values with NA a this would be the 
 
 
-## Text
-## Figures and tables
- 
