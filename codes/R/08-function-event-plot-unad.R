@@ -8,11 +8,11 @@ library(fixest)
 outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
-treatment_var<- c("UNDOC")
+treatment_var<- c("ForeginBorn")
 # controlvar<-C("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
-variable_list <- c("UNDOC") ########## To be removed from the draft table
-plotleglable<- c('Legal FB','Undocumented FB')
-Dataset<-Forgn
+variable_list <- c("ForeginBorn") ########## To be removed from the draft table
+plotleglable<- c('US-Born','Foregin-born')
+Dataset<-data
 ### Changing the graph colors 
 #cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -146,5 +146,5 @@ for (outcome_var in outcome_vars) {
 # geom_vline(xintercept =-1, col = ref.line.par$col, lwd = ref.line.par$lwd, lty = ref.line.par$lty)        geom_ribbon()
 ################################################################# Other
 
-
+drop(outcome_var)
 ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom")

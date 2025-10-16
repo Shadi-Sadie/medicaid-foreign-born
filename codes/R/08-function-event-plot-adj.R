@@ -25,7 +25,7 @@ variable_list<- c("ForeginBorn"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,
 treatment_var<- c("ForeginBorn")
 # controlvar<-C("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
 plotleglable<- c('US-Born','Foregin-born')
-Dataset<-Data
+Dataset<-data
 ### Changing the graph colors 
 cbPalette <- c("#232424", "#CC6677", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -44,7 +44,8 @@ regression_models <- list()
 plot_list <- list()
 
 for (outcome_var in outcome_vars) {
-  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
+  #formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
+  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR")) # if adjusted need to be added #
   
   ##### Need to change #########
   Event= feols( formula   ,                        ## FEs
@@ -60,12 +61,14 @@ for (outcome_var in outcome_vars) {
   draft<-coeftable(Event) 
   draft<-as.data.frame(draft)
   
-  existing_rows <- variable_list[variable_list %in% rownames(draft)]
+ # existing_rows <- variable_list[variable_list %in% rownames(draft)]
+  event_rows <- grepl("ttot::", rownames(draft))
+  draft <- draft[event_rows, ]
   
-  if (length(existing_rows) > 0) {
-    dropOutFtab <- which(rownames(draft) %in% existing_rows)
-    draft <- draft[-dropOutFtab, ]
-  }
+ # if (length(existing_rows) > 0) {
+ #   dropOutFtab <- which(rownames(draft) %in% existing_rows)
+  #  draft <- draft[-dropOutFtab, ]
+ # }
   
   #grep("ttot",rownames(draft)))
   checkmark<-any(grepl(treatment_var,rownames(draft)))    
@@ -77,6 +80,7 @@ for (outcome_var in outcome_vars) {
   
   plot$id<-1
   plot$x_year<-as.numeric(gsub("[^0-9.-]", "", rownames(plot))) # extracting year variable from row names
+
   colnams<-c("estimate","sd","id", "x_year") #assigning names
   colnames(plot)<- colnams
   ############## Calculating the est of interaction #############
@@ -89,10 +93,14 @@ for (outcome_var in outcome_vars) {
   
   cov<-vcov(Event, "hetero")
   
-  if (length(existing_rows) > 0) {
-    dropOutFtab <- which(rownames(cov) %in% existing_rows)
-    cov<-cov[-dropOutFtab,-dropOutFtab]
-  }
+  event_rows <- grepl("ttot::", rownames(cov))
+  cov <- cov[event_rows, event_rows]
+  
+  
+  #if (length(existing_rows) > 0) {
+  #  dropOutFtab <- which(rownames(cov) %in% existing_rows)
+  #  cov<-cov[-dropOutFtab,-dropOutFtab]
+ # }
   
   #se_treat_male <- sqrt(cov[1, 1] + cov[2, 2] + 2 * cov[1, 2]) ->
   if (checkmark) { 
@@ -155,13 +163,14 @@ for (outcome_var in outcome_vars) {
     theme(panel.background = element_rect(fill = "white", colour = "grey50"),legend.position="bottom", plot.title = element_text(hjust = 0.5))
   
   plot_list[[outcome_var]] <- plot
-}       #  geom_style
+  
+}      #  geom_style
 # geom_vline(xintercept =-1, col = ref.line.par$col, lwd = ref.line.par$lwd, lty = ref.line.par$lty)        geom_ribbon()
 ################################################################# Other
 
 
 
-fig<-ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom")
+ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom")
 
 
 
@@ -173,63 +182,63 @@ fig<-ggarrange(plotlist = plot_list, ncol = 2, nrow = 2, common.legend = TRUE, l
 ################################################################################
 #outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
-
-
-Event1= feols( UNINS ~ i(ttot, expansion, ref = -1) +
-                SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
-                ST + YEAR   ,                        ## FEs
-              vcov="hetero",
-              #  cluster = "ST",
-              weights = ~PWGTP,
-              data = Data,
-              split= ~NATIVITY)
-
-plot1<-ggiplot(Event1,
-               ref.line = -1, main = 'Uninsured',xlab='Event Time')+
-  scale_color_manual(values=c('black','#B64074'))
-
-
-
-Event2= feols( HINS4 ~ i(ttot, expansion, ref = -1) +
-                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
-                 ST + YEAR   ,                        ## FEs
-               vcov="hetero",
-               #  cluster = "ST",
-               weights = ~PWGTP,
-               data = Data,
-               split= ~NATIVITY)
-
-plot2<-ggiplot(Event2, ref.line = -1, main = 'Medicaid',xlab='Event Time')+
-  scale_color_manual(values=c('black','#B64074'))
-
-
-Event3= feols( HINS1 ~ i(ttot, expansion, ref = -1) +
-                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
-                 ST + YEAR   ,                        ## FEs
-               vcov="hetero",
-               #  cluster = "ST",
-               weights = ~PWGTP,
-               data = Data,
-               split= ~NATIVITY)
-
-plot3<-ggiplot(Event3,ref.line = -1, main = 'Employer-Sponsored',xlab='Event Time')+
-  scale_color_manual(values=c('black','#B64074'))
-
-
-Event4= feols( HINS2 ~ i(ttot, expansion, ref = -1) +
-                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
-                 ST + YEAR   ,                        ## FEs
-               vcov="hetero",
-               #  cluster = "ST",
-               weights = ~PWGTP,
-               data = Data,
-               split= ~NATIVITY)
-
-plot4<-ggiplot(Event4,ref.line = -1, main = 'Directly Purchased',xlab='Event Time')+
-  scale_color_manual(values=c('black','#B64074'))
-
-
-ggarrange(plot1,plot2,plot3, plot4 , 
-          ncol = 2, nrow = 2,common.legend = TRUE, legend = "bottom")
-
-
+#
+# 
+# Event1= feols( UNINS ~ i(ttot, expansion, ref = -1) +
+#                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+#                 ST + YEAR   ,                        ## FEs
+#               vcov="hetero",
+#               #  cluster = "ST",
+#               weights = ~PWGTP,
+#               data = Data,
+#               split= ~NATIVITY)
+# 
+# plot1<-ggiplot(Event1,
+#                ref.line = -1, main = 'Uninsured',xlab='Event Time')+
+#   scale_color_manual(values=c('black','#B64074'))
+# 
+# 
+# 
+# Event2= feols( HINS4 ~ i(ttot, expansion, ref = -1) +
+#                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+#                  ST + YEAR   ,                        ## FEs
+#                vcov="hetero",
+#                #  cluster = "ST",
+#                weights = ~PWGTP,
+#                data = Data,
+#                split= ~NATIVITY)
+# 
+# plot2<-ggiplot(Event2, ref.line = -1, main = 'Medicaid',xlab='Event Time')+
+#   scale_color_manual(values=c('black','#B64074'))
+# 
+# 
+# Event3= feols( HINS1 ~ i(ttot, expansion, ref = -1) +
+#                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+#                  ST + YEAR   ,                        ## FEs
+#                vcov="hetero",
+#                #  cluster = "ST",
+#                weights = ~PWGTP,
+#                data = Data,
+#                split= ~NATIVITY)
+# 
+# plot3<-ggiplot(Event3,ref.line = -1, main = 'Employer-Sponsored',xlab='Event Time')+
+#   scale_color_manual(values=c('black','#B64074'))
+# 
+# 
+# Event4= feols( HINS2 ~ i(ttot, expansion, ref = -1) +
+#                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC | 
+#                  ST + YEAR   ,                        ## FEs
+#                vcov="hetero",
+#                #  cluster = "ST",
+#                weights = ~PWGTP,
+#                data = Data,
+#                split= ~NATIVITY)
+# 
+# plot4<-ggiplot(Event4,ref.line = -1, main = 'Directly Purchased',xlab='Event Time')+
+#   scale_color_manual(values=c('black','#B64074'))
+# 
+# 
+# ggarrange(plot1,plot2,plot3, plot4 , 
+#           ncol = 2, nrow = 2,common.legend = TRUE, legend = "bottom")
+# 
+# 

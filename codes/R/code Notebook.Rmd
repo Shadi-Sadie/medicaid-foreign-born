@@ -217,7 +217,7 @@ table(Data$LTINU)
 
 Data$CITSTAT<-0
 Data$CITSTAT<-ifelse(Data$CIT == "Born in US states" | Data$CIT =="Born in US Territories", "US-Born", Data$CITSTAT)
-Data$CITSTAT<-ifelse(Data$CIT == "US-citizen Born Abroad" | Data$CIT == 'Naturalized-citizen', "FB-Citizen", Data$CITSTAT)
+
 Data$CITSTAT<-ifelse(Data$CIT == "Non-citizen", "FB-Non-citizen", Data$CITSTAT)
 table(Data$CITSTAT)
 

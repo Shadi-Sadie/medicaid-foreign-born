@@ -164,7 +164,7 @@ reg3 = feols(UNINS ~ treat*ForeginBorn  + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCi
 
 
 
-table7<-  etable(list(reg1,reg2,reg3,reg4.reg5,reg6), 
+table7<-  etable(list(reg1,reg2,reg3,reg4,reg5,reg6), 
                  title = "Medicaid Expansion on Uninsured Rate (Difference-in-Differences Estimation Specifications)",
                  #headers = list("^:_:"= .("FE OLS" = 7, "FE LOGIT"=7)),
                  # extralines=list("^^Uninsured"=.(" ")) ,
