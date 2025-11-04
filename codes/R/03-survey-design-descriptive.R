@@ -118,7 +118,7 @@ t2<-Data %>%
     stat_2 = '**Expansion**'
   )
 
-
+t2
 #tab2 # check if everything is correct
 
 ## Stack two tables to create table 1
@@ -133,7 +133,7 @@ table1
 # unweighted table2
   tableA1<-Data %>%  filter(ACA=="Pre-ACA")%>%
   select(UNINS, HINS4, AGEP, SEX,  DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-            CIT,LTINU,ENG, CULRG,CORIGIN,expansion, NATIVITY ) %>%
+            CIT,LTINU,ENG, CULRG,expansion, NATIVITY ) %>%
             tbl_strata(
                        strata = expansion,
                       .tbl_fun = ~ .x %>% 
@@ -143,7 +143,7 @@ table1
                                label = list(AGEP ~ "Age", UNINS ~ "Uninsured",HINS4 ~ "Medicaid coverage", SEX ~ "Sex", DIS ~"Disability",
                                             ESRG~"Current employment status", MARG ~"Marital status",SCHLG~"Education" , RACE1~"Race/ethnicity",
                                             POVPIPG ~ "Federal poverty",CIT~"Citizenship status",LTINU ~"Lifetime in US",
-                                            ENG~"Self-rated English proficiency", CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+                                            ENG~"Self-rated English proficiency",  CULRG~"Cultural clusters"
                                            )
                                     ) %>%
                        #add_p() 
@@ -175,7 +175,7 @@ table1
                          include = c(
                                  UNINS, HINS4, AGEP, SEX,  DIS, 
                                  ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-                                 CIT,LTINU,ENG,CULRG,CORIGIN 
+                                 CIT,LTINU,ENG,CULRG 
                                      ),
                          missing = "no",
                          label = list(
@@ -184,8 +184,8 @@ table1
                                ESRG~"Current employment status", MARG ~"Marital status",
                                SCHLG~"Education" , RACE1~"Race/ethnicity",POVPIPG ~ "Federal poverty",
                                CIT~"Citizenship status",LTINU ~"Lifetime in US",
-                               ENG~"Self-rated English proficiency", 
-                               CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+                               ENG~"Self-rated English proficiency"
+                               #CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
                                      )
                               ) %>%
                 add_p()                  %>%
@@ -211,18 +211,18 @@ table1
 
  t1<- Data %>% 
       filter(expansion=="expansion")%>%
-      select(UNINS, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, CORIGIN, DIS,expansion,ACA) %>%  
+      select(UNINS, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, GEOR, DIS,expansion,ACA) %>%  
       tbl_strata(
            strata = ACA,
           .tbl_fun = ~ .x %>%  
                   tbl_summary(
                         by = UNINS,
-                        include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, CORIGIN, DIS,CULRG) ,
+                        include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, GEOR, DIS,CULRG) ,
                         label = list(
                                      RACE1~"Race/ethnicity", CIT~"Citizenship status",LTINU ~"Lifetime in US",
                                      SEX ~ "Sex", DIS ~"Disability", ESRG~"Current employment status", MARG ~"Marital status",
                                      SCHLG~"Education" , POVPIPG ~ "Federal poverty",ENG~"Self-rated English proficiency",
-                                     CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+                                     GEOR~"Country/Region of birth", CULRG~"Cultural clusters"
                                      ), 
                         percent = "row",
                         statistic = list(all_categorical() ~ "{p}%")
@@ -235,18 +235,18 @@ table1
 
  t2<- Data %>% 
    filter(expansion=="Non-expansion")%>%
-   select(UNINS, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, CORIGIN, DIS,expansion,ACA) %>%  
+   select(UNINS, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, GEOR, DIS,expansion,ACA) %>%  
    tbl_strata(
        strata = ACA,
       .tbl_fun = ~ .x %>%  
            tbl_summary(
                       by = UNINS,
-                      include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, CORIGIN, DIS,CULRG) ,
+                      include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, GEOR, DIS,CULRG) ,
                       label = list (
                                 RACE1~"Race/ethnicity", CIT~"Citizenship status",LTINU ~"Lifetime in US",
                                 SEX ~ "Sex", DIS ~"Disability", ESRG~"Current employment status", MARG ~"Marital status",
                                 SCHLG~"Education" , POVPIPG ~ "Federal poverty",ENG~"Self-rated English proficiency",
-                                CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+                                GEOR~"Country/Region of birth", CULRG~"Cultural clusters"
                                    ), 
                       percent = "row",
                       statistic = list(all_categorical() ~ "{p}%")
@@ -272,18 +272,18 @@ table1
 
  t1<- Data %>% 
    filter(expansion=="expansion")%>%
-   select(HINS4, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, CORIGIN, DIS,expansion,ACA) %>%  
+   select(HINS4, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, GEOR, DIS,expansion,ACA) %>%  
    tbl_strata(
      strata = ACA,
      .tbl_fun = ~ .x %>%  
        tbl_summary(
          by = HINS4,
-         include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, CORIGIN, DIS,CULRG) ,
+         include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, GEOR, DIS,CULRG) ,
          label = list(
            RACE1~"Race/ethnicity", CIT~"Citizenship status",LTINU ~"Lifetime in US",
            SEX ~ "Sex", DIS ~"Disability", ESRG~"Current employment status", MARG ~"Marital status",
            SCHLG~"Education" , POVPIPG ~ "Federal poverty",ENG~"Self-rated English proficiency",
-           CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+           GEOR~"Country/Region of birth", CULRG~"Cultural clusters"
          ), 
          percent = "row",
          statistic = list(all_categorical() ~ "{p}%")
@@ -296,18 +296,18 @@ table1
  
  t2<- Data %>% 
    filter(expansion=="Non-expansion")%>%
-   select(HINS4, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, CORIGIN, DIS,expansion,ACA) %>%  
+   select(HINS4, CIT, LTINU,  RACE1, SEX,ESRG, MARG, SCHLG,POVPIPG, ENG,CULRG, GEOR, DIS,expansion,ACA) %>%  
    tbl_strata(
      strata = ACA,
      .tbl_fun = ~ .x %>%  
        tbl_summary(
          by = HINS4,
-         include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, CORIGIN, DIS,CULRG) ,
+         include = c(CIT, LTINU,  RACE1,SEX,ESRG, MARG, SCHLG,POVPIPG, ENG, GEOR, DIS,CULRG) ,
          label = list (
            RACE1~"Race/ethnicity", CIT~"Citizenship status",LTINU ~"Lifetime in US",
            SEX ~ "Sex", DIS ~"Disability", ESRG~"Current employment status", MARG ~"Marital status",
            SCHLG~"Education" , POVPIPG ~ "Federal poverty",ENG~"Self-rated English proficiency",
-           CORIGIN~"Country/Region of birth", CULRG~"Cultural clusters"
+           GEOR~"Country/Region of birth", CULRG~"Cultural clusters"
          ), 
          percent = "row",
          statistic = list(all_categorical() ~ "{p}%")
@@ -360,7 +360,7 @@ table1
      # Filter the data based on CIT
      filtered_data <- Data %>%
        filter(CIT == cit_value) %>%
-       select({{ var }}, SEX, DIS, ESRG, MARG, SCHLG, RACE1, POVPIPG,LTINU, ENG, CULRG, CORIGIN)
+       select({{ var }}, SEX, DIS, ESRG, MARG, SCHLG, RACE1, POVPIPG,LTINU, ENG, CULRG, GEOR)
      
      # Create the table using tbl_summary
      table <- filtered_data %>%
@@ -378,7 +378,7 @@ table1
            LTINU ~ "Lifetime in US",
            MARG ~"Married",
            ENG ~ "Self-rated English proficiency",
-           CORIGIN ~ "Country/Region of birth"
+           GEOR ~ "Country/Region of birth"
          ),
          percent = "row",
          statistic = list(all_categorical() ~ "{p}%")
@@ -432,7 +432,7 @@ table1
  
  t1<-Data %>%  filter(ACA == "Pre-ACA") 
  data<-subset(data, select= c(UNINS, HINS4, AGEP, SEX,  DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-        CIT,LTINU,ENG, CULRG,CORIGIN,expansion, NATIVITY ))
+        CIT,LTINU,ENG, CULRG,GEOR,expansion, NATIVITY ))
  
  
  data<-dummy(data)
@@ -443,7 +443,7 @@ table1
  
  tableA2<- data %>%  filter(ACA == "Pre-ACA") %>%
  select(UNINS, HINS4, AGEP, SEX,  DIS, ESRG, MARG ,SCHLG , RACE1,POVPIPG,
-          CIT,LTINU,ENG, CULRG,CORIGIN,expansion, NATIVITY ) %>%
+          CIT,LTINU,ENG, CULRG,GEOR,expansion, NATIVITY ) %>%
    
    
    tableA2 <- data %>% tbl_strata (
