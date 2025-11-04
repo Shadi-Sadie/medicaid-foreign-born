@@ -19,3 +19,4 @@ codes/R/code Notebook.nb.html
 data/RAWACS-2025.RData
 codes/R/00-get-data-tidcycensus.R
 data/RAWACS-2025.csv
+*.csv

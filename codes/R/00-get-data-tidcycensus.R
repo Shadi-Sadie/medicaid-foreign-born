@@ -72,12 +72,12 @@ ACS<-rbind(ACS2011,ACS2012,ACS2013,ACS2014,ACS2015,ACS2016,ACS2017,ACS2018,ACS20
 
 ### Change the data format from tbl-df to data frame 
 
-ACS=as.data.frame(ACS)
+RAWACS=as.data.frame(ACS)
 
 
 #### 
 
-write.csv(ACS, file = paste0(wd$data,"RAWACS-2025.csv"), row.names = FALSE)
+write.csv(RAWACS, file = paste0(wd$data,"RAWACS-2025.csv"), row.names = FALSE)
 
 
-save(ACS, file =paste0(wd$data,"RAWACS-2025.RData"))
+save(RAWACS, file =paste0(wd$data,"RAWACS-2025.RData"))
