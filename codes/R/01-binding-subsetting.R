@@ -69,7 +69,7 @@ Data<-Data[!(Data$YLIU<5 & Data$CIT==5),]  # Removing the data of immigrant with
 
 ###### 5. Removing the US citizen born outside US and those born portorico and virgin island and ..
 
-#Data<-Data[!(Data$CIT %in% c(2,3) ),]  # Re
+Data<-Data[!(Data$CIT %in% c(2,3) ),]  # Re
 
 
 
