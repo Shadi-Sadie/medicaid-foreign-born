@@ -5,10 +5,14 @@
 #############################################################################################################
 
 
+
+#install.packages('labelled')
+
+
+
                                                                     #### loading required library  ####
 library(labelled)
 library(tidyr)
-library(readxl)
 library(dplyr)
 
 
@@ -22,13 +26,45 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
                                                                     #### Reading Dataset   ####
 
- Data<-read.csv("PREACS.csv", header = TRUE, sep ="," , fill = TRUE)
+#Data<-read.csv("PREACS-2025.csv", header = TRUE, sep ="," , fill = TRUE)
 
-PREACS<-Data
+Data<-PREACS
                                                                     #### Cleaning the Data   ####
+                                                                  
 
 
 Varname<-colnames(Data) # Checking the names of all variable
+
+
+
+## Upon checking all the variable and their value I noticed that  YOEP (Year of entry) for people borned in US is bottem coded instead of being NA , 
+## thus I fix this mannaualy based on the data dictionary for each year 
+
+# I can do it either in this way  
+
+#ACS$YOEP<-ifelse(ACS$YEAR==2009 & ACS$YOEP==1918,NA,ACS$YOEP) #
+#ACS$YOEP<-ifelse(ACS$YEAR==2010 & ACS$YOEP==1918,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2011 & ACS$YOEP==1918,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2012 & ACS$YOEP==1920,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2013 & ACS$YOEP==1920,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2014 & ACS$YOEP==1920,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2015 & ACS$YOEP==1920,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2016 & ACS$YOEP==1920,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2017 & ACS$YOEP==1924,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2018 & ACS$YOEP==1928,NA,ACS$YOEP) # 
+#ACS$YOEP<-ifelse(ACS$YEAR==2019 & ACS$YOEP==1928,NA,ACS$YOEP) # 
+
+
+# or 
+
+Data$YOEP<-ifelse(Data$CIT==1,NA,Data$YOEP) # 
+
+
+
+
+
+
+
 
 ### 1.  STATE - No cleaning needed
 
@@ -42,7 +78,7 @@ Varname<-colnames(Data) # Checking the names of all variable
   
 ### 4. AGEP to AGEG
 
-table(ACS$AGEP, exclude = NULL)
+table(PREACS$AGEP, exclude = NULL)
 
 Data$AGEG<-0
 Data$AGEG<-ifelse(Data$AGEP>25 & Data$AGEP<35,1,Data$AGEG) # 1. 25-34
@@ -95,13 +131,17 @@ var_label(Data$ENG) <- "English Proficiency"
    
 ### 6. FER : Gave birth to child within the past 12 months, 
 
- # We obsesrve similar pattern as ENG here before 2017, men and not applicable interviewee were coded 0 but after 2017 there were coded NA
+ # We observe similar pattern as ENG here before 2017, men and not applicable interviewee were coded 0 but after 2017 there were coded NA
 
 Data$FER<-replace(Data$FER,Data$FER==0,NA) # Change the 0 value to NA
-Data$FER<-replace(Data$FER,Data$FER=="b",0) # Change the 0 value to NA
+Data$FER<-replace(Data$FER,Data$FER=="b",0) # Change the b value to NA
+Data$FER<-replace(Data$FER,Data$FER==8,NA) # Change the b value to NA
+
 
  table(Data$FER,Data$YEAR ,exclude = NULL)  # Coded 8 is only for 2012 were there was a problem gathering the data
 
+ Data$FER<- ordered(Data$FER, labels = c("Yes","No"  ))
+ 
 ### 7. ALL INSURANCE VARIABLES 
 
 # HIMRKS  "HINS1"  "HINS2"  "HINS3" "HINS4"    "HINS5"    "HINS6"    "HINS7"  "HICOV"  "PRIVCOV"  "PUBCOV"
@@ -186,7 +226,8 @@ table(Data$SEX)
 
 ### 13. DISABILITY STATUS  DIS make it a dummy 
 
-Data$DIS<-replace(Data$DIS,Data$DIS==2,0)
+
+  Data$DIS<-replace(Data$DIS,Data$DIS==2,0)
 var_label(Data$DIS) <- "Disability"
 
 
@@ -276,32 +317,6 @@ table(Data$PostACA)
 
 ## Substitue way using the excel file that is already there by KFF
 
-expanData <- read_excel(paste0(wd$data,"expansion.xlsx"), sheet = "raw_data")
-
-# this data set includes stfips code(ST), State name(StateN), expansion(expansion) if state adopted or not(treatment), the year of expansion (ExpansionY)
-# and the Expan_STS which has values not expanded, expanded, late expanded.
-
-# checking the class of data
-sapply(expanData, class)
-
-# expansion and Expan_STS are character but they need to be factor, I will change their class next
-expanData$expansion<-as.factor(expanData$expansion)
-expanData$Expan_STS<-as.factor(expanData$Expan_STS)
-
-# merging data to whole data set
-Data <- merge(Data, expanData, by = "ST", all.x = TRUE)
-# Expansion year for the state that didn't adopt the medicaid is 0 I like to change that to NA
-# I might later decide to change it to 0 again
-Data$ExpansionY <- ifelse(Data$ExpansionY == 0, NA, Data$ExpansionY)
-# the expansion treatment is not dynamic it only shows if the satet is among expansion or non expansion states
-# Thus I need to create another variable called treatment that is dynamice
-Data$treat<-ifelse(Data$YEAR>=Data$ExpansionY & !is.na(Data$ExpansionY) , 1,0)
-#Change adoptet to expansion values
-b<-Data$expansion
-levels(b) <- c("Non-expansion","Expansion")
-class(b)
-b<-as.factor(b)
-Data$expansion<-b
 
 #####  percentage of life spent in the US
 
@@ -370,94 +385,6 @@ table(Data$CULRG, exclude = NULL)
 
 
 
-                                                              #### Export extra variables ####
-
-
-                                                    ## IPC Index##
-
-# Read an Excel file named "IPC.xlsx" from the working directory, 
-# where the sheet named "Sheet1" will be read.
-# This is going to be the all IPC score
-IPCINDX<-read.csv(paste0(wd$data,"IPC_Final.csv"), header = TRUE, sep ="," , fill = TRUE)
-IPCINDX <- IPCINDX[, c("state", "year", "annual_score")] #subset
-
-colnames(IPCINDX) <- c("StateN", "YEAR", "IPCINDX")
-sapply(IPCINDX, class)
-Data <- merge(Data, IPCINDX, by = c("StateN", "YEAR"), all.x = TRUE)
-
-# This is going to be IPC score without including Medicaid score 
-IPC <- read.csv(paste0(wd$data,"IPC.csv"), header = TRUE, sep ="," , fill = TRUE)
-#IPC <- read_excel(paste0(wd$data,"IPC.csv"), sheet = "Sheet1")
-#
-sapply(IPC, class)
-colnames(IPC) <- c("StateN", "YEAR", "IPC")
-Data <- merge(Data, IPC, by = c("StateN", "YEAR"), all.x = TRUE)
-
-
-                                            ## Political climate ##
-
-# Read an Excel file named "Pol.xlsx" from the working directory, 
-
-PolClM<-read_excel(paste0(wd$data,"Pol.xlsx"), sheet = "Sheet4")
-sapply(PolClM, class)
-
-# first I drop the extra variable
-#PolClM <- PolClM %>% select(-"STATE ABR")
-
-# then I will change the var names
-
-colnames(PolClM) <- c("YEAR", "StateN", "ST", "ADA")
-
-Data <- merge(Data, PolClM, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
-
-table(Data$ADA,exclude=NaN)
-
-class(Data$ADA)
-#table(PolClM$Leg_Control, exclude = NaN)
-#table(PolClM$Gov_Party, exclude = NaN)
-#table(PolClM$State_Control, exclude = NaN)
-
-# values Divided and split are the same need to be replaced
-#PolClM$`Leg. Control` <- replace(df$Status, df$Status == "Split", "Divided")
-
-
-#change charachter variable to ordered factor
-#levels_order <- c("Dem", "Rep", "Divided")
-#for (var in c("Leg. Control", "Gov. Party","State Control" )) {
- # PolClM[[var]] <- factor(PolClM[[var]], levels = levels_order, ordered = TRUE)
-#}
-
-
-
-                                        ## State's unemployment rate ##
-
-UNEMPR <- read_excel(paste0(wd$data,"UnempR.xlsx"), sheet = "Sheet1")
-sapply(UNEMPR, class)
-
-# Drop the columns I don't want, Statae name and State ABR are not included in the original Dataset, 
-# I might need to drop them or just keep the ABR for the final dataset
-
-UNEMPR <- UNEMPR %>% select(-c(`STATE ABR` , `2020`, `2021`))
-
-# Use pivot_longer to reshape the data
-unemp_data_long <- pivot_longer(UNEMPR, 
-                                cols = c(`2009`,`2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), 
-                                names_to = "YEAR", 
-                                values_to = "UnempR")
-
-# Print the transformed data check if everything is correct
-print(unemp_data_long)
-UNEMPR<-unemp_data_long 
-rm(unemp_data_long)
-
-colnames(UNEMPR) <- c("StateN","ST", "YEAR", "UnempR")
- #cheking the values again, year is charachter and need to be converted to numeric
-sapply(UNEMPR, class)
-UNEMPR$YEAR<- as.numeric(UNEMPR$YEAR)
-table(UNEMPR$YEAR)
-## Now, I try to merge my data 
-
-Data <- merge(Data, UNEMPR, by = c("ST", "YEAR", "StateN"), all.x = TRUE)
 
 
                                      ### ADDING FURTHER CLEANING WHICH was added later on to cleaning       ### 
@@ -556,10 +483,34 @@ table(Data$LTINU)
 
 
 
-write.csv(Data, file = paste0(wd$data,"CLNACS.csv"), row.names = FALSE)
+write.csv(Data, file = paste0(wd$data,"CLNACS-2025.csv"), row.names = FALSE)
 
 
-save(Data, file =paste0(wd$data,"CLNACS2.RData"))
+save(Data, file =paste0(wd$data,"CLNACS2025.RData"))
+
+CLNACS<-Data
+
+
+#Fixing the charachter to factro 
+#### 
+
+#classcol<-sapply(Data, class)
+#table(classcol)
+#char_columns <- which(classcol=="character")   
+#for (i in char_columns) {
+#   if (colnames(ACS)[i] != "SERIALNO") {
+#            ACS[, i] <- as.numeric(ACS[, i])
+#      }
+#}
+## don't worry warnnig is because b in data are changing to NA
+
+
+## I decided to use following code to fix the character issue 
+## 
+
+#num_vars <- c("YEAR","AGEP","POVPIP","ST","TYPE","CIT","ESR","HICOV","YOEP", paste0("HINS",1:7))
+#ACS[num_vars] <- lapply(ACS[num_vars], function(x) suppressWarnings(as.numeric(x)))
+
 
 
 
