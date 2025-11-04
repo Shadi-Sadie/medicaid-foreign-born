@@ -475,7 +475,7 @@ Data$IPC<-ifelse(Data$StateN == "North Carolina" & Data$YEAR==2016 & is.na(Data$
 
 Data$LTINU<-ifelse(Data$NATIVITY=="US-born",9,Data$LTINU) 
 
-table(Data$CORIGIN)
+#table(Data$CORIGIN)
 
 table(Data$LTINU)
 
