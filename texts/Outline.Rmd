@@ -50,6 +50,7 @@ forcont       <- c("ENG", "LTINU", "CORIGIN", "NonCit") # ENG+LTINU+CORIGIN+NonC
 
 #NATV<- Data[Data$NATIVITY == "US-born", ]
 
+Data<-Data[!(Data$ST %in% c(10, 11, 25,36,50)),]  # Looked up State FIPS code MA is 25 and Delaware is 10, DC is 11 , NY it 36 and Vermont is 50 
 
 ```
 
@@ -79,7 +80,7 @@ svy <- svydesign(
                   id=~1,
                   weights = ~ PWGTP, 
                   repweights = ~ matches("PWGTP[0-9]+"), 
-                  data = data, 
+                  data = Data, 
                   type = "JK1",
                   scale = 4/80,
                   rscales = rep(1, 80),
@@ -464,6 +465,7 @@ Table 2 gives a detailed look at demographics, insurance rates, and Medicaid cov
 
 ```{r tab2 }
 
+
 table2<-svy %>% subset(ACA=="Pre-ACA")%>%
       tbl_strata(
            strata = expansion,
@@ -808,7 +810,6 @@ as_kable_extra(booktabs = TRUE,
 Data$expansion<-as.numeric(Data$expansion)
 Data$expansion<-ifelse(Data$expansion==2,0,Data$expansion)
 
-Data$NonCit<- ifelse(Data$CIT == "Non-citizen",1,0)
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 
 NATV<- Data[Data$NATIVITY == "US-born", ]

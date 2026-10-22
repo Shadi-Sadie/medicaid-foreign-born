@@ -19,11 +19,8 @@ library(fixest)
 ## Data Preparation 
 ####################
 
- ACS <- read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
-Data<-ACS
-
-NATV<- Data[Data$NATIVITY == "US-born", ]
-Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
+# ACS <- read.csv( paste0(wd$data,"CLNACS.csv"), header = TRUE, sep = ",", fill = TRUE, stringsAsFactors = TRUE)
+ # Data<-ACS
 
 #Becausae expansion was a factor variable I had problme with the feols , so I changed it back to dummy
 Data$expansion<-as.numeric(Data$expansion)

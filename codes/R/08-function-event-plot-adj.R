@@ -17,6 +17,9 @@ outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
 outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 controlvar<-c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA") 
+#<-c("SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG") 
+
+
 variable_list<- c("ForeginBorn"   , "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
                   "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
                   "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ForeginBorn:LTINU", "ForeginBorn:RACE1.L", "ForeginBorn:RACE1.Q", 
@@ -44,8 +47,8 @@ regression_models <- list()
 plot_list <- list()
 
 for (outcome_var in outcome_vars) {
-  #formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
-  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR")) # if adjusted need to be added #
+  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
+  #formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC| ST + YEAR")) # if adjusted need to be added #
   
   ##### Need to change #########
   Event= feols( formula   ,                        ## FEs

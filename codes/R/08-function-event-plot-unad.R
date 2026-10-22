@@ -12,7 +12,7 @@ treatment_var<- c("ForeginBorn")
 # controlvar<-C("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU")
 variable_list <- c("ForeginBorn") ########## To be removed from the draft table
 plotleglable<- c('US-Born','Foregin-born')
-Dataset<-data
+Dataset<-Data
 ### Changing the graph colors 
 #cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 

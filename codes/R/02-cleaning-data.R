@@ -67,6 +67,7 @@ Data$YOEP<-ifelse(Data$CIT==1,NA,Data$YOEP) #
 
 
 ### 1.  STATE - No cleaning needed
+### 
 
 ### 2.  TYPE - Variable not needed drop 
 
@@ -303,7 +304,7 @@ table(Data$PostACA)
 #2021 Oklahoma
 #2022 Missouri
 # not expanded Alabama,Florida,Georgia,Kansas,Mississippi,North Carolina,South Carolina,South Dakota,Tennessee,Texas,Wisconsin,Wyoming
-# Create a data frame with state FIPS codes and their corresponding expansion years
+# Create a data frame with t FIPS codes and their corresponding expansion years
 
 #I can use the code here to create a var for expansion and expansion year but since I have the data availble
 #I'll use that instead, but if you don't want to use the data set the variable can be made using the code by removing # in the begings
@@ -459,6 +460,8 @@ Data$slegal <- ave(Data$good , Data$YEAR, Data$SERIALNO, FUN = mean)
 
 Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
 
+#create a non citizen variable
+Data$NonCit<- ifelse(Data$CIT == "Non-citizen",1,0)
 
 ### Fixing NA values:
 table(Data$IPC,exclude=NaN)

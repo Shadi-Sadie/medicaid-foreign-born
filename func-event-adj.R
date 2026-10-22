@@ -30,7 +30,7 @@ level<- c("")
 # plotleglable<- c('US-Born','Foregin-born')
 plotleglable<- c('US-Born','Foregin-born')
 
-Dataset<-data
+Dataset<-Data
 ### Changing the graph colors 
 cbPalette <- c("#232424", "#CC6677", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
