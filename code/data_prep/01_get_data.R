@@ -27,7 +27,8 @@ wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
 
 ### Uploading the Key to access to the ACS's API
 
-census_api_key("94b2e4e0fbd4ea5b12065dabc6c8b7292a615248", install = TRUE)
+# The key is read from the CENSUS_API_KEY environment variable (set it in ~/.Renviron), not stored in the code.
+census_api_key(Sys.getenv("CENSUS_API_KEY"))
 
 
 ### Creating a for loop to dl all the annual dataset at once  ##
