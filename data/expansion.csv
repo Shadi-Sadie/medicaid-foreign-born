@@ -1,0 +1,52 @@
+ST,StateN,expansion,ExpansionY,Expan_STS,aca_expansion_date,expansion_year_earliest,aca_exposure_frac_first_year
+1,Alabama,Not Adopted,0,Not Expanded,,,
+2,Alaska,Adopted,2015,Late Expansion,2015-09-01,2015,0.3342
+4,Arizona,Adopted,2014,Expanded,2014-01-01,2014,1.0
+5,Arkansas,Adopted,2014,Expanded,2014-01-01,2014,1.0
+6,California,Adopted,2014,Early Expansion,2014-01-01,2011,1.0
+8,Colorado,Adopted,2014,Early Expansion,2014-01-01,2012,1.0
+9,Connecticut,Adopted,2014,Early Expansion,2014-01-01,2010,1.0
+10,Delaware,Adopted,2014,Expanded,2014-01-01,2014,1.0
+11,District of Columbia,Adopted,2014,Early Expansion,2014-01-01,2010,1.0
+12,Florida,Not Adopted,0,Not Expanded,,,
+13,Georgia,Not Adopted,0,Not Expanded,,,
+15,Hawaii,Adopted,2014,Expanded,2014-01-01,2014,1.0
+16,Idaho,Not Adopted,0,Not Expanded,,,
+17,Illinois,Adopted,2014,Expanded,2014-01-01,2014,1.0
+18,Indiana,Adopted,2015,Late Expansion,2015-02-01,2015,0.9151
+19,Iowa,Adopted,2014,Expanded,2014-01-01,2014,1.0
+20,Kansas,Not Adopted,0,Not Expanded,,,
+21,Kentucky,Adopted,2014,Expanded,2014-01-01,2014,1.0
+22,Louisiana,Adopted,2016,Late Expansion,2016-07-01,2016,0.5027
+23,Maine,Adopted,2019,Late Expansion,2019-01-10,2019,0.9753
+24,Maryland,Adopted,2014,Expanded,2014-01-01,2014,1.0
+25,Massachusetts,Adopted,2014,Expanded,2014-01-01,2014,1.0
+26,Michigan,Adopted,2014,Expanded,2014-04-01,2014,0.7534
+27,Minnesota,Adopted,2014,Early Expansion,2014-01-01,2011,1.0
+28,Mississippi,Not Adopted,0,Not Expanded,,,
+29,Missouri,Not Adopted,0,Not Expanded,,,
+30,Montana,Adopted,2016,Late Expansion,2016-01-01,2016,1.0
+31,Nebraska,Not Adopted,0,Not Expanded,,,
+32,Nevada,Adopted,2014,Expanded,2014-01-01,2014,1.0
+33,New Hampshire,Adopted,2014,Expanded,2014-08-15,2014,0.3808
+34,New Jersey,Adopted,2014,Early Expansion,2014-01-01,2011,1.0
+35,New Mexico,Adopted,2014,Expanded,2014-01-01,2014,1.0
+36,New York,Adopted,2014,Expanded,2014-01-01,2014,1.0
+37,North Carolina,Not Adopted,0,Not Expanded,,,
+38,North Dakota,Adopted,2014,Expanded,2014-01-01,2014,1.0
+39,Ohio,Adopted,2014,Expanded,2014-01-01,2014,1.0
+40,Oklahoma,Not Adopted,0,Not Expanded,,,
+41,Oregon,Adopted,2014,Expanded,2014-01-01,2014,1.0
+42,Pennsylvania,Adopted,2015,Late Expansion,2015-01-01,2015,1.0
+44,Rhode Island,Adopted,2014,Expanded,2014-01-01,2014,1.0
+45,South Carolina,Not Adopted,0,Not Expanded,,,
+46,South Dakota,Not Adopted,0,Not Expanded,,,
+47,Tennessee,Not Adopted,0,Not Expanded,,,
+48,Texas,Not Adopted,0,Not Expanded,,,
+49,Utah,Not Adopted,0,Not Expanded,,,
+50,Vermont,Adopted,2014,Expanded,2014-01-01,2014,1.0
+51,Virginia,Adopted,2019,Late Expansion,2019-01-01,2019,1.0
+53,Washington,Adopted,2014,Early Expansion,2014-01-01,2011,1.0
+54,West Virginia,Adopted,2014,Expanded,2014-01-01,2014,1.0
+55,Wisconsin,Not Adopted,0,Not Expanded,,,
+56,Wyoming,Not Adopted,0,Not Expanded,,,

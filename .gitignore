@@ -26,7 +26,8 @@ data/raw/
 # Merged and cleaned files made by code/data_prep/02 and 03 (large; rebuilt from data/raw/)
 data/clean/
 # Small hand-made input that must be tracked, despite the *.csv rule above
-!data/state_policy.csv
+# (Medicaid expansion status and dates by state, used by code/data_prep/02)
+!data/expansion.csv
 # Lock files LibreOffice creates while a spreadsheet is open
 .~lock.*#
 
