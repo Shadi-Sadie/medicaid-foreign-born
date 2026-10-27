@@ -236,9 +236,10 @@ housing_vars <- c(
 #    for people born in the US, LANP for people who speak only English, MIGSP for people who
 #    lived in the same house a year ago, OCCP and SOCP for people not working, FHINS4C for
 #    people without Medicaid, POVPIP for most people in group quarters.
-# 2. Numbers are written with leading zeros up to 2018 but not in 2019, e.g. POVPIP "086" in
-#    2011-2018 and "86" in 2019, SSP "00000" vs "0". Codes such as ST "01", SCHL "01", HISP "01",
-#    POBP "006" and OCCP "0430" keep their zeros in every year. Always compare as numbers.
+# 2. POVPIP, SSP, SSIP and PAP are written with leading zeros in 2011-2017 but not from 2018
+#    on, e.g. POVPIP "086" in 2017 and "86" in 2018, SSP "00000" vs "0". Codes such as ST "01",
+#    SPORDER "01", SCHL "01", HISP "01", POBP "006" and OCCP "0430" keep their zeros in every
+#    year. Always compare as numbers.
 # 3. YOEP is missing exactly for people born in the US (CIT == 1). People born in Puerto Rico or
 #    the island areas, or abroad to American parents (CIT 2 and 3), are also "native" (NATIVITY
 #    == 1) but do have a year of entry.
