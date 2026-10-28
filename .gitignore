@@ -17,7 +17,6 @@ data/CLNACS.RData
 data/CLNACS2.RData
 archive/codes/R/code Notebook.nb.html
 data/RAWACS-2025.RData
-code/data_prep/01_get_data.R
 data/RAWACS-2025.csv
 *.csv
 data/CLNACS2025.RData
@@ -28,6 +27,8 @@ data/clean/
 # Small hand-made input that must be tracked, despite the *.csv rule above
 # (Medicaid expansion status and dates by state, used by code/data_prep/02)
 !data/expansion.csv
+# The state-by-year table built by code/data_prep/02_merge.R (small; tracked so it can be reviewed)
+!data/state_year.csv
 # Lock files LibreOffice creates while a spreadsheet is open
 .~lock.*#
 

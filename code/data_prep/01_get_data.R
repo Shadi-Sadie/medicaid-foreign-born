@@ -30,8 +30,8 @@
 #   A year whose output files already exist (with all the variables) is skipped, so a rerun after
 #   an interruption continues where it stopped.
 #
-# Inputs:  none (the Census Bureau website, https://www2.census.gov/programs-surveys/acs/data/pums/).
-#          No API key is needed.
+# Inputs: the Census Bureau website, (https://www2.census.gov/programs-surveys/acs/data/pums/).
+#          
 # Outputs: data/raw/census_files/csv_pus_YYYY.zip, csv_hus_YYYY.zip   the original Census files
 #          data/raw/acs_YYYY.rds        one row per person: all variables + main weight PWGTP
 #          data/raw/repwt_YYYY.rds      SERIALNO, SPORDER, YEAR, PWGTP1-PWGTP80

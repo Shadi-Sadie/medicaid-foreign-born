@@ -1,521 +1,452 @@
-
-##############################################################################################################
-### This program's aim is to clean the data for the final use 
-### last update : Nov 15, 2022
-#############################################################################################################
-
-
-
-#install.packages('labelled')
-
-
-
-                                                                    #### loading required library  ####
-library(labelled)
-library(tidyr)
-library(dplyr)
-
-
-
-wd <- list()
-# commonly used paths in my working directory
-wd$data   <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/data/"
-wd$output <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/output/"
-wd$texts <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/text/"
-wd$codes <- "/home/shadi/Projects/GitHub/medicaid-foreign-born/codes/R/"
-
-                                                                    #### Reading Dataset   ####
-
-#Data<-read.csv("PREACS-2025.csv", header = TRUE, sep ="," , fill = TRUE)
-
-Data<-PREACS
-                                                                    #### Cleaning the Data   ####
-                                                                  
-
-
-Varname<-colnames(Data) # Checking the names of all variable
-
-
-
-## Upon checking all the variable and their value I noticed that  YOEP (Year of entry) for people borned in US is bottem coded instead of being NA , 
-## thus I fix this mannaualy based on the data dictionary for each year 
-
-# I can do it either in this way  
-
-#ACS$YOEP<-ifelse(ACS$YEAR==2009 & ACS$YOEP==1918,NA,ACS$YOEP) #
-#ACS$YOEP<-ifelse(ACS$YEAR==2010 & ACS$YOEP==1918,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2011 & ACS$YOEP==1918,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2012 & ACS$YOEP==1920,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2013 & ACS$YOEP==1920,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2014 & ACS$YOEP==1920,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2015 & ACS$YOEP==1920,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2016 & ACS$YOEP==1920,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2017 & ACS$YOEP==1924,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2018 & ACS$YOEP==1928,NA,ACS$YOEP) # 
-#ACS$YOEP<-ifelse(ACS$YEAR==2019 & ACS$YOEP==1928,NA,ACS$YOEP) # 
-
-
-# or 
-
-Data$YOEP<-ifelse(Data$CIT==1,NA,Data$YOEP) # 
-
-
-
-
-
-
-
-
-### 1.  STATE - No cleaning needed
-### 
-
-### 2.  TYPE - Variable not needed drop 
-
-
-### 3. REGION - No cleaning needed
-
-
-
-  
-### 4. AGEP to AGEG
-
-table(PREACS$AGEP, exclude = NULL)
-
-Data$AGEG<-0
-Data$AGEG<-ifelse(Data$AGEP>25 & Data$AGEP<35,1,Data$AGEG) # 1. 25-34
-Data$AGEG<-ifelse(Data$AGEP>=35 & Data$AGEP<45,2,Data$AGEG) # 2. 35-44
-Data$AGEG<-ifelse(Data$AGEP>=45 & Data$AGEP<55,3,Data$AGEG) # 3. 45-54
-Data$AGEG<-ifelse(Data$AGEP>=55 & Data$AGEP<65,4,Data$AGEG) # 4. 55-64
-
-table(Data$AGEG, exclude = NULL)
-Data$AGEG<- ordered(Data$AGEG, labels = c("25-34", "35-44", "45-54","55-64" ))
-var_label(Data$AGEG) <- "Age (years)"
-
-
-### 4. CITIZENSHIP STATUS
-
-## in the data us-citizen born abroud are not included in foregin born. howerver, I wnat 
-## this groupd to be foregin born. therefore I recode it as :
-
-Data$NATIVITY<-replace(Data$NATIVITY,Data$CIT==3,2) 
-
-
-# additionaly I want my cit to have lable
-Data$CIT<- ordered(Data$CIT, labels = c("Born in US states", "Born in US Territories","US-citizen Born Abroad","Naturalized-citizen", "Non-citizen" )) # labeling the values 
-var_label(Data$CIT) <- "Citizenship Status"
-
-table(Data$NATIVITY)
-#Similarly I want to have lable for nativity
-
-Data$NATIVITY<- ordered(Data$NATIVITY, labels = c("US-born", "Foregin-born")) # labeling the values 
-var_label(Data$NATIVITY) <- "Forign-born Status"
-
-
-
-### 5. ABILITY SPEAK ENGLISH 
-
-table(Data$ENG, Data$YEAR , exclude = NULL)   # NA .Speaks only english  # 1 .Very well # 2 .Well # 3 .Not well # 4 .Not at all
-
-   # looking at the data, it is clear that there was a change in recoding by ACS. Prior to 2017, only english speaker 
-        # were coded as 0 ,but after 2017 they were coded as NA. We need to frist fix this.
-
-Data$ENG<-replace(Data$ENG,is.na(Data$ENG),0) #
-Data$ENG<-replace(Data$ENG,Data$ENG=="b",0) #
-
-table(Data$ENG,exclude = NULL)
-
-Data$ENG<- ordered(Data$ENG, labels = c("Only english","Very well", "Well", "Not well", "Not at all"  ))
-var_label(Data$ENG) <- "English Proficiency"
-
-
-
-   
-### 6. FER : Gave birth to child within the past 12 months, 
-
- # We observe similar pattern as ENG here before 2017, men and not applicable interviewee were coded 0 but after 2017 there were coded NA
-
-Data$FER<-replace(Data$FER,Data$FER==0,NA) # Change the 0 value to NA
-Data$FER<-replace(Data$FER,Data$FER=="b",0) # Change the b value to NA
-Data$FER<-replace(Data$FER,Data$FER==8,NA) # Change the b value to NA
-
-
- table(Data$FER,Data$YEAR ,exclude = NULL)  # Coded 8 is only for 2012 were there was a problem gathering the data
-
- Data$FER<- ordered(Data$FER, labels = c("Yes","No"  ))
- 
-### 7. ALL INSURANCE VARIABLES 
-
-# HIMRKS  "HINS1"  "HINS2"  "HINS3" "HINS4"    "HINS5"    "HINS6"    "HINS7"  "HICOV"  "PRIVCOV"  "PUBCOV"
-  
-# HINS1 Insurance through a current or former employer or union
-Data$HINS1<-replace(Data$HINS1,Data$HINS1==2,0) # Making it a dummy variable change the value of NO from 2 to 0
-var_label(Data$HINS1) <- "Employer sponsored"
-table(Data$HINS1)
-
-#"HINS2" : Insurance purchased directly from an insurance company
-Data$HINS2<-replace(Data$HINS2,Data$HINS2==2,0)
-var_label(Data$HINS2) <- "Individual purchased"
-table(Data$HINS2)
-
-#"HINS3" : Medicare, 
-Data$HINS3<-replace(Data$HINS3,Data$HINS3==2,0)
-var_label(Data$HINS3) <- "Medicare"
-table(Data$HINS3)
-
-#"HINS4" Medicaid,
-Data$HINS4<-replace(Data$HINS4,Data$HINS4==2,0)
-var_label(Data$HINS4) <- "Medicaid"
-table(Data$HINS4)
-
-#"HINS5": TRICARE or other military health care
-Data$HINS5<-replace(Data$HINS5,Data$HINS5==2,0)
-var_label(Data$HINS5) <- "TRICARE"
-table(Data$HINS5)
-
-# "HINS6": VA (enrolled for VA health care)
-Data$HINS6<-replace(Data$HINS6,Data$HINS6==2,0)
-var_label(Data$HINS6) <- "VA health care"
-table(Data$HINS6)
-
-# "HINS7": Indian Health Service
-Data$HINS7<-replace(Data$HINS7,Data$HINS7==2,0)
-var_label(Data$HINS7) <- "Indian Health Service"
-table(Data$HINS7)
-
-#  HICOV Any health insurance 
-Data$HICOV<-replace(Data$HICOV,Data$HICOV==2,0)
-var_label(Data$HICOV) <- "Any health insurance "
-
-
-### 8. MARITIAL STATUS  MAR to MARG - ( Married, widowed, divorced, Separated,Never Married)
-
-table(Data$MAR, exclude = NULL)
-Data$MARG<-1 # 1: Married
-Data$MARG<-replace(Data$MARG,Data$MAR %in% c(2,3,4,5),0)  # 0: Single
-table(Data$MARG, exclude = NULL)
-var_label(Data$MARG) <- "Married "
-
-### 9. EDUCATION STATUS
-Data$SCHL <- as.numeric(as.character(Data$SCHL))
-
-Data$SCHLG<-0 # creating a school group variable
-Data$SCHLG<-ifelse(Data$SCHL>=1 & Data$SCHL< 16,1,Data$SCHLG) # 1. Less than High school 
-Data$SCHLG<-ifelse(Data$SCHL %in% c(16,17),2,Data$SCHLG) # 2. High school
-Data$SCHLG<-ifelse(Data$SCHL %in% c(18,19,20),3,Data$SCHLG) # 3. Some College Or Associate's degree 
-Data$SCHLG<-ifelse(Data$SCHL %in% c(21),4,Data$SCHLG) # 4. Bachler degree
-Data$SCHLG<-ifelse(Data$SCHL %in% c(22,23,24),5,Data$SCHLG) # 5. Graduate degree
-
-
-
-Data$SCHLG<- ordered(Data$SCHLG, labels = c("Less than high school", "High school", "Some college or Associate degree", "College degree", "Graduate and beyond" ))
-var_label(Data$SCHLG) <- "Education"
-
-
-### 11. SEX to make it easier and be consitent wit the litriture I recoded the sex so that 0 shows male and 1 shows female previousl 1 showed male and 2 showed female
-
-Data$SEX<-replace(Data$SEX,Data$SEX==1,0) # recode male from 1 to zero
-Data$SEX<-replace(Data$SEX,Data$SEX==2,1) # recode female from 2 to 1
-
-Data$SEX<- ordered(Data$SEX, labels = c("Male", "Female" ))
-var_label(Data$SEX) <- "Sex"
-table(Data$SEX)
-  Data$SEX<-PREACS$SEX
-  
-  Data$FEMALE<-ifelse(Data$SEX==2,1,0)
-    
-### 12. YEAR arrived in US  "YOEP"
-
-### 13. DISABILITY STATUS  DIS make it a dummy 
-
-
-  Data$DIS<-replace(Data$DIS,Data$DIS==2,0)
-var_label(Data$DIS) <- "Disability"
-
-
-### 14. ETHNICITY
-
-table(Data$HISP, exclude = NULL)
-Data$ETHN<-1 # creat ethnicity variable      # 1 : Hispanic
-Data$ETHN<-ifelse(Data$HISP == 1,0,Data$ETHN) # 0 : Not hispanic
-table(Data$ETHN,exclude = NULL) 
-var_label(Data$ETHN) <- "Hispanic"
-
-
-### 15. EMPLOYMENT STATUS : "ESRG" from ESR --(employed, unemployed, armed force, not in labor force)
-
-table(Data$ESR, exclude = NULL)
-Data$ESRG<-0 # creating new employment variable
-Data$ESRG<-ifelse(Data$ESR %in% c(1,2,4,5),1,Data$ESRG) #1 Employed
-Data$ESRG<-ifelse(Data$ESR==3,2,Data$ESRG) #2 Unemployed
-Data$ESRG<-ifelse(Data$ESR==6,3,Data$ESRG) #3 Not labor force
-Data$ESRG<- ordered(Data$ESRG, labels = c("Employed", "Unemployed", "Not in labor force"))
-var_label(Data$ESRG) <- "Employment"
-table(Data$ESRG, exclude = NULL)
-
-### 16. INCOME To Poverty RATION : POVPIP
-Data$POVPIP <- as.numeric(as.character(Data$POVPIP))
-
-
-Data$POVPIPG<-1 # 1.0 to 100% poverty 
-Data$POVPIPG<-ifelse(Data$POVPIP>100,2,Data$POVPIPG) #2.100 t0 138% poverty
-
-Data$POVPIPG<- ordered(Data$POVPIPG, labels = c("Income below 100% poverty", "Income  100 to 138% poverty"))
-var_label(Data$POVPIPG) <- "Income"
-
-table(Data$POVPIP, exclude = NULL)
-table(Data$POVPIPG,Data$CIT ,exclude = NULL)
-
-
-### 19. RACE  
-
-Data$RACE<-Data$RAC1P
-Data$RACE<-ifelse(Data$RAC1P %in% c(3,4,5,7,8,9),9,Data$RACE)  # 8.Some Other Race alone # 9.Two or More Races
-Data$RACE<-ifelse(Data$RACE==6,3,Data$RACE) # 6. Asian rename asian to 3
-Data$RACE<-ifelse(Data$RACE==9,4,Data$RACE) # 9 other to 4
-
-
-
-## Creating a new variable for race/ethnicity and rename it RACE1
-Data$RACE1<-Data$RACE
-Data$RACE1<-ifelse(Data$ETHN==1,5,Data$RACE1) # merge ethnicity into the race
-Data$RACE1<-ifelse(Data$RACE1==4,6,Data$RACE1) # merge ethnicity into the race
-
-Data$RACE<- ordered(Data$RACE, labels = c("White", "Black", "Asian", "Other"))
-var_label(Data$RACE) <- "Race"
-
-Data$RACE1<- ordered(Data$RACE1, labels = c("White", "Black", "Asian", "Hispanic","Other"))
-var_label(Data$RACE1) <- "Race and Ethnicity"
-
-  
-
-# Create a variable ACA to have pre and post ACA
-Data$ACA <- ifelse(Data$YEAR < 2014,1, 2)
-Data$ACA<- ordered(Data$ACA, labels = c("Pre-ACA","Post-ACA" ))
-
-# Create a variable ACA numeric binary
-Data$PostACA<- ifelse(Data$YEAR < 2014,0, 1)
-
-table(Data$PostACA)
-#####  expansion status
-#2015 Pennsylvania,  Indiana ,Alaska
-#2016, Montana, Louisiana
-#2019, Virginia, Maine
-#2020 Idaho,Utah,Nebraska
-#2021 Oklahoma
-#2022 Missouri
-# not expanded Alabama,Florida,Georgia,Kansas,Mississippi,North Carolina,South Carolina,South Dakota,Tennessee,Texas,Wisconsin,Wyoming
-# Create a data frame with t FIPS codes and their corresponding expansion years
-
-#I can use the code here to create a var for expansion and expansion year but since I have the data availble
-#I'll use that instead, but if you don't want to use the data set the variable can be made using the code by removing # in the begings
-
-#expansion_years <- data.frame(ST = c(2,4,5,6,8,9,15,17,18, 19,21,22,23,24,26,27,30,32,33,34,35,38,39,41,42,44,51,53,54),
-  #                     Expan_year = c(rep(2015, 1),rep(2014, 7), rep(2015, 1),rep(2014, 2), rep(2016,1), rep(2019,1), rep(2014, 3),rep(2016,1),rep(2014, 7),rep(2015, 1),rep(2014, 1),rep(2019,1),rep(2014, 2)))
-# Merge Data with expansion_years based on the STATE variable
-# Data <- merge(Data, expansion_years, by = "ST", all.x = TRUE)
-# Create the expansion variable based on the year of expansion
-# Data$expan <- ifelse(is.na(Data$Expan_year), 0, 1)
-
-## Substitue way using the excel file that is already there by KFF
-
-
-#####  percentage of life spent in the US
-
-# there is problem that might have rised beacuse the age was rounded up in the Dataset to fix that I changed YLIU as following
-Data$YLIU <- ifelse(Data$YLIU > Data$AGEP, Data$AGEP, Data$YLIU)
-
-# now that I fixed the issue with the YLIU I can create percentage life in US 
-Data$PLIU<-NA
-Data$PLIU <- floor((Data$YLIU / Data$AGEP) * 100)  # i used floor to roundup the percentage 
-
-# Country of origin
-
-### 1. Based on Geography
-# Create a new column for the geographic region (GEOR)
-Data$GEOR<-NA
-
-# Assign geographic regions based on UN sub-regions
-# Africa
-Data$GEOR[Data$POBP %in% c(400,414,430,436,451,456)] <- 1 #Northern Africa Done
-Data$GEOR[Data$POBP %in% c(400:499) & !Data$POBP %in% c(400,414,430,436,451,456)] <- 2 #Sub-Saharan Africa Done
-# America
-Data$GEOR[Data$POBP %in% c(303,310:399)] <- 3 #Latin America  Done 
-Data$GEOR[Data$POBP %in% c(300:302,304:309)] <- 4 #Northern America Done
-# Asia
-Data$GEOR[Data$POBP %in% c(200:203,210,229,231,238,218,219,246,253)] <- 5 #South  & Centeral Asia
-Data$GEOR[Data$POBP %in% c(207,209,217,215,228,249,251)] <- 6 #Eastern Asia
-Data$GEOR[Data$POBP %in% c(206,211,223,226,205,233,236,242,247,254,240)] <- 7 #South eaastern Asia
-Data$GEOR[Data$POBP %in% c(158,159,161,212:214,216,222,224,235,239,243,245,248,208)] <- 8 #Western Asia
-#Europe
-Data$GEOR[Data$POBP %in% c(104,105,117,128,162,132,163,164,147, 148,149,155, 165,160,169)] <- 9 #Eastern Europe
-Data$GEOR[Data$POBP %in% c(106,108,118,119,156,157,127,136,138,142,140,139)] <- 10 #Northen Europe157, 160, 162:199
-Data$GEOR[Data$POBP %in% c(100,150, 151,116,120,129,168,152,154,134,167,166 )] <- 11 #Southern Europe ,1
-Data$GEOR[Data$POBP %in% c(102,103,109,110,126, 137)] <- 12 #Western Europe
-#Oceania and at Sea
-Data$GEOR[Data$POBP %in% c(060, 130, 500:554)] <- 13 #Oceania and at Sea
-
-Data$GEOR<- ordered(Data$GEOR, labels = c("Northern Africa", "Sub-Saharan Africa", "Latin America","Northern Americ", "South  & Centeral Asia","Eastern Asia","South eaastern Asia",
-                                          "Western Asia","Eastern Europe","Northen Europe","Southern Europe","Western Europe","Oceania and at Sea"))
-var_label(Data$GEOR) <- "Geographic region"
-Data$GEOR <- factor(ifelse(Data$NATIVITY == "US-born", "United States", as.character(Data$GEOR)))
-table(Data$GEOR,exclude = NULL)
-# TO DO : maybe put cenetal Asia in another group since thera are not much observation in that group 
-table(Data$ExpansionY, exclude = NULL)
-
-### 1. Based on Culture 
-
-# English Speaking, Protestant Europe, Catholic Europe, Confucian, Orthodox ,Latin America, South Asia, Islamic,Sub-Saharan Africa
-# English-speaking, Protestant Europe,Catholic Europe, Confucian,Orthodox, Latin America, South Asian , African-Islamic, Baltic
-
-Data$CULRG<-NA
-
-Data$CULRG[Data$POBP %in% c(119,138,139,140,142,060, 500:554,300:302,304:309)] <- 1 #English-speaking countries
-Data$CULRG[Data$POBP %in% c(106,108,110,118,126,127,136,137)] <- 2 #Protestant Europe
-Data$CULRG[Data$POBP %in% c(102,103,105,109,117,120,128,129,130,134,147,148,149,151,155, 156,157)] <- 3 # Catholic Europe
-Data$CULRG[Data$POBP %in% c(104,116,132,150,152,154,158,160:169,251)] <- 4 #Orthodox
-
-Data$CULRG[Data$POBP %in% c(206,207,209,215,217,228,254,240,249 )] <- 5 # Confucian
-Data$CULRG[Data$POBP %in% c(233,303,310:399)] <- 6 #Latin America
-Data$CULRG[Data$POBP %in% c(203,208,210,211,214,223,226,236,238, 242,247,449)] <- 7 #South Asia
-Data$CULRG[Data$POBP %in% c(159,200,202,205, 100,212,213,216,218,281,219,222,224,229, 231,235,239,243,245,246,248,253,400,414,400:448,450:499)] <- 8 #Islamic,
-
-Data$CULRG<- ordered(Data$CULRG, labels = c("English-speaking", "Protestant Europe","Catholic Europe", "Orthodox", "Confucian", "Latin America", "South Asian" , "African-Islamic"))
-var_label(Data$CULRG) <- "Inglehart-Welzel cultural Cluster"
-
-table(Data$CULRG, exclude = NULL)
-
-
-
-
-
-                                     ### ADDING FURTHER CLEANING WHICH was added later on to cleaning       ### 
- 
-
-Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
-table(Data$NATIVITY)
-table(Data$ForeginBorn)
-
-
-
-# Make a dummy for lifetime in US this would be based on Endeshaw et al. (2018)
-
-Data$LTINU<-ifelse(Data$PLIU>25,1,0)
-Data$LTINU<-ordered(Data$LTINU, labels=c("<25%", ">25%"))
-
-### Should calculate uninsured rather than insured therefore
-
-
-Data<-mutate(Data, UNINS=1-HICOV)
-
-### Create variable ttot for vent study later
-### 
-### 
-
-Data$ttot<-ifelse(is.na(Data$ExpansionY), 0, Data$YEAR - Data$ExpansionY)
-
-
-### Creating UNDOC variable 
-
-Data$UNDOC <- 1
-
-# Set UNDOC to 0 based on various conditions:
-
-# The individual is a citizen.
-Data$UNDOC[Data$CIT %in% c("Born in US states", "Born in US Territories", "US-citizen Born Abroad", "Naturalized-citizen")] <- 0
-# The individual arrived before 1980.
-Data$UNDOC[Data$YOEP < 1980] <- 0
-# The individual was born in Cuba (as practically all Cuban immigrants were granted refugee status before 2017) 
-Data$UNDOC[Data$POBP == 327] <- 0
-# The individual is a veteran or is currently in the Armed Forces.
-Data$UNDOC[Data$ESR %in% c(4,5) ] <- 0
-Data$UNDOC[Data$MIL %in% c(1,2,3) ] <- 0
-#e. The individual works in the government sector.
-Data$UNDOC[Data$COW %in% c(3,4,5) ] <- 0
-# The individual's occupation requires some form of licensing based on borjas (such as physicians, registered nurses, air traffic controllers, and lawyers)
-Data$UNDOC[Data$OCCP %in% c (10, 120, 230, 350, 410, 800, 810, 820, 830, 845, 850, 860, 900, 910,
-                             930, 940, 2100, 2105, 2145, 2170, 2180, 2205, 2300,
-                             2310, 2320, 2330, 2350, 2360, 2400, 2435, 2440, 2545, 2555, 
-                             3000, 3010, 3030, 3040, 3050, 3090, 3100, 3110, 3120, 3140,
-                             3150, 3160, 3200, 3210, 3220, 3230, 3245, 3250, 3255, 3256, 
-                             3258, 3261, 3270, 3300, 3310, 3321, 3322, 3323, 3324, 3330,
-                             3401, 3402, 3421, 3422, 3423, 3424, 3430, 3500, 3515, 3520,
-                             3545, 3550, 3700, 3710, 3720, 3725, 3740, 3750, 3801, 3802, 
-                             3820, 3870, 3910, 3945, 3946, 3946, 6010, 6660, 9030, 9040, 9050, 
-                             9121, 9122, 9130, 9141, 9142, 9150, 9210, 9240, 9265, 9300, 9310)] <- 0
-
-# if spouse is legal
-# 
-# 
-
-Data$good <- ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==0, 1,
-                    ifelse(Data$MAR == 1 & Data$RELP %in% c(21, 23, 1) & Data$UNDOC==1, 0,
-                           ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==0, 1,
-                                  ifelse(Data$MAR == 1 & Data$RELP %in% c(20, 0) & Data$UNDOC==1, 0, 0)
-                           )
-                    )
-)
-
-
-Data$slegal <- ave(Data$good , Data$YEAR, Data$SERIALNO, FUN = mean)
-
-Data$UNDOC[Data$MAR == 1 & Data$slegal > 0 ] <- 0
-
-#create a non citizen variable
-Data$NonCit<- ifelse(Data$CIT == "Non-citizen",1,0)
-
-### Fixing NA values:
-table(Data$IPC,exclude=NaN)
-
-
-
-#Data[887376, 1:8]
-
-#Data[Data$StateN=="North Carolina"]
-
-table(Data$YEAR[Data$StateN == "North Carolina"])
-
-Data$IPC<-ifelse(Data$StateN == "North Carolina" & Data$YEAR==2016 & is.na(Data$IPC), -3, Data$IPC)
-
-Data$LTINU<-ifelse(Data$NATIVITY=="US-born",9,Data$LTINU) 
-
-#table(Data$CORIGIN)
-
-table(Data$LTINU)
-
-                                                #### Exporting the data set into the new data sample both CSV and R ####
-
-
-
-write.csv(Data, file = paste0(wd$data,"CLNACS-2025.csv"), row.names = FALSE)
-
-
-save(Data, file =paste0(wd$data,"CLNACS2025.RData"))
-
-CLNACS<-Data
-
-
-#Fixing the charachter to factro 
-#### 
-
-#classcol<-sapply(Data, class)
-#table(classcol)
-#char_columns <- which(classcol=="character")   
-#for (i in char_columns) {
-#   if (colnames(ACS)[i] != "SERIALNO") {
-#            ACS[, i] <- as.numeric(ACS[, i])
-#      }
-#}
-## don't worry warnnig is because b in data are changing to NA
-
-
-## I decided to use following code to fix the character issue 
-## 
-
-#num_vars <- c("YEAR","AGEP","POVPIP","ST","TYPE","CIT","ESR","HICOV","YOEP", paste0("HINS",1:7))
-#ACS[num_vars] <- lapply(ACS[num_vars], function(x) suppressWarnings(as.numeric(x)))
-
-
-
-
-
-
+# Title: Clean the ACS data and build the analysis variables (step 3 of the data preparation)
+# Author: Shadi Seyedi
+# Description: Turns the merged file from 02_merge.R into the analysis file. Every coded ACS
+#              variable is converted to a number first, then recoded so that it means the same in
+#              every year (see "KNOWN CODING FEATURES" in the header of 01_get_data.R). It adds the
+#              derived variables the analysis uses and flags for the sensitivity checks.
+#              This script drops NO person. The sample restrictions are applied later by
+#              make_sample() in code/00_setup.R.
+#
+# Variables built here (one block each below):
+#   Outcomes       HINS1-HINS7, HICOV: 1 yes, 0 no.  UNINS = 1 - HICOV.
+#   Demographics   SEX (factor Male/Female) and FEMALE (0/1), AGEG (ordered), MARG, DIS, FER,
+#                  ETHN (Hispanic), RACE and RACE1 (factors), SCHLG (ordered), ESRG (factor),
+#                  POVPIPG (ordered)
+#   Immigration    ForeginBorn, NATIVITY, NonCit, CITSTAT, FBCIT, FBMEX, FBOTHR, cit_birth_abroad,
+#                  ENG (ordered), YLIU, PLIU, LTINU, recent_arrival, CORIGIN (region of birth)
+#   Legal status   REL_HH (relationship to the householder, one coding for all years),
+#                  UNDOC (likely undocumented, main version), UNDOC_BEN (sensitivity version that
+#                  also uses benefit receipt), FBLEG
+#   Treatment      ttot (years since expansion, for event studies), year_treated (for the Sun
+#                  and Abraham estimator), ACA, PostACA.
+#                  expansion, ExpansionY, Expan_STS, expansion_date, treat and treat_frac come
+#                  from 02_merge.R unchanged. The analysis uses ExpansionY for timing;
+#                  expansion_date is the exact date, kept for reference only. The state lists for sample rules (states with
+#                  full coverage before 2014, early-option states, late and mid-year expanders)
+#                  are written in make_sample() with their sources; they need no column here.
+#   Flags          in_gq (group quarters), hins_imputed (Medicaid answer imputed), medicaid_edit
+#                  (Medicaid assigned by the Census coverage edit). ipc_imputed comes from 02.
+#
+# Inputs:  data/clean/acs_merged.rds (from 02_merge.R)
+# Outputs: data/clean/acs_clean.rds   one row per person, all input columns + the variables above
+# Usage:   from the project root,  Rscript code/data_prep/03_clean.R
+
+
+####################
+## Setup
+####################
+
+suppressPackageStartupMessages(library(data.table))
+
+# All paths are relative to the project root, so the script must be run from there.
+if (!file.exists("run_all.R")) stop("Run this script from the project root folder.")
+
+in_file  <- "data/clean/acs_merged.rds"
+out_file <- "data/clean/acs_clean.rds"
+
+# Saves an object without ever leaving a half-written file behind (as in 01_get_data.R).
+save_safely <- function(object, path) {
+        tmp <- paste0(path, ".tmp")
+        saveRDS(object, tmp)
+        if (!file.rename(tmp, path)) stop("Could not rename ", tmp, " to ", path)
+}
+
+
+####################
+## Functions
+####################
+
+# Relationship to the householder, one coding for every year: "reference", "spouse" or "other".
+# The Census renamed and recoded this variable in 2019 (REL_RAW holds the original codes):
+#   RELP     (2011-2018): 00 reference person, 01 husband/wife
+#   RELSHIPP (2019):      20 reference person, 21 opposite-sex spouse, 23 same-sex spouse
+harmonize_relationship <- function(rel, year) {
+        rel <- as.integer(rel)
+        fifelse(rep_len(year, length(rel)) < 2019,
+                fcase(rel == 0, "reference", rel == 1, "spouse", default = "other"),
+                fcase(rel == 20, "reference", rel %in% c(21, 23), "spouse", default = "other"))
+}
+
+# Lived more than 25% of their life in the US (Endeshaw et al. 2018). 0 for the US-born.
+code_ltinu <- function(pliu, foreign_born) {
+        as.integer(foreign_born == 1 & !is.na(pliu) & pliu > 25)
+}
+
+## Likely undocumented immigrants (the "residual" method)
+# The ACS does not ask about legal status. Following Borjas and Cassidy (2019, Labour Economics
+# 61:101757), which applies Passel and Cohn's (Pew) method to the ACS, a non-citizen is counted as
+# legal if ANY of the following holds, and as likely undocumented otherwise:
+#   (a) arrived before 1980                      YOEP <= 1979
+#   (b) born in Cuba (nearly all Cuban immigrants had refugee status)   POBP 327
+#   (c) is a veteran or in the armed forces      active duty now or in the past (see MIL below),
+#                                                or ESR 4-5 (armed forces)
+#   (d) works for the government                 COW 3 local, 4 state, 5 federal
+#   (e) works in a licensed occupation           OCCP lists below
+#   (f) is married to a legal immigrant or a citizen (the spouse meets (a)-(e) or is a citizen)
+# The sensitivity version (benefits = TRUE) adds Borjas and Cassidy's benefit rule: receives
+# Social Security (SSP > 0) or SSI (SSIP > 0), or is covered by Medicare (HINS3), TRICARE
+# (HINS5) or VA (HINS6). Medicaid (HINS4), which is in their list, is left out of both versions:
+# it is our outcome, and using it would set Medicaid to 0 for everyone flagged undocumented.
+# Public housing, also in their list, is not in the ACS.
+#
+# MIL changed codes in 2013 (PUMS data dictionaries):
+#   2011-2012: 1 active duty now, 2 active duty in the past 12 months, 3 active duty earlier,
+#              4 training only (Reserves/National Guard), 5 never served
+#   2013-2019: 1 active duty now, 2 active duty in the past, 3 training only, 4 never served
+# Training only does not count, as in Borjas and Cassidy ("a veteran, or currently in the Armed
+# Forces") and in the IPUMS veteran status variable.
+#
+# Licensed occupations: Borjas and Cassidy give examples (physicians, registered nurses, air
+# traffic controllers, lawyers) but did not publish a list; Pew adds police and other law
+# enforcement. The list covers lawyers and judges, licensed health professionals, police,
+# fire and correctional officers, transportation security screeners, pilots and air traffic
+# controllers. PUMS 2011-2017 use the 2010 Census occupation codes, 2018-2019 the 2018 codes;
+# the 2018 list replaces physicians and surgeons 3060 by 3090 and 3100, EMTs and paramedics 3400
+# by 3401 and 3402, bailiffs and correctional officers 3800 by 3801 and 3802, and police officers
+# 3850 by 3870 (Census 2018 occupation code crosswalk).
+licensed_occ_2010 <- c(2100, 2105,                                     # lawyers, judges, clerks
+                       3000, 3010, 3030, 3040, 3050, 3060, 3110, 3120, # health professionals
+                       3140, 3150, 3160, 3200, 3220, 3230, 3250, 3255, 3256, 3258, 3310,
+                       3400, 3500,
+                       3700, 3710, 3720, 3740, 3750, 3800, 3820, 3850, 3945,   # protective service
+                       9030, 9040)                                     # pilots, air traffic
+licensed_occ_2018 <- sort(c(setdiff(licensed_occ_2010, c(3060, 3400, 3800, 3850)),
+                            3090, 3100, 3401, 3402, 3801, 3802, 3870))
+
+# TRUE for a person who meets rules (a)-(e) above or is a citizen (CIT 1-4).
+legal_by_own_traits <- function(d, benefits = FALSE) {
+        military <- fifelse(d$YEAR < 2013, d$MIL %in% 1:3, d$MIL %in% 1:2) | d$ESR %in% 4:5
+        licensed <- fifelse(d$YEAR < 2018, d$OCCP %in% licensed_occ_2010,
+                            d$OCCP %in% licensed_occ_2018)
+        legal <- d$CIT %in% 1:4 | d$YOEP %in% 1900:1979 | d$POBP %in% 327 | military |
+                 d$COW %in% 3:5 | licensed
+        if (benefits) {
+                legal <- legal | (!is.na(d$SSP) & d$SSP > 0) | (!is.na(d$SSIP) & d$SSIP > 0) |
+                         d$HINS3 %in% 1 | d$HINS5 %in% 1 | d$HINS6 %in% 1
+        }
+        legal
+}
+
+# 1 = likely undocumented, 0 = not. Needs YEAR, SERIALNO, REL_HH, CIT, YOEP, POBP, MIL, ESR, COW,
+# OCCP (and SSP, SSIP, HINS3, HINS5, HINS6 when benefits = TRUE; HINS coded 1 yes, 0 no).
+# Rule (f) pairs the reference person with their spouse. PUMS has no spouse pointer, so other
+# married couples in the household (e.g. a married adult child) cannot be paired; the rule is
+# applied once (a spouse who is legal only through rule (f) does not pass it on).
+flag_undoc <- function(d, benefits = FALSE) {
+        x <- data.table(hh = paste(d$YEAR, d$SERIALNO), rel = d$REL_HH,
+                        legal = legal_by_own_traits(d, benefits))
+        couples <- x[rel %in% c("reference", "spouse"),
+                     .(n_ref = sum(rel == "reference"), n_spouse = sum(rel == "spouse"),
+                       ref_legal = any(legal & rel == "reference"),
+                       spouse_legal = any(legal & rel == "spouse")),
+                     by = hh]
+        x <- couples[x, on = "hh"]            # keeps the order of d
+        partner_legal <- fcase(x$rel == "reference" & x$n_spouse == 1, x$spouse_legal,
+                               x$rel == "spouse"    & x$n_ref    == 1, x$ref_legal,
+                               default = FALSE)
+        as.integer(d$CIT == 5 & !x$legal & !partner_legal)
+}
+
+## Checks of the functions on made-up people (the script stops here if a rule is wrong)
+
+# A made-up household: one undocumented-looking non-citizen per row unless changed
+fake <- function(...) {
+        d <- data.table(YEAR = 2015L, SERIALNO = "A", REL_HH = "reference", MAR = 5L, CIT = 5L,
+                        YOEP = 2005L, POBP = 303L, ESR = 1L, MIL = 4L, COW = 1L, OCCP = 4720L,
+                        SSP = 0L, SSIP = 0L, HINS3 = 0L, HINS4 = 0L, HINS5 = 0L, HINS6 = 0L)
+        args <- list(...)
+        n <- max(lengths(args), 1)
+        d <- d[rep(1, n)]
+        for (v in names(args)) d[, (v) := args[[v]]]
+        d
+}
+
+# Relationship codes mean the same in every year
+stopifnot(identical(harmonize_relationship(c("00", "01", "05"), 2015), c("reference", "spouse", "other")),
+          identical(harmonize_relationship(c("20", "21", "23", "22", "25"), 2019),
+                    c("reference", "spouse", "spouse", "other", "other")))
+
+# Each rule on its own; the first row breaks no rule, citizens are never flagged
+stopifnot(identical(flag_undoc(fake(SERIALNO = letters[1:7],
+                                    CIT = c(5L, 4L, 5L, 5L, 5L, 5L, 5L),
+                                    YOEP = c(2005L, 2005L, 1979L, 2005L, 2005L, 2005L, 2005L),
+                                    POBP = c(303L, 303L, 303L, 327L, 303L, 303L, 303L),
+                                    COW = c(1L, 1L, 1L, 1L, 4L, 1L, 1L),
+                                    ESR = c(1L, 1L, 1L, 1L, 1L, 4L, 1L),
+                                    OCCP = c(4720L, 4720L, 4720L, 4720L, 4720L, 4720L, 3255L))),
+                    c(1L, 0L, 0L, 0L, 0L, 0L, 0L)))
+
+# Military service means the same before and after the 2013 code change: active duty counts,
+# training only does not
+stopifnot(identical(flag_undoc(fake(SERIALNO = c("A", "B", "C", "D"), YEAR = c(2012L, 2012L, 2013L, 2013L),
+                                    MIL = c(3L, 4L, 2L, 3L))),
+                    c(0L, 1L, 0L, 1L)))
+
+# Occupation codes are read with the code list of their year
+stopifnot(identical(flag_undoc(fake(SERIALNO = c("A", "B", "C"), YEAR = c(2017L, 2018L, 2018L),
+                                    OCCP = c(3060L, 3060L, 3090L))),
+                    c(0L, 1L, 0L)))
+
+# Benefits count only in the sensitivity version, and Medicaid never counts
+d <- fake(SERIALNO = c("A", "B", "C"), SSP = c(5000L, 0L, 0L), HINS3 = c(0L, 1L, 0L),
+          HINS4 = c(0L, 0L, 1L))
+stopifnot(identical(flag_undoc(d), c(1L, 1L, 1L)),
+          identical(flag_undoc(d, benefits = TRUE), c(0L, 0L, 1L)))
+
+# A non-citizen married to a citizen (2015 codes) or to a legal non-citizen (2019 codes) is not
+# flagged
+stopifnot(identical(flag_undoc(fake(REL_HH = c("reference", "spouse"), MAR = 1L, CIT = c(5L, 4L))),
+                    c(0L, 0L)),
+          identical(flag_undoc(fake(YEAR = 2019L, REL_HH = c("reference", "spouse"), MAR = 1L,
+                                    YOEP = c(2005L, 1975L))),
+                    c(0L, 0L)))
+
+# The spouse rule uses only the person's own spouse: a legal adult child does not make the
+# couple legal (the old code averaged over the whole household)
+stopifnot(identical(flag_undoc(fake(REL_HH = c("reference", "spouse", "other"), MAR = 1L,
+                                    CIT = c(5L, 5L, 4L))),
+                    c(1L, 1L, 0L)))
+
+# LTINU is 0/1 and 0 for the US-born
+stopifnot(identical(code_ltinu(c(10, 40, NA, 40), c(1, 1, 0, 0)), c(0L, 1L, 0L, 0L)))
+rm(d)
+
+
+####################
+## Read and convert
+####################
+
+cat("Reading", in_file, "\n")
+Data <- as.data.table(readRDS(in_file))
+n_people <- nrow(Data)
+
+# Every value was saved as text exactly as in the Census files, so "01" == 1 is FALSE and "086" >
+# "100" is TRUE. All coded variables become integers here, before any recode. SERIALNO, ST and
+# PUMA stay text (they are identifiers; ST is matched as text in 02), and so do SOCP (contains
+# letters) and REL_RAW (recoded by harmonize_relationship()).
+keep_text <- c("SERIALNO", "ST", "StateN", "PUMA", "SOCP", "REL_RAW", "Expan_STS")
+to_int <- setdiff(names(Data)[vapply(Data, is.character, logical(1))], keep_text)
+na_before <- vapply(Data[, ..to_int], function(x) sum(is.na(x)), numeric(1))
+Data[, (to_int) := lapply(.SD, as.integer), .SDcols = to_int]
+na_after <- vapply(Data[, ..to_int], function(x) sum(is.na(x)), numeric(1))
+# The conversion turned no value into NA (every code is a whole number)
+stopifnot(identical(na_before, na_after))
+
+
+####################
+## Outcomes: health insurance
+####################
+
+# HINS1 employer/union, HINS2 bought directly, HINS3 Medicare, HINS4 Medicaid or other
+# means-tested coverage, HINS5 TRICARE, HINS6 VA, HINS7 Indian Health Service, HICOV any coverage.
+# ACS codes: 1 yes, 2 no. Recoded to 1 yes, 0 no.
+hins <- c(paste0("HINS", 1:7), "HICOV")
+stopifnot(Data[, all(unlist(lapply(.SD, function(x) x %in% 1:2))), .SDcols = hins])
+Data[, (hins) := lapply(.SD, function(x) as.integer(x == 1)), .SDcols = hins]
+Data[, UNINS := 1L - HICOV]
+
+
+####################
+## Demographics
+####################
+
+## Sex: ACS 1 male, 2 female
+Data[, SEX := factor(SEX, levels = 1:2, labels = c("Male", "Female"))]
+Data[, FEMALE := as.integer(SEX == "Female")]
+
+## Age groups (ages 18+ in the data)
+Data[, AGEG := cut(AGEP, breaks = c(17, 25, 34, 44, 54, 64, Inf),
+                   labels = c("18-25", "26-34", "35-44", "45-54", "55-64", "65+"),
+                   ordered_result = TRUE)]
+
+## Married: ACS MAR 1 married, 2 widowed, 3 divorced, 4 separated, 5 never married
+Data[, MARG := as.integer(MAR == 1)]
+
+## Disability: ACS 1 with a disability, 2 without
+Data[, DIS := as.integer(DIS == 1)]
+
+## Gave birth in the past 12 months: ACS 1 yes, 2 no, NA not asked (men, women outside 15-50).
+## Code 8 ("suppressed") appears in 2012 only and is treated as missing.
+Data[, FER := fcase(FER == 1, 1L, FER == 2, 0L)]
+
+## Hispanic: ACS HISP 01 not Hispanic, 02-24 Hispanic origin groups
+Data[, ETHN := as.integer(HISP != 1)]
+
+## Race: ACS RAC1P 1 White, 2 Black, 3-5 American Indian / Alaska Native, 6 Asian,
+## 7 Native Hawaiian / Pacific Islander, 8 some other race, 9 two or more races
+Data[, RACE := factor(fcase(RAC1P == 1, "White", RAC1P == 2, "Black", RAC1P == 6, "Asian",
+                            default = "Other"),
+                      levels = c("White", "Black", "Asian", "Other"))]
+## Race and ethnicity: Hispanic of any race, then non-Hispanic White, Black, Asian, Other
+Data[, RACE1 := factor(fifelse(ETHN == 1, "Hispanic", as.character(RACE)),
+                       levels = c("White", "Black", "Asian", "Hispanic", "Other"))]
+
+## Education: ACS SCHL 01-15 less than high school, 16 high school diploma, 17 GED,
+## 18-19 some college, 20 associate's, 21 bachelor's, 22 master's, 23 professional, 24 doctorate
+Data[, SCHLG := cut(SCHL, breaks = c(0, 15, 17, 20, 21, 24),
+                    labels = c("Less than high school", "High school",
+                               "Some college or Associate degree", "College degree",
+                               "Graduate and beyond"),
+                    ordered_result = TRUE)]
+
+## Employment: ACS ESR 1-2 civilian employed (at work / with a job but not at work),
+## 4-5 armed forces, 3 unemployed, 6 not in the labor force
+Data[, ESRG := factor(fcase(ESR %in% c(1, 2, 4, 5), "Employed", ESR == 3, "Unemployed",
+                            ESR == 6, "Not in labor force"),
+                      levels = c("Employed", "Unemployed", "Not in labor force"))]
+
+## Income-to-poverty ratio groups (POVPIP is 0-400 in the data, see 01_get_data.R)
+Data[, POVPIPG := cut(POVPIP, breaks = c(-1, 100, 138, 200, 400),
+                      labels = c("0-100%", "101-138%", "139-200%", "201-400%"),
+                      ordered_result = TRUE)]
+
+
+####################
+## Immigration
+####################
+
+## Citizenship: ACS CIT 1 born in the US, 2 born in Puerto Rico or the US island areas,
+## 3 born abroad to American parents, 4 naturalized citizen, 5 not a citizen.
+## Foreign-born means not a citizen at birth (CIT 4-5), as the Census Bureau defines it.
+## People born in the territories or abroad to American parents (CIT 2-3) are flagged: the main
+## sample drops them, and a sensitivity check counts them as US-born.
+Data[, ForeginBorn := as.integer(CIT %in% 4:5)]
+Data[, NATIVITY := factor(ForeginBorn, levels = 0:1, labels = c("US-born", "Foregin-born"))]
+Data[, cit_birth_abroad := as.integer(CIT %in% 2:3)]
+Data[, NonCit := as.integer(CIT == 5)]
+Data[, FBCIT := as.integer(CIT == 4)]
+Data[, CITSTAT := factor(fcase(CIT %in% 1:3, "US-Born", CIT == 4, "FB-Citizen",
+                               CIT == 5, "FB-Non-citizen"),
+                         levels = c("US-Born", "FB-Citizen", "FB-Non-citizen"))]
+
+## English: ACS ENG 1 very well, 2 well, 3 not well, 4 not at all; NA (not applicable) means the
+## person speaks only English at home (it is NA exactly when LANX == 2, in every year)
+stopifnot(Data[, all(is.na(ENG) == (LANX == 2))])
+Data[, ENG := factor(fifelse(is.na(ENG), 0L, ENG), levels = 0:4,
+                     labels = c("Only english", "Very well", "Well", "Not well", "Not at all"),
+                     ordered = TRUE)]
+
+## Years and share of life in the US. YOEP (year of entry) is NA exactly for people born in the
+## US (CIT 1). 307 people report an entry year before their birth year (age is top-coded and
+## rounded), so years in the US are capped at age.
+stopifnot(Data[, all(is.na(YOEP) == (CIT == 1))])
+Data[, YLIU := pmin(YEAR - YOEP, AGEP)]
+Data[, PLIU := floor(YLIU / AGEP * 100)]
+Data[, LTINU := code_ltinu(PLIU, ForeginBorn)]
+# In the US less than 5 years (the 5-year bar on Medicaid for most lawfully present immigrants)
+Data[, recent_arrival := as.integer(ForeginBorn == 1 & YLIU < 5)]
+
+## Born in Mexico or elsewhere (Figure 10)
+Data[, FBMEX  := as.integer(ForeginBorn == 1 & POBP == 303)]
+Data[, FBOTHR := as.integer(ForeginBorn == 1 & POBP != 303)]
+
+## Region of birth (CORIGIN), for the foreign-born; "United States" for everyone else.
+## Groups follow Pew Research Center's region-of-birth tables (Statistical Portrait of the
+## Foreign-Born Population), with Mexico separate from the rest of Latin America, and the
+## countries placed by the Census Bureau's region of birth (ACS table B05006). Europe, Canada and
+## Oceania are combined because each is small in a low-income sample.
+## POBP codes from the PUMS data dictionaries 2011-2019. Codes that exist only in some years:
+## 155 Estonia and 251 Eastern Asia (2011), 208 Cyprus (2012-2016), 167 Kosovo, 219 Kyrgyzstan,
+## 228 Mongolia (2017+), 464 Northern Africa n.e.c. (2017+).
+pob_mena <- c(158, 159, 161,                       # Armenia, Azerbaijan, Georgia (Western Asia)
+              208, 212, 213, 214, 216, 222, 224, 235, 239, 243, 245, 248,   # Cyprus, Iran ... Yemen
+              400, 414, 430, 436, 451, 456, 464)  # Algeria, Egypt, Libya, Morocco, Sudan, Tunisia,
+                                                  # Northern Africa n.e.c.
+pob_east_asia  <- c(205, 206, 207, 209, 211, 215, 217, 223, 226, 228, 233, 236, 240, 242, 247,
+                    249, 251, 254)                # Myanmar ... Vietnam; 249/254 Asia n.e.c.
+pob_south_asia <- c(200, 202, 203, 210, 218, 219, 229, 231, 238, 246, 253)   # Afghanistan ...
+Data[, CORIGIN := fcase(
+        ForeginBorn == 0,                             "United States",
+        POBP == 303,                                  "Mexico",
+        POBP %between% c(310, 316),                   "Central America",
+        POBP %between% c(321, 344),                   "Caribbean",
+        POBP %between% c(360, 399),                   "South America",   # 399 Americas n.e.c.
+        POBP %in% pob_east_asia,                      "East and Southeast Asia",
+        POBP %in% pob_south_asia,                     "South and Central Asia",
+        POBP %in% pob_mena,                           "Middle East and North Africa",
+        POBP %between% c(400, 469),                   "Sub-Saharan Africa",
+        POBP %between% c(100, 169) | POBP %in% c(60, 300, 301) | POBP %between% c(500, 554),
+                                                      "Europe, Canada and Oceania")]
+Data[, CORIGIN := factor(CORIGIN, levels = c("United States", "Mexico", "Central America",
+                                             "Caribbean", "South America",
+                                             "East and Southeast Asia", "South and Central Asia",
+                                             "Middle East and North Africa", "Sub-Saharan Africa",
+                                             "Europe, Canada and Oceania"))]
+# Every foreign-born person has a region
+stopifnot(!anyNA(Data$CORIGIN))
+
+
+####################
+## Legal status
+####################
+
+Data[, REL_HH := harmonize_relationship(REL_RAW, YEAR)]
+
+Data[, UNDOC     := flag_undoc(Data)]
+Data[, UNDOC_BEN := flag_undoc(Data, benefits = TRUE)]
+# Foreign-born and not likely undocumented (Figure 2)
+Data[, FBLEG := as.integer(ForeginBorn == 1 & UNDOC == 0)]
+
+# Share of non-citizens flagged, by year. Pew's estimates put unauthorized immigrants at roughly
+# 44% of non-citizens (2016); a residual flag is expected to run higher (Pew's own first-stage
+# pool is 20-35% larger than its final estimate), and this file covers only ages 18+ with incomes
+# up to 400% of poverty.
+cat("\nShare of non-citizens flagged as likely undocumented (weighted):\n")
+print(Data[CIT == 5, .(UNDOC = round(weighted.mean(UNDOC, PWGTP), 3),
+                       UNDOC_BEN = round(weighted.mean(UNDOC_BEN, PWGTP), 3)), by = YEAR])
+
+
+####################
+## Treatment timing
+####################
+
+# Years since the state expanded (0 for states that never expanded; event-study models interact
+# it with expansion, so its value there does not matter)
+Data[, ttot := fifelse(is.na(ExpansionY), 0L, YEAR - ExpansionY)]
+# Expansion year for the Sun and Abraham (2021) estimator: states that never expanded get a year
+# far outside the study period, as fixest::sunab() requires for never-treated units
+Data[, year_treated := fifelse(is.na(ExpansionY), 10000L, ExpansionY)]
+Data[, ACA := factor(fifelse(YEAR < 2014, "Pre-ACA", "Post-ACA"), levels = c("Pre-ACA", "Post-ACA"))]
+Data[, PostACA := as.integer(YEAR >= 2014)]
+
+
+####################
+## Flags for sensitivity checks
+####################
+
+# Group quarters: TYPE 1 housing unit, 3 noninstitutional group quarters (institutional group
+# quarters, TYPE 2, have no POVPIP and were not downloaded)
+Data[, in_gq := as.integer(TYPE != 1)]
+# Medicaid answer imputed by the Census Bureau (FHINS4P allocation flag)
+Data[, hins_imputed := as.integer(FHINS4P == 1)]
+# Medicaid assigned by the Census coverage edit (e.g. for people receiving SSI); NA in the file
+# for people without Medicaid
+Data[, medicaid_edit := as.integer(!is.na(FHINS4C) & FHINS4C == 1)]
+
+
+####################
+## Checks and save
+####################
+
+# No person dropped, and the 0/1 variables are 0 or 1
+stopifnot(nrow(Data) == n_people,
+          Data[, all(UNINS %in% 0:1), ], Data[, all(LTINU %in% 0:1)],
+          Data[, all(UNDOC %in% 0:1)], Data[, all(UNDOC_BEN <= UNDOC)])
+
+# Treatment is 0 in every state that never expanded, and years since expansion match treat
+stopifnot(Data[expansion == 0, all(treat == 0)],
+          Data[expansion == 1, all((ttot >= 0) == (treat == 1))])
+
+# No missing values in the model variables among people the main sample would keep (ages 26-64,
+# income at or below 138% of poverty, not in group quarters, not born in the territories or
+# abroad to American parents; DC is dropped by the main sample and has no ADA score)
+model_vars <- c("HICOV", "UNINS", "HINS1", "HINS2", "HINS3", "HINS4", "SEX", "DIS", "AGEP", "POVPIPG", "SCHLG",
+                "MARG", "RACE1", "ESRG", "ENG", "LTINU", "CORIGIN", "NonCit", "UNDOC",
+                "IPC", "UnempR", "ADA", "treat", "ttot", "PWGTP")
+core <- Data[AGEP %between% c(26, 64) & POVPIP <= 138 & in_gq == 0 & cit_birth_abroad == 0 &
+             ST != "11"]
+stopifnot(!anyNA(core[, ..model_vars]))
+rm(core)
+
+cat("Saving", format(nrow(Data), big.mark = ","), "people to", out_file, "\n")
+save_safely(as.data.frame(Data), out_file)
