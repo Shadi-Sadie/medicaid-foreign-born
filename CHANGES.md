@@ -17,13 +17,37 @@ Bug fixes are marked `# FIX:` in the code.
 ## Changes that apply to every script
 
 - Each script runs on its own from a fresh R session. It sources `code/00_setup.R`, loads
-  `data/CLNACS2.RData` itself, and saves its table or figure to `output/`. The originals assumed an
-  interactive RStudio session with the data and other objects already in memory.
+  `data/clean/acs_clean.rds`, keeps the sample it is run on with `make_sample()`, and saves its
+  table or figure to `output/`. The originals assumed an interactive RStudio session with the data
+  and other objects already in memory. (The scripts were first checked against the paper on
+  `data/CLNACS2.RData`; the notes below that mention `CLNACS2` refer to that check.)
 - Commented-out options and unused helper code were dropped when copying (for example, unused
   colour palettes). Estimation and plotting code is otherwise unchanged.
 - The lines `Data$expansion <- as.numeric(Data$expansion)` / `ifelse(Data$expansion == 2, 0, ...)`
   in `05` and `07` were dropped. They converted an old factor coding. In `CLNACS2.RData`,
   `expansion` is already 0/1, so the lines did nothing.
+- **New sample rule (not in the paper):** the main sample excludes adults with Medicare
+  (`HINS3 == 1`), who are not eligible for the ACA expansion group. The sensitivity sample
+  `with_medicare` keeps them. See `main_rules` in `code/00_setup.R`.
+- **New outcome (not in the paper):** every table and figure uses any health insurance coverage
+  (`HICOV`) where the paper used uninsured (`UNINS`). `HICOV` is `1 - UNINS`, so the estimates
+  are the paper's with the sign reversed; standard errors and p-values do not change. The
+  outcome list of the figure scripts is now defined once, in `code/00_setup.R`.
+- **Bug fix (changes the paper's results): standard errors.** Every model now clusters standard
+  errors by state (`vcov = ~ST`), the level at which Medicaid expansion is assigned. The originals
+  used heteroskedasticity-robust errors, which treat each person as independent; Tables 7 and 8
+  reported two-way (state and year) clustered errors, which are unreliable with 9 years. The
+  confidence intervals in the hand-built event-study figures (1, 2, 3, 8, 10) use the clustered
+  covariance matrix. Clustered errors are roughly 5-15 times larger.
+- **Bug fix (changes the paper's results): fixed effects in the pooled models.** Models that
+  compare the expansion effect across groups in one regression (Tables 2, 5, 6; Figures 1, 2, 3,
+  8, 10) are triple differences, but had only state and year fixed effects. Any national change
+  in the gap between groups was then counted as an expansion effect. The fixed effects are now
+  state x group and year x group: `ST^ForeginBorn + YEAR^ForeginBorn` (Tables 2, 5; Figures 1, 8),
+  `ST^CITSTAT + YEAR^CITSTAT` (Table 6), and state and year crossed with the two group dummies
+  (Figures 2, 3, 10). The group main effects are absorbed by these fixed effects. Models
+  estimated separately by nativity (Tables 7, 8; Figures 5, 7, 9) already compare within one
+  group and keep state and year fixed effects.
 
 ## Item by item
 
@@ -39,7 +63,7 @@ Bug fixes are marked `# FIX:` in the code.
 | Fig 2 | `fig2.R` | `codes/R/10-event-plot-undoc-adj.R` | **Reconstructed to match:** `FBLEG` was never defined. It is now "foreign-born and not undocumented" (`ForeginBorn == 1 & UNDOC == 0`). |
 | Fig 3 | `fig3.R` | `codes/R/10-event-plot-cit-adj.R` | **Bug fix:** `FBCIT` used the same misspelled citizenship value as Table 6; it is now `ForeginBorn == 1 & NonCit == 0`. **Bug fix:** the script ran on the `data` copy from `06`, which turns ordered factors into plain factors. The coefficient names then no longer matched `variable_list` and it crashed. It now runs on `Data`. |
 | Fig 5 | `fig5.R` | `codes/R/09-sun&abraham-vs-event-fig3.R` lines 73-210 | **Bug fix:** `year_treated` was only created in `07`, on a copy of the data, so the script failed on its own. **Bug fix:** panel (b), labelled "Foreign-Born", plotted the US-born models (`fen`/`san`, `mfen`/`msan`); it now plots `fef`/`saf` and `mfef`/`msaf`. Lines 1-67 (an appendix figure not in the paper, with a `plot11` typo) were left out. |
-| Fig 6 | `fig6.R` | `codes/R/04-causal-discovery-dag.R` lines 310-349 | None. The causal-discovery part of `04` (pcalg, kpcalg, Rgraphviz, ...) is not needed for the figure. |
+| Fig 6 | none (retired) | `codes/R/04-causal-discovery-dag.R` lines 310-349 | **Dropped.** The DAG figure is no longer part of the analysis; its script is kept in `archive/fig6.R`. |
 | Fig 7 | `fig7.R` | `codes/R/08-function-event-plot-adj.R` lines 190-245 | Uncommented; otherwise unchanged. |
 | Fig 8 | `fig8.R` | `codes/R/08-function-event-plot-unad.R` | None. The colours differ from the paper's Figure 8 because the palette in the original script was changed after the paper's figure was made. |
 | Fig 9 | `fig9.R` | none | **Reconstructed to match:** no code for Figure 9 existed. It is the Figure 7 code with the control variables removed. |
@@ -47,9 +71,27 @@ Bug fixes are marked `# FIX:` in the code.
 
 ## Data preparation (`code/data_prep/`)
 
-- `01_get_data.R`: the Census API key was written in the code. It is now read from the
-  `CENSUS_API_KEY` environment variable. The old key is still in the git history.
-- Otherwise unchanged. These scripts are not run by `run_all.R` (see README.md, "Known gaps").
+- `01_get_data.R` was rewritten. It downloads the national PUMS files from the Census Bureau's
+  website instead of using the Census API, so it needs no API key. The old script had its API key
+  written in the code; that key is still in the git history.
+- `02_bind_subset.R` was rewritten as `02_merge.R`. It reads the yearly files from
+  `01_get_data.R`, builds one checked state-by-year table (`data/state_year.csv`) and adds it to
+  every person, matching on the FIPS code and year. It no longer applies sample restrictions
+  (these move to `make_sample()` in `code/00_setup.R`). Errors found and fixed on 27 Oct 2026:
+  - `data/UnempR.xlsx` had North Carolina/North Dakota and South Carolina/South Dakota swapped
+    from 2010 on, and wrong values for New Mexico (up to 3.1 points) and New York (up to 1.8).
+    The rates now come straight from BLS. **The paper's estimates used the wrong rates.**
+  - ADA for California 2012 was 0.49 in `Pol.xlsx` Sheet4 but 0.58 in the 2012 sheet it is
+    built from; 0.58 is used.
+  - DC was dropped by accident: the IPC files spell it "DC" and the old merges matched on state
+    names. DC is now kept. Its ADA score is missing (DC has no voting member of Congress).
+  - The old script labelled expansion states "Non-expansion" and the reverse (factor levels
+    relabelled in the wrong order). `expansion` is now 0/1.
+  - IPC and `treat` are identical to the values in `data/CLNACS2.RData`.
+- `03_clean.R` was rewritten. It recodes every ACS variable to mean the same in every year, builds
+  the analysis variables and drops nobody; the sample rules are in `make_sample()`.
+- These scripts are not run by `run_all.R`; run them first (see README.md, "Instructions to
+  replicators").
 
 ## Files moved to `archive/`
 
@@ -60,5 +102,10 @@ Bug fixes are marked `# FIX:` in the code.
   `Data` instead of `data`); the version in `08-function-event-plot-adj.R` is the one that matches
   the paper.
 - `output_old/`: the 2023 draft images that were in `output/`.
+- `fig6.R` from `code/analysis/` (the DAG, Figure 6 of the earlier paper). Dropped from the
+  analysis; dagitty and ggdag, which only it used, are no longer required.
+- `check_paper.R` from `code/`. It compared key numbers with `Paper_1.pdf`. It was retired
+  because the analysis no longer aims to reproduce that paper: the sample, outcome and standard
+  errors have changed (see above).
 - `gitmodules`: the old `.gitmodules`, which pointed to an Overleaf submodule that is not in the
   repository.
