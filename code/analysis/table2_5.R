@@ -6,7 +6,7 @@
 # Output: output/tables/table2.tex, table5.tex and the matching *_estimates.csv files.
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(fixest)
 
@@ -16,7 +16,11 @@ library(fixest)
 #### Unadjusted table
 #### (OLS Weighted) for all low-income adult aged 26-65
 ################################################################################
-reg = feols(c(UNINS,HINS4,HINS1,HINS2) ~ treat*ForeginBorn  | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+# FIX: treat:ForeginBorn is a triple difference, so the fixed effects are state x nativity and
+# year x nativity (the original had state and year only, which counted any national change in the
+# FB - USB gap as an expansion effect). Standard errors are clustered by state, the level at
+# which expansion is assigned (the original used heteroskedasticity-robust errors).
+reg = feols(c(HICOV,HINS4,HINS1,HINS2) ~ treat*ForeginBorn  | ST^ForeginBorn + YEAR^ForeginBorn  , vcov = ~ST, weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
 
 table5<-
         etable(reg,
@@ -40,7 +44,7 @@ table5<-
                        slopes.format = "State-Specific Linear Time Trends",
                        yesNo = "yes"
                ) ,
-               dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               dict=c(ST = "State" , YEAR = "Year", HICOV="Any Coverage", treat='Medicaid Expansion',
                       ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
                ),
                file = file.path(table_dir, "table5.tex"), replace = TRUE
@@ -55,7 +59,8 @@ save_estimates(reg, file.path(table_dir, "table5_estimates.csv"))
 #### (OLS Weighted) for all low-income adult aged 26-65
 ################################################################################
 
-regadj = feols(c(UNINS,HINS4,HINS1,HINS2) ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST + YEAR  , vcov = "hetero", weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
+# FIX: fixed effects and clustering as in Table 5.
+regadj = feols(c(HICOV,HINS4,HINS1,HINS2) ~ treat*ForeginBorn + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) | ST^ForeginBorn + YEAR^ForeginBorn  , vcov = ~ST, weights = ~PWGTP, data = Data) # Control for demographic + immigrants + state
 
 table2<-
         etable(regadj,
@@ -63,7 +68,7 @@ table2<-
                title = "Difference-in-Differences Result With Controls",
                group = list("-^Controls"=c("UnempR","SEX","DIS", "AGEP","SCHLG", "MARG", "RACE1", "ESRG","ENG", "LTINU","NonCit", "IPC","POVPIPG","ADA","Foreign-Born x State Political Ideology", "Foreign-Born x State Unemployment Rate","State Political Ideology","State Unemployment Rate")),
                digits = 3,
-               headers = c("Uninsured","Medicaid", "Employer-Sponsored", "Directly Purchased"),
+               headers = c("Any Coverage","Medicaid", "Employer-Sponsored", "Directly Purchased"),
                tex= TRUE,
                depvar= FALSE,
                family = FALSE,
@@ -83,7 +88,7 @@ table2<-
                        slopes.format = "State-Specific Linear Time Trends",
                        yesNo = "yes"
                ) ,
-               dict=c(ST = "State" , YEAR = "Year", UNINS="Uninsured Rate", treat='Medicaid Expansion',
+               dict=c(ST = "State" , YEAR = "Year", HICOV="Any Coverage", treat='Medicaid Expansion',
                       ForeginBorn= 'Foreign-Born',UnempR= "State Unemployment Rate", ADA="State Political Ideology", REGION="Region"
                ),
                file = file.path(table_dir, "table2.tex"), replace = TRUE

@@ -1,11 +1,11 @@
 # Title: Master script
-# Description: Re-creates every table and figure in the paper from data/CLNACS2.RData, then
-#              compares the key numbers with the paper. Each analysis script runs in its own
-#              fresh R process, so none depends on objects left over from another.
-#              The data-preparation scripts in code/data_prep/ are NOT run (see README.md).
+# Description: Re-creates every table and figure in the paper from data/clean/acs_clean.rds. Each
+#              analysis script runs in its own fresh R process, so none depends on objects left
+#              over from another.
+#              The data-preparation scripts in code/data_prep/ build that file and are NOT run
+#              here: run them first (see README.md, "Instructions to replicators").
 # Usage: from the project root,  Rscript run_all.R
-# Output: output/tables/, output/figures/, output/logs/, output/check_paper.csv,
-#         output/session_info.txt
+# Output: output/tables/, output/figures/, output/logs/, output/session_info.txt
 
 source("code/00_setup.R")
 
@@ -20,12 +20,10 @@ scripts <- c(
         "code/analysis/fig2.R",
         "code/analysis/fig3.R",
         "code/analysis/fig5.R",
-        "code/analysis/fig6.R",
         "code/analysis/fig7.R",
         "code/analysis/fig8.R",
         "code/analysis/fig9.R",
-        "code/analysis/fig10.R",
-        "code/check_paper.R"
+        "code/analysis/fig10.R"
 )
 
 log_dir <- "output/logs"

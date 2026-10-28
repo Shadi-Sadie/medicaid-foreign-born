@@ -6,37 +6,14 @@
 # Output: output/figures/fig10.pdf
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
 library(ggpubr)
 
-#### Creating variable needed for this:
-#### "Born in Mexico"
-Data$FBMEX<-ifelse(Data$POBP==303 & Data$ForeginBorn==1,1,0)
-Data$FBOTHR<-ifelse(Data$POBP!=303 & Data$ForeginBorn==1,1,0)
-
-outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
-outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 treatment_var<-c("FBMEX", "FBOTHR")
-variable_list <-c("FBMEX", "FBOTHR",
-                  "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
-                    "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
-                    "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ADA",
-
-"FBMEX:LTINU", "FBMEX:RACE1.L", "FBMEX:RACE1.Q", 
-"FBMEX:RACE1.C", "FBMEX:RACE1^4", "FBMEX:SCHLG.L", 
-"FBMEX:SCHLG.Q" ,"FBMEX:SCHLG.C", "FBMEX:SCHLG^4", 
-'FBMEX:MARG',"FBMEX:IPC", "FBMEX:ESRG.L" , 
-"FBMEX:ESRG.Q","FBMEX:ADA","FBMEX:UnempR",
-
-"FBOTHR:LTINU", "FBOTHR:RACE1.L", "FBOTHR:RACE1.Q", 
-"FBOTHR:RACE1.C", "FBOTHR:RACE1^4", "FBOTHR:SCHLG.L", 
-"FBOTHR:SCHLG.Q" ,"FBOTHR:SCHLG.C", "FBOTHR:SCHLG^4", 
-'FBOTHR:MARG',"FBOTHR:IPC", "FBOTHR:ESRG.L" , 
-"FBOTHR:ESRG.Q","FBOTHR:ADA","FBOTHR:UnempR") ########## To be removed from the draft table
 plotleglable<- c('US-Born' ,"Born in Mexico", "Born elsewhere" )
 Dataset<-Data
 ### Changing the graph colors 
@@ -51,10 +28,12 @@ plot_list <- list()
 for (outcome_var in outcome_vars) {
     formula <- as.formula(paste(outcome_var, "~", treatment_var[1]," * i(ttot, expansion, ref = -1) +" ,   treatment_var[2]," * i(ttot, expansion, ref = -1) + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+",
                                 treatment_var[1],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) +",
-                                treatment_var[2],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR"))
+                                treatment_var[2],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  |",
+                                # FIX: fixed effects and clustering as in Figure 2 (fig2.R).
+                                "ST^", treatment_var[1], "^", treatment_var[2], "+ YEAR^", treatment_var[1], "^", treatment_var[2]))
 
     Event= feols( formula   ,
-                  vcov="hetero",
+                  vcov= ~ST,
                   weights = ~PWGTP,
                   data = Dataset)
 
@@ -66,12 +45,8 @@ for (outcome_var in outcome_vars) {
     draft<-coeftable(Event)
     draft<-as.data.frame(draft)
 
-    existing_rows <- variable_list[variable_list %in% rownames(draft)]  # give the row number in darft that their names is among variable list
-
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(draft) %in% existing_rows)
-        draft <- draft[-dropOutFtab, ]
-    }
+    event_rows <- grepl("ttot::", rownames(draft))   # keep only the event-time coefficients
+    draft <- draft[event_rows, ]
 
     checkmark<-any(grepl(treatment_var,rownames(draft)))    # check if the string stored in treatment_var is  in any of the row names of the draft
     if (checkmark) {
@@ -93,12 +68,10 @@ for (outcome_var in outcome_vars) {
     est5<-est4+est1
     ############## # Calculate standard error for each pair of rows and columns#############
 
-    cov<-vcov(Event, "hetero")
+    cov<-vcov(Event)
 
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(cov) %in% existing_rows)
-        cov<-cov[-dropOutFtab,-dropOutFtab]
-    }
+    event_rows <- grepl("ttot::", rownames(cov))
+    cov <- cov[event_rows, event_rows]
 
     if (checkmark) {
         i <- 1

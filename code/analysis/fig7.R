@@ -7,24 +7,26 @@
 # Output: output/figures/fig7.pdf
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
 library(ggiplot)
 library(ggpubr)
 
+# FIX: standard errors clustered by state, the level at which expansion is assigned (the original
+# used heteroskedasticity-robust errors).
 
-Event1= feols( UNINS ~ i(ttot, expansion, ref = -1) +
+Event1= feols( HICOV ~ i(ttot, expansion, ref = -1) +
                 SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC |
                 ST + YEAR   ,                        ## FEs
-              vcov="hetero",
+              vcov= ~ST,
               weights = ~PWGTP,
               data = Data,
               split= ~NATIVITY)
 
 plot1<-ggiplot(Event1,
-               ref.line = -1, main = 'Uninsured',xlab='Event Time')+
+               ref.line = -1, main = 'Any Coverage',xlab='Event Time')+
   scale_color_manual(values=c('black','#B64074'))
 
 
@@ -32,7 +34,7 @@ plot1<-ggiplot(Event1,
 Event2= feols( HINS4 ~ i(ttot, expansion, ref = -1) +
                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC |
                  ST + YEAR   ,                        ## FEs
-               vcov="hetero",
+               vcov= ~ST,
                weights = ~PWGTP,
                data = Data,
                split= ~NATIVITY)
@@ -44,7 +46,7 @@ plot2<-ggiplot(Event2, ref.line = -1, main = 'Medicaid',xlab='Event Time')+
 Event3= feols( HINS1 ~ i(ttot, expansion, ref = -1) +
                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC |
                  ST + YEAR   ,                        ## FEs
-               vcov="hetero",
+               vcov= ~ST,
                weights = ~PWGTP,
                data = Data,
                split= ~NATIVITY)
@@ -56,7 +58,7 @@ plot3<-ggiplot(Event3,ref.line = -1, main = 'Employer-Sponsored',xlab='Event Tim
 Event4= feols( HINS2 ~ i(ttot, expansion, ref = -1) +
                  SEX+DIS+AGEP+SCHLG+POVPIPG+MARG+RACE1+ESRG+ENG+LTINU+NonCit+ADA+UnempR+IPC |
                  ST + YEAR   ,                        ## FEs
-               vcov="hetero",
+               vcov= ~ST,
                weights = ~PWGTP,
                data = Data,
                split= ~NATIVITY)

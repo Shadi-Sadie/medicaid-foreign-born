@@ -1,62 +1,59 @@
 # Title: Figure 5. TWFE event study vs Sun & Abraham (2020), split by nativity
 # Author: Shadi Seyedi
-# Description: Adjusted event-study (TWFE) and Sun & Abraham estimates for uninsured and Medicaid
+# Description: Adjusted event-study (TWFE) and Sun & Abraham estimates for any coverage and Medicaid
 #              coverage; panel (a) US-born, panel (b) foreign-born.
 #              Copied from codes/R/09-sun&abraham-vs-event-fig3.R lines 73-210 (now in archive/).
 # Output: output/figures/fig5.pdf
 # Note: uses `controlvar` from code/00_setup.R.
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
 library(ggiplot)
 library(ggpubr)
 
-# FIX: year_treated was only created in 07-robustness-check.R (on a copy of the data), so this
-# script failed when run on its own. Following Sun and Abraham, never-treated states get a fake
-# treatment year far outside the study period.
-Data$year_treated <- ifelse(Data$expansion == 0, 10000, Data$ExpansionY)
-
 #############################       Model 2                      #############################
 
 Forgn<- Data[Data$NATIVITY == "Foregin-born", ]
 NATV<- Data[Data$NATIVITY == "US-born", ]
 
-san = feols(UNINS ~ sunab(year_treated, YEAR) +.[controlvar] |
+# FIX: standard errors clustered by state, the level at which expansion is assigned (the original
+# used heteroskedasticity-robust errors).
+san = feols(HICOV ~ sunab(year_treated, YEAR) +.[controlvar] |
                 ST + YEAR,
-            vcov = "hetero" ,
+            vcov = ~ST ,
             weights = ~PWGTP,
             data = NATV)
 
 
-fen= feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlvar]|
+fen= feols(HICOV ~ i(ttot, expansion, ref = -1)+.[controlvar]|
                ST + YEAR,                             ## FEs
            weights = ~PWGTP,
-           vcov = "hetero" ,
+           vcov = ~ST ,
            data = NATV)
 
 
 
-saf = feols(UNINS ~ sunab(year_treated, YEAR) +.[controlvar] |
+saf = feols(HICOV ~ sunab(year_treated, YEAR) +.[controlvar] |
                 ST + YEAR,
-            vcov = "hetero" ,
+            vcov = ~ST ,
             weights = ~PWGTP,
             data = Forgn)
 
 
-fef= feols(UNINS ~ i(ttot, expansion, ref = -1)+.[controlvar]  |
+fef= feols(HICOV ~ i(ttot, expansion, ref = -1)+.[controlvar]  |
                ST + YEAR,                             ## FEs
            weights = ~PWGTP,
-           vcov = "hetero" ,
+           vcov = ~ST ,
            data = Forgn)
 
 
 
 msan = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlvar] |
                 ST + YEAR,
-            vcov = "hetero" ,
+            vcov = ~ST ,
             weights = ~PWGTP,
             data = NATV)
 
@@ -64,14 +61,14 @@ msan = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlvar] |
 mfen= feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controlvar]|
                ST + YEAR,                             ## FEs
            weights = ~PWGTP,
-           vcov = "hetero" ,
+           vcov = ~ST ,
            data = NATV)
 
 
 
 msaf = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlvar] |
                 ST + YEAR,
-            vcov = "hetero" ,
+            vcov = ~ST ,
             weights = ~PWGTP,
             data = Forgn)
 
@@ -79,14 +76,14 @@ msaf = feols(HINS4 ~ sunab(year_treated, YEAR) +.[controlvar] |
 mfef= feols(HINS4 ~ i(ttot, expansion, ref = -1)+.[controlvar]  |
                ST + YEAR,                             ## FEs
            weights = ~PWGTP,
-           vcov = "hetero" ,
+           vcov = ~ST ,
            data = Forgn)
 
 
 
 plot1<-ggiplot(list('TWFE'=fen,'Sun & Abraham (2020)'=san), pt.pch=20, pt.size=2,
                ref.line = -1,
-               main = "Uninsured",
+               main = "Any Coverage",
                xlab = "Time to treatment",
       theme =
 theme(panel.background = element_rect(fill = "white", colour = "grey50"),
@@ -100,7 +97,7 @@ theme(panel.background = element_rect(fill = "white", colour = "grey50"),
 # plots the foreign-born models (fef/saf).
 plot2<-ggiplot(list('TWFE'=fef,'Sun & Abraham (2020)'=saf), pt.pch=17, pt.size=2,
                ref.line = -1,
-               main = "Uninsured",
+               main = "Any Coverage",
                xlab = "Time to treatment",
         theme = theme(panel.background = element_rect(fill = "white", colour = "grey50"),
                       axis.title= element_text(size=8),

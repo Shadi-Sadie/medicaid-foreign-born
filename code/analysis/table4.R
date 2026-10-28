@@ -10,7 +10,7 @@
 # table probably came from an older dataset. It is kept so the code behind the table is on record.
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(survey)
 library(gtsummary)

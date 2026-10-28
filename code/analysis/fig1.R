@@ -8,36 +8,23 @@
 # Output: output/figures/fig1.pdf
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
 library(ggpubr)
 
 
-####################
-## Data Preparation (from 06-did-regressions.R)
-####################
-
-Data$ForeginBorn <- ifelse(Data$NATIVITY == "Foregin-born", 1, 0)
-# Make sure data are factor
-data<-Data
-factor_columns <- sapply(data, is.factor)
-data[factor_columns] <- lapply(data[factor_columns], as.character)
-
-data <- replace(data, is.na(data), 99999999)
-
-data[factor_columns] <- lapply(data[factor_columns], as.factor)
-
+# REMOVED: the data preparation copied from 06-did-regressions.R. It rebuilt ForeginBorn (now
+# built in code/data_prep/03_clean.R) and replaced every missing value with 99999999, which put
+# that number into the models wherever a control was missing.
 
 ################## Starting the Function with variable  ###########################
 
-outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
-outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 treatment_var<- c("ForeginBorn")
 plotleglable<- c('US-Born','Foregin-born')
-Dataset<-data
+Dataset<-Data
 ### Changing the graph colors
 cbPalette <- c("#232424", "#CC6677", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -49,10 +36,13 @@ regression_models <- list()
 plot_list <- list()
 
 for (outcome_var in outcome_vars) {
-  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST + YEAR")) # if adjusted need to be added #
+  # FIX: state x nativity and year x nativity fixed effects (the original had state and year only,
+  # which counted any national change in the FB - USB gap as an expansion effect), and standard
+  # errors clustered by state (the original used heteroskedasticity-robust errors).
+  formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1)+ SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+ForeginBorn*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)| ST^", treatment_var, "+ YEAR^", treatment_var)) # if adjusted need to be added #
 
   Event= feols( formula   ,                        ## FEs
-                vcov="hetero",
+                vcov= ~ST,
                 weights = ~PWGTP,
                 data = Dataset)
   regression_models[[outcome_var]] <- Event
@@ -86,7 +76,7 @@ for (outcome_var in outcome_vars) {
 
   ############## # Calculate standard error for each pair of rows and columns#############
 
-  cov<-vcov(Event, "hetero")
+  cov<-vcov(Event)
 
   event_rows <- grepl("ttot::", rownames(cov))
   cov <- cov[event_rows, event_rows]

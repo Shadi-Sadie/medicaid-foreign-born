@@ -6,41 +6,15 @@
 # Output: output/figures/fig3.pdf
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
 library(ggpubr)
 
-# FIX: FBCIT was coded from CIT with the misspelled level "US-citizen Born abroad " (see table6.R),
-# which left 16,187 foreign-born citizens in the US-born group. Foreign-born citizens are now
-# foreign-born adults who are not non-citizens.
-Data$FBCIT <- ifelse(Data$ForeginBorn == 1 & Data$NonCit == 0, 1, 0)
-
-outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
-outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 treatment_var<-c("FBCIT", "NonCit")
-variable_list <-c("FBCIT", "NonCit",
-                  "UnempR" , "SEX"   ,  "DIS"   ,  "AGEP"    ,"SCHLG.L", "SCHLG.Q" ,"SCHLG.C", "SCHLG^4", "MARG",
-                    "ESRG.L" , "ESRG.Q",  "ENG.L" ,  "ENG.Q"  , "RACE1.L", "RACE1.Q", "RACE1.C", "RACE1^4",
-                    "ENG.C" ,  "ENG^4" ,  "LTINU" , "NonCit", "IPC", "POVPIPG.L", "ADA",
-
-"FBCIT:LTINU", "FBCIT:RACE1.L", "FBCIT:RACE1.Q", 
-"FBCIT:RACE1.C", "FBCIT:RACE1^4", "FBCIT:SCHLG.L", 
-"FBCIT:SCHLG.Q" ,"FBCIT:SCHLG.C", "FBCIT:SCHLG^4", 
-'FBCIT:MARG',"FBCIT:IPC", "FBCIT:ESRG.L" , 
-"FBCIT:ESRG.Q","FBCIT:ADA","FBCIT:UnempR",
-
-"NonCit:LTINU", "NonCit:RACE1.L", "NonCit:RACE1.Q", 
-"NonCit:RACE1.C", "NonCit:RACE1^4", "NonCit:SCHLG.L", 
-"NonCit:SCHLG.Q" ,"NonCit:SCHLG.C", "NonCit:SCHLG^4", 
-'NonCit:MARG',"NonCit:IPC", "NonCit:ESRG.L" , 
-"NonCit:ESRG.Q","NonCit:ADA","NonCit:UnempR") ########## To be removed from the draft table
 plotleglable<- c('US-Born' ,'FB-Citizen', 'FB-Non-citizen' )
-# FIX: the original ran on `data`, the copy made in 06-did-regressions.R that turns ordered factors
-# into plain factors. The coefficient names then no longer matched `variable_list` and the script
-# crashed. It now runs on `Data` as loaded.
 Dataset<-Data
 ### Changing the graph colors 
 cbPalette <- c("#000021", "#88CCEE", "#661100", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -54,10 +28,12 @@ plot_list <- list()
 for (outcome_var in outcome_vars) {
     formula <- as.formula(paste(outcome_var, "~", treatment_var[1]," * i(ttot, expansion, ref = -1) +" ,   treatment_var[2]," * i(ttot, expansion, ref = -1) + SEX + DIS+AGEP+POVPIPG+ENG+LTINU+NonCit+",
                                 treatment_var[1],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC) +",
-                                treatment_var[2],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  | ST + YEAR"))
+                                treatment_var[2],"*(SCHLG+ MARG+ RACE1 + ESRG + ADA+UnempR+IPC)  |",
+                                # FIX: fixed effects and clustering as in Figure 2 (fig2.R).
+                                "ST^", treatment_var[1], "^", treatment_var[2], "+ YEAR^", treatment_var[1], "^", treatment_var[2]))
 
     Event= feols( formula   ,
-                  vcov="hetero",
+                  vcov= ~ST,
                   weights = ~PWGTP,
                   data = Dataset)
 
@@ -69,12 +45,8 @@ for (outcome_var in outcome_vars) {
     draft<-coeftable(Event)
     draft<-as.data.frame(draft)
 
-    existing_rows <- variable_list[variable_list %in% rownames(draft)]  # give the row number in darft that their names is among variable list
-
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(draft) %in% existing_rows)
-        draft <- draft[-dropOutFtab, ]
-    }
+    event_rows <- grepl("ttot::", rownames(draft))   # keep only the event-time coefficients
+    draft <- draft[event_rows, ]
 
     checkmark<-any(grepl(treatment_var,rownames(draft)))    # check if the string stored in treatment_var is  in any of the row names of the draft
     if (checkmark) {
@@ -96,12 +68,10 @@ for (outcome_var in outcome_vars) {
     est5<-est4+est1
     ############## # Calculate standard error for each pair of rows and columns#############
 
-    cov<-vcov(Event, "hetero")
+    cov<-vcov(Event)
 
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(cov) %in% existing_rows)
-        cov<-cov[-dropOutFtab,-dropOutFtab]
-    }
+    event_rows <- grepl("ttot::", rownames(cov))
+    cov <- cov[event_rows, event_rows]
 
     if (checkmark) {
         i <- 1

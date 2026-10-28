@@ -8,7 +8,7 @@
 #       was changed after the paper's figure was made.
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(ggplot2)
 library(fixest)
@@ -18,11 +18,8 @@ library(ggpubr)
 
 ################## Starting the Function with variable  ###########################
 
-outcome_vars <- c("UNINS", "HINS4", "HINS1", "HINS2")
-outcome_labels <- c("UNINS" = "Uninsured", "HINS4" = "Medicaid", "HINS1" = "Employer-Sponsored", "HINS2" = "Directly Purchased")
 
 treatment_var<- c("ForeginBorn")
-variable_list <- c("ForeginBorn") ########## To be removed from the draft table
 plotleglable<- c('US-Born','Foregin-born')
 Dataset<-Data
 ### Changing the graph colors
@@ -36,10 +33,11 @@ regression_models <- list()
 plot_list <- list()
 
 for (outcome_var in outcome_vars) {
-    formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1) | ST + YEAR")) # if adjusted need to be added .[controlvar]#
+    # FIX: fixed effects and clustering as in Figure 1 (fig1.R).
+    formula <- as.formula(paste(outcome_var, "~",treatment_var," * i(ttot, expansion, ref = -1) | ST^", treatment_var, "+ YEAR^", treatment_var)) # if adjusted need to be added .[controlvar]#
 
     Event= feols( formula   ,                        ## FEs
-                  vcov="hetero",
+                  vcov= ~ST,
                   weights = ~PWGTP,
                   data = Dataset)
     regression_models[[outcome_var]] <- Event
@@ -50,12 +48,8 @@ for (outcome_var in outcome_vars) {
     draft<-coeftable(Event)
     draft<-as.data.frame(draft)
 
-    existing_rows <- variable_list[variable_list %in% rownames(draft)]
-
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(draft) %in% existing_rows)
-        draft <- draft[-dropOutFtab, ]
-    }
+    event_rows <- grepl("ttot::", rownames(draft))   # keep only the event-time coefficients
+    draft <- draft[event_rows, ]
 
     checkmark<-any(grepl(treatment_var,rownames(draft)))
     if (checkmark) {
@@ -76,12 +70,10 @@ for (outcome_var in outcome_vars) {
 
     ############## # Calculate standard error for each pair of rows and columns#############
 
-    cov<-vcov(Event, "hetero")
+    cov<-vcov(Event)
 
-    if (length(existing_rows) > 0) {
-        dropOutFtab <- which(rownames(cov) %in% existing_rows)
-        cov<-cov[-dropOutFtab,-dropOutFtab]
-    }
+    event_rows <- grepl("ttot::", rownames(cov))
+    cov <- cov[event_rows, event_rows]
 
     if (checkmark) {
         i <- 1

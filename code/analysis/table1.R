@@ -12,7 +12,7 @@
 # an open decision (see CHANGES.md).
 
 source("code/00_setup.R")
-load(data_file)
+Data <- make_sample(readRDS(data_file), sample_name)
 
 library(dplyr)
 library(gtsummary)
@@ -26,9 +26,8 @@ library(gtsummary)
 # gets its own difference and test.
 pre <- Data[Data$ACA == "Pre-ACA", ]
 
-tab_data <- data.frame(UNINS = pre$UNINS, HINS4 = pre$HINS4, HINS2 = pre$HINS2, HINS1 = pre$HINS1)
+tab_data <- data.frame(HICOV = pre$HICOV, HINS4 = pre$HINS4, HINS2 = pre$HINS2, HINS1 = pre$HINS1)
 
-pre$SEX <- factor(pre$SEX, levels = c(2, 1), labels = c("Female", "Male"))
 for (v in c("RACE1", "SEX", "ESRG", "SCHLG", "POVPIPG")) {
         for (l in levels(pre[[v]])) tab_data[[paste0(v, ": ", l)]] <- as.integer(pre[[v]] == l)
 }
@@ -39,7 +38,7 @@ tab_data$AGEP <- pre$AGEP
 tab_data$NATIVITY  <- factor(pre$NATIVITY, levels = c("Foregin-born", "US-born"), labels = c("FB", "USB"))
 tab_data$expansion <- factor(pre$expansion, levels = c(0, 1), labels = c("Non-expansion", "Expansion"))
 
-labels <- list(UNINS ~ "Uninsured", HINS4 ~ "Medicaid", HINS2 ~ "Individually Purchased",
+labels <- list(HICOV ~ "Any Coverage", HINS4 ~ "Medicaid", HINS2 ~ "Individually Purchased",
                HINS1 ~ "Employer Sponsored", DIS ~ "Disability", MARG ~ "Married", AGEP ~ "Age")
 
 
