@@ -116,7 +116,7 @@ main results. The sample names and the reason for each are in `sample_variants` 
 
 | Paper item | Program | Output | Note |
 |---|---|---|---|
-| Table 1 | `code/analysis/table1.R` | `output/tables/table1.tex`, `table1.csv` | Unweighted (see Known gaps) |
+| Table 1 | `code/analysis/table1.R` | `output/tables/table1.tex`, `table1.csv` | Weighted, pre-ACA, by citizenship and expansion status |
 | Table 2 | `code/analysis/table2_5.R` | `output/tables/table2.tex` | |
 | Table 3 | `code/analysis/table3_fig4.R` | `output/tables/table3.tex`, `table3.csv` | |
 | Table 4 | `code/analysis/table4.R` | `output/tables/table4.tex`, `table4.csv` | See Known gaps |
@@ -138,8 +138,7 @@ main results. The sample names and the reason for each are in `sample_variants` 
 
 - **Some definitions were reconstructed**, because the original code never defined them: the
   control lists for Tables 7-8, `FBLEG` (Figure 2) and all of Figure 9. They were chosen because
-  they reproduced the earlier paper's numbers. Table 1 is unweighted, although its title in the
-  earlier paper says "(Weighted)". See `CHANGES.md`.
+  they reproduced the earlier paper's numbers. See `CHANGES.md`.
 - **Table 4** in the earlier paper is internally inconsistent, and its code never reproduced it.
   Check its output before using it.
 - **Sample:** Oregon (state FIPS 41) is in the main sample, although the earlier paper says it
