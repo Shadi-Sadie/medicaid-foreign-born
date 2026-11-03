@@ -55,8 +55,10 @@ Variable descriptions for the ACS extract and the cleaning steps are in
 
 - R 4.5.3, from the conda environment `r45` (`~/anaconda3/envs/r45`).
 - R packages (already installed in `~/R/x86_64-pc-linux-gnu-library/4.5`): fixest, ggplot2,
-  dplyr, scales, kableExtra, flextable, officer.
-  `code/00_setup.R` stops with a message if any are missing.
+  dplyr, scales, kableExtra, flextable, officer, HonestDiD (0.2.8, for `honest_did.R`).
+  `code/00_setup.R` stops with a message if any are missing. HonestDiD's solvers need the GLPK
+  system library (Ubuntu: `sudo apt install libglpk40`, or `libglpk-dev` to build from source;
+  building its dependencies from source also needs `libgmp-dev` and Rust).
 - The exact package versions of the last run are written to `output/session_info.txt`.
 - The data-preparation scripts also need data.table and readxl, and an internet connection.
   `02_merge.R` downloads the BLS unemployment file, and BLS refuses downloads that do not name a
@@ -140,6 +142,7 @@ so renumbering changes one line there (and the table below).
 | B. Identification | Figure B2 | `control_outcomes.R` | `output/figures/control_outcomes.pdf`, `output/tables/control_outcomes_estimates.csv` | Event studies with the control variables as outcomes (bad-control and sample-selection check) |
 | B. Identification | Table B1 | `placebo.R` | `output/tables/placebo.tex`, `placebo.docx`, `placebo.csv` | Table 2 model on adults above the expansion limit (139-400% of poverty) and adults with a high school education or less up to 400% |
 | B. Identification | Table B2 | `pretrend_tests.R` | `output/tables/pretrend_tests.tex`, `pretrend_tests.docx`, `pretrend_tests.csv` | Joint F tests that the event-study coefficients 2-4 years before expansion are zero, by citizenship group and for differences between groups, four outcomes, specification E |
+| B. Identification | Figure B3 | `honest_did.R` | `output/figures/honest_did.pdf`, `output/tables/honest_did.csv` | HonestDiD sensitivity to departures from parallel trends (relative magnitudes; with the sign of the pre-trend; with leads -3 to -2; smoothness): naturalized any insurance, naturalized minus US-born any insurance, naturalized direct purchase |
 | C. Robustness | Table C1, Figure C1 | `robustness.R` | `output/tables/robustness.tex`, `robustness.docx`, `robustness.csv`; `output/figures/robustness_plot.pdf` | Sun and Abraham estimator; without Florida; without Texas; including the early-option states |
 | C. Robustness | Figure C2 | `sunab_event.R` | `output/figures/sunab_event.pdf`, `output/tables/sunab_event_estimates.csv` | Sun and Abraham event studies by citizenship and differences between groups, four outcomes, specification E |
 | C. Robustness | Figure C3 | `specs_employer.R` | `output/figures/specs_employer.pdf`, `output/tables/specs_employer_estimates.csv` | Employer-sponsored insurance by citizenship, five covariate specifications |

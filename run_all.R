@@ -21,6 +21,7 @@ scripts <- c(
         "code/analysis/control_outcomes.R",
         "code/analysis/placebo.R",
         "code/analysis/pretrend_tests.R",
+        "code/analysis/honest_did.R",
         # C. Robustness
         "code/analysis/robustness.R",
         "code/analysis/sunab_event.R",

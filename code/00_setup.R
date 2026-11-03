@@ -11,7 +11,7 @@
 ## Required Packages
 ####################
 
-required_packages <- c("fixest", "ggplot2", "dplyr", "scales", "kableExtra", "flextable", "officer")
+required_packages <- c("fixest", "ggplot2", "dplyr", "scales", "kableExtra", "flextable", "officer", "HonestDiD")
 
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing_packages) > 0) {
@@ -346,17 +346,36 @@ event_estimates <- function(m, series, w = 1) {
 # on q and G - 1 degrees of freedom (G states), from the state-clustered covariance.
 pretrend_test <- function(m, series, w = 1, years = -4:-2) {
         b <- coef(m)
-        R <- matrix(0, length(years), length(b), dimnames = list(NULL, names(b)))
-        for (i in seq_along(years)) {
-                terms <- sprintf("et::%d:grp::%s", years[i], series)
-                stopifnot(terms %in% names(b))   # no lead dropped for collinearity
-                R[i, terms] <- w
-        }
+        R <- event_weights(m, series, w, years)
         Rb <- R %*% b
         q <- length(years)
         F <- drop(t(Rb) %*% solve(R %*% vcov(m) %*% t(R)) %*% Rb) / q
         df2 <- fixest::degrees_freedom(m, "t")
         data.frame(F = F, df1 = q, df2 = df2, p = pf(F, q, df2, lower.tail = FALSE))
+}
+
+# The matrix that maps the coefficients of model m to the weighted sum of the groups in `series`
+# at each event time in `years` (one row per year, named by the year). Stops if a term was
+# dropped for collinearity.
+event_weights <- function(m, series, w = 1, years) {
+        b <- coef(m)
+        R <- matrix(0, length(years), length(b), dimnames = list(as.character(years), names(b)))
+        for (i in seq_along(years)) {
+                terms <- sprintf("et::%d:grp::%s", years[i], series)
+                stopifnot(terms %in% names(b))
+                R[i, terms] <- w
+        }
+        R
+}
+
+# Inputs for the HonestDiD sensitivity analysis (honest_did.R; Rambachan and Roth 2023): the
+# event-study estimates of the weighted sum of the groups in `series` before (`pre`) and after
+# (`post`) expansion, pre-periods first and without the omitted year -1, and their covariance,
+# clustered by state. The covariance of a difference between groups comes from the model's joint
+# covariance.
+honest_inputs <- function(m, series, w = 1, pre = -4:-2, post = 0:5) {
+        R <- event_weights(m, series, w, c(pre, post))
+        list(betahat = drop(R %*% coef(m)), sigma = R %*% vcov(m) %*% t(R))
 }
 
 # Each group's estimates in each specification of a nested fit
@@ -430,6 +449,7 @@ exhibits <- c(
         control_outcomes = "Figure B2",   # control_outcomes.R
         placebo          = "Table B1",    # placebo.R
         pretrend_tests   = "Table B2",    # pretrend_tests.R
+        honest_did       = "Figure B3",   # honest_did.R
         robustness       = "Table C1",    # robustness.R (table and figure)
         robustness_plot  = "Figure C1",
         sunab_event      = "Figure C2",   # sunab_event.R
