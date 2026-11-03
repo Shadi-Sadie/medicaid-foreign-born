@@ -140,16 +140,16 @@ so renumbering changes one line there (and the table below).
 | A. Data and sample | (none yet) | | | |
 | B. Identification | Figure B1 | `trends_raw.R` | `output/figures/trends_raw.pdf`, `output/tables/trends_raw_means.csv` | Weighted coverage rates by year, citizenship and expansion status (2014 expanders vs never expanded) |
 | B. Identification | Figure B2 | `control_outcomes.R` | `output/figures/control_outcomes.pdf`, `output/tables/control_outcomes_estimates.csv` | Event studies with the control variables as outcomes (bad-control and sample-selection check) |
-| B. Identification | Table B1 | `placebo.R` | `output/tables/placebo.tex`, `placebo.docx`, `placebo.csv` | Table 2 model on adults above the expansion limit (139-400% of poverty) and adults with a high school education or less up to 400% |
+| B. Identification | Table B1 | `comparison_samples.R` | `output/tables/comparison_samples.tex`, `comparison_samples.docx`, `comparison_samples.csv` | Table 2 model on a higher-income comparison sample (139-400% of poverty, above the expansion limit; not a placebo, since the rest of the ACA affects it) and adults with a high school education or less up to 400% |
 | B. Identification | Table B2 | `pretrend_tests.R` | `output/tables/pretrend_tests.tex`, `pretrend_tests.docx`, `pretrend_tests.csv` | Joint F tests that the event-study coefficients 2-4 years before expansion are zero, by citizenship group and for differences between groups, four outcomes, specification E |
 | B. Identification | Figure B3 | `honest_did.R` | `output/figures/honest_did.pdf`, `output/tables/honest_did.csv` | HonestDiD sensitivity to departures from parallel trends (relative magnitudes; with the sign of the pre-trend; with leads -3 to -2; smoothness): naturalized any insurance, naturalized minus US-born any insurance, naturalized direct purchase |
-| C. Robustness | Table C1, Figure C1 | `robustness.R` | `output/tables/robustness.tex`, `robustness.docx`, `robustness.csv`; `output/figures/robustness_plot.pdf` | Sun and Abraham estimator; without Florida; without Texas; including the early-option states |
+| C. Robustness | Table C1, Figure C1 | `robustness.R` | `output/tables/robustness.tex`, `robustness.docx`, `robustness.csv`; `output/figures/robustness_plot.pdf` | Sun and Abraham estimator; without Florida; without Texas; including the early-option states; non-citizens in the US 10+ years |
 | C. Robustness | Figure C2 | `sunab_event.R` | `output/figures/sunab_event.pdf`, `output/tables/sunab_event_estimates.csv` | Sun and Abraham event studies by citizenship and differences between groups, four outcomes, specification E |
 | C. Robustness | Figure C3 | `specs_employer.R` | `output/figures/specs_employer.pdf`, `output/tables/specs_employer_estimates.csv` | Employer-sponsored insurance by citizenship, five covariate specifications |
 | C. Robustness | Figure C4 | `specs_direct.R` | `output/figures/specs_direct.pdf`, `output/tables/specs_direct_estimates.csv` | Directly purchased insurance by citizenship, five covariate specifications |
 | D. Heterogeneity | Table D1 | `income_bands.R` | `output/tables/income_bands.tex`, `income_bands.docx`, `income_bands.csv` | Table 2 model at or below 100% and at 101-138% of poverty |
 
-All appendix programs are in `code/analysis/`. `placebo.R`, `robustness.R` and `income_bands.R`
+All appendix programs are in `code/analysis/`. `comparison_samples.R`, `robustness.R` and `income_bands.R`
 run their own list of samples, so they take no sample name.
 
 ## Known gaps

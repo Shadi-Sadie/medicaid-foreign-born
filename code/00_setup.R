@@ -114,7 +114,7 @@ sample_variants <- list(
         pov_400 = list(drop = "income",
                        why = "All incomes in the data (up to 400% of poverty). Used to test whether expansion changed who has income at or below 138%."),
         pov_139_400 = list(drop = "income", rule = quote(POVPIP > 138 & POVPIP <= 400),
-                           why = "Placebo: income from 139% to 400% of poverty, above the expansion limit and within the Marketplace subsidy range in every state."),
+                           why = "Higher-income comparison sample: income from 139% to 400% of poverty, above the expansion limit and within the Marketplace subsidy range in every state. Not a placebo, since the rest of the ACA affects it."),
         pov_200 = list(drop = "income", rule = quote(POVPIP <= 200),
                        why = "Income at or below 200% of poverty."),
         age_19_64 = list(drop = "age", rule = quote(AGEP >= 19 & AGEP <= 64),
@@ -447,7 +447,7 @@ spec_figure <- function(Data, y, ylab, name) {
 exhibits <- c(
         trends_raw       = "Figure B1",   # trends_raw.R
         control_outcomes = "Figure B2",   # control_outcomes.R
-        placebo          = "Table B1",    # placebo.R
+        comparison_samples = "Table B1",  # comparison_samples.R
         pretrend_tests   = "Table B2",    # pretrend_tests.R
         honest_did       = "Figure B3",   # honest_did.R
         robustness       = "Table C1",    # robustness.R (table and figure)
@@ -461,7 +461,7 @@ exhibit_number <- function(name) sub("^(Table|Figure) ", "", exhibits[[name]])  
 
 
 ####################
-## Checks of the Table 2 model on other samples (placebo.R, robustness.R, income_bands.R)
+## Checks of the Table 2 model on other samples (comparison_samples.R, robustness.R, income_bands.R)
 ####################
 
 # The effects and differences of Table 2
