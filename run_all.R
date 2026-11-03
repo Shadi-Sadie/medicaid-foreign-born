@@ -11,19 +11,23 @@ source("code/00_setup.R")
 
 scripts <- c(
         "code/analysis/table1.R",
-        "code/analysis/table2_5.R",
-        "code/analysis/table3_fig4.R",
-        "code/analysis/table4.R",
-        "code/analysis/table6.R",
-        "code/analysis/table7_8.R",
+        "code/analysis/table2.R",
         "code/analysis/fig1.R",
         "code/analysis/fig2.R",
         "code/analysis/fig3.R",
-        "code/analysis/fig5.R",
-        "code/analysis/fig7.R",
-        "code/analysis/fig8.R",
-        "code/analysis/fig9.R",
-        "code/analysis/fig10.R"
+        # Appendix, by section (numbers in `exhibits` in code/00_setup.R)
+        # B. Identification
+        "code/analysis/trends_raw.R",
+        "code/analysis/control_outcomes.R",
+        "code/analysis/placebo.R",
+        "code/analysis/pretrend_tests.R",
+        # C. Robustness
+        "code/analysis/robustness.R",
+        "code/analysis/sunab_event.R",
+        "code/analysis/specs_employer.R",
+        "code/analysis/specs_direct.R",
+        # D. Heterogeneity
+        "code/analysis/income_bands.R"
 )
 
 log_dir <- "output/logs"

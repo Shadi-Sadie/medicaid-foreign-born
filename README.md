@@ -5,9 +5,10 @@ data. It studies the effect of the ACA Medicaid expansions on health insurance c
 low-income foreign-born and US-born adults aged 26-64 not enrolled in Medicare, using ACS 1-year
 PUMS data for 2011-2019 and difference-in-differences and event-study models.
 
-The tables and figures keep the numbering of the earlier version of the paper (`Paper_1.pdf`),
-but the results differ from it: the data are rebuilt from the Census files, and the sample,
-outcome, fixed effects and standard errors have changed. `CHANGES.md` lists every difference.
+The tables and figures are those of the Health Services Research submission. The earlier version
+of the paper (`Paper_1.pdf`) had different exhibits; its scripts are archived (see
+`archive/`), and the data are rebuilt from the Census files, with a different sample, outcome,
+fixed effects and standard errors. `CHANGES.md` lists every difference.
 
 The README follows the structure of the [Social Science Data Editors' template](https://social-science-data-editors.github.io/template_README/).
 Items still to be completed are marked **TODO**.
@@ -54,7 +55,7 @@ Variable descriptions for the ACS extract and the cleaning steps are in
 
 - R 4.5.3, from the conda environment `r45` (`~/anaconda3/envs/r45`).
 - R packages (already installed in `~/R/x86_64-pc-linux-gnu-library/4.5`): fixest, ggplot2,
-  ggpubr, ggiplot, dplyr, scales, gtsummary, gt, survey, bacondecomp, cowplot, kableExtra.
+  dplyr, scales, kableExtra, flextable, officer.
   `code/00_setup.R` stops with a message if any are missing.
 - The exact package versions of the last run are written to `output/session_info.txt`.
 - The data-preparation scripts also need data.table and readxl, and an internet connection.
@@ -65,8 +66,8 @@ Variable descriptions for the ACS extract and the cleaning steps are in
 ### Memory and runtime
 
 - Memory: the cleaned file has 12,413,778 rows (everyone aged 18 and older with income up to
-  400% of poverty) and 106 columns; the main sample has 1,716,909 people. At least 16 GB of RAM
-  is recommended.
+  400% of poverty) and 106 columns; the main sample has 1,340,837 people. At least 24 GB of RAM
+  is recommended (`table2.R` peaks at about 21 GB).
 - Disk: about 10 GB for the Census zip files and the files built from them.
 - Running time: `01_get_data.R` takes about 15 minutes (peak memory about 5 GB). `02_merge.R`,
   `03_clean.R` and `run_all.R`: **TODO** (see Overview).
@@ -76,10 +77,10 @@ Variable descriptions for the ACS extract and the cleaning steps are in
 | Folder / file | Purpose |
 |---|---|
 | `run_all.R` | Master script. Runs every script below in a fresh R process, writes logs to `output/logs/`. |
-| `code/00_setup.R` | Checks packages; sets paths; defines the main and sensitivity samples (`make_sample()`), the outcomes, the shared control-variable lists and a helper that saves estimates. Sourced by every analysis script. |
+| `code/00_setup.R` | Checks packages; sets paths; defines the main and sensitivity samples (`make_sample()`), the outcomes, and the models, estimates and table formatting that several scripts share. Sourced by every analysis script. |
 | `code/analysis/` | One script per table or figure (list below). Each runs on its own. |
 | `code/data_prep/` | `01_get_data.R` (downloads and reads the Census files), `02_merge.R` (stacks the ACS years and adds the state-by-year data, also saved as `data/state_year.csv`), `03_clean.R` (recoding and analysis variables). Run in this order, before `run_all.R`. |
-| `archive/` | Original scripts, drafts and old outputs. Not used. See `CHANGES.md`. |
+| `archive/` | Tables, figures and scripts of the earlier paper as of 2 November 2026 (`archive/2026-11-02/`), including its Tables 3-8 and Figures 4-10, which the submission does not use. Not run. The original scripts are in git commit `21c7fe0`. See `CHANGES.md`. |
 | `CHANGES.md` | Every difference between the scripts here and the original code. |
 
 ## Instructions to replicators
@@ -107,44 +108,55 @@ All commands run from the project root.
 
 A single item can be re-created by running its script on its own, for example
 `Rscript code/analysis/fig3.R`. To run it on a sensitivity sample, add the sample's name, for
-example `Rscript code/analysis/table2_5.R with_medicare`. The results then go to
+example `Rscript code/analysis/table2.R with_medicare`. The results then go to
 `output/tables_with_medicare/` and `output/figures_with_medicare/`, so they never overwrite the
 main results. The sample names and the reason for each are in `sample_variants` in
 `code/00_setup.R`.
 
 ## List of tables and figures
 
+The main exhibits keep their numbers. The appendix is grouped by the question each exhibit answers,
+and numbered within each section (A data and sample; B identification; C robustness;
+D heterogeneity). Appendix scripts and outputs are named by content, and their numbers are set in
+one place, `exhibits` in `code/00_setup.R`: the Word and LaTeX tables take their numbers from it,
+so renumbering changes one line there (and the table below).
+
+### Main exhibits
+
 | Paper item | Program | Output | Note |
 |---|---|---|---|
-| Table 1 | `code/analysis/table1.R` | `output/tables/table1.tex`, `table1.csv` | Weighted, pre-ACA, by citizenship and expansion status |
-| Table 2 | `code/analysis/table2_5.R` | `output/tables/table2.tex` | |
-| Table 3 | `code/analysis/table3_fig4.R` | `output/tables/table3.tex`, `table3.csv` | |
-| Table 4 | `code/analysis/table4.R` | `output/tables/table4.tex`, `table4.csv` | See Known gaps |
-| Table 5 | `code/analysis/table2_5.R` | `output/tables/table5.tex` | |
-| Table 6 | `code/analysis/table6.R` | `output/tables/table6.tex` | |
-| Table 7 | `code/analysis/table7_8.R` | `output/tables/table7.tex` | |
-| Table 8 | `code/analysis/table7_8.R` | `output/tables/table8.tex` | |
-| Figure 1 | `code/analysis/fig1.R` | `output/figures/fig1.pdf` | |
-| Figure 2 | `code/analysis/fig2.R` | `output/figures/fig2.pdf` | |
-| Figure 3 | `code/analysis/fig3.R` | `output/figures/fig3.pdf` | |
-| Figure 4 | `code/analysis/table3_fig4.R` | `output/figures/fig4.pdf` | |
-| Figure 5 | `code/analysis/fig5.R` | `output/figures/fig5.pdf` | |
-| Figure 7 | `code/analysis/fig7.R` | `output/figures/fig7.pdf` | |
-| Figure 8 | `code/analysis/fig8.R` | `output/figures/fig8.pdf` | Colours differ from the paper |
-| Figure 9 | `code/analysis/fig9.R` | `output/figures/fig9.pdf` | Reconstructed (see Known gaps) |
-| Figure 10 | `code/analysis/fig10.R` | `output/figures/fig10.pdf` | |
+| Table 1 | `code/analysis/table1.R` | `output/tables/table1.tex`, `table1.docx`, `table1.csv` | Weighted, pre-ACA, by citizenship and expansion status |
+| Table 2 | `code/analysis/table2.R` | `output/tables/table2.tex`, `table2.docx`, `table2.csv`, `table2_by_spec.csv` | Effects by citizenship and differences between groups |
+| Figure 1 | `code/analysis/fig1.R` | `output/figures/fig1.pdf`, `output/tables/fig1_estimates.csv` | Any coverage by citizenship, five covariate specifications |
+| Figure 2 | `code/analysis/fig2.R` | `output/figures/fig2.pdf`, `output/tables/fig2_estimates.csv` | Medicaid by citizenship, five covariate specifications |
+| Figure 3 | `code/analysis/fig3.R` | `output/figures/fig3.pdf`, `output/tables/fig3_estimates.csv` | Differences between the groups' effects, four coverage outcomes |
+
+### Appendix
+
+| Section | Item | Program | Output | Note |
+|---|---|---|---|---|
+| A. Data and sample | (none yet) | | | |
+| B. Identification | Figure B1 | `trends_raw.R` | `output/figures/trends_raw.pdf`, `output/tables/trends_raw_means.csv` | Weighted coverage rates by year, citizenship and expansion status (2014 expanders vs never expanded) |
+| B. Identification | Figure B2 | `control_outcomes.R` | `output/figures/control_outcomes.pdf`, `output/tables/control_outcomes_estimates.csv` | Event studies with the control variables as outcomes (bad-control and sample-selection check) |
+| B. Identification | Table B1 | `placebo.R` | `output/tables/placebo.tex`, `placebo.docx`, `placebo.csv` | Table 2 model on adults above the expansion limit (139-400% of poverty) and adults with a high school education or less up to 400% |
+| B. Identification | Table B2 | `pretrend_tests.R` | `output/tables/pretrend_tests.tex`, `pretrend_tests.docx`, `pretrend_tests.csv` | Joint F tests that the event-study coefficients 2-4 years before expansion are zero, by citizenship group and for differences between groups, four outcomes, specification E |
+| C. Robustness | Table C1, Figure C1 | `robustness.R` | `output/tables/robustness.tex`, `robustness.docx`, `robustness.csv`; `output/figures/robustness_plot.pdf` | Sun and Abraham estimator; without Florida; without Texas; including the early-option states |
+| C. Robustness | Figure C2 | `sunab_event.R` | `output/figures/sunab_event.pdf`, `output/tables/sunab_event_estimates.csv` | Sun and Abraham event studies by citizenship and differences between groups, four outcomes, specification E |
+| C. Robustness | Figure C3 | `specs_employer.R` | `output/figures/specs_employer.pdf`, `output/tables/specs_employer_estimates.csv` | Employer-sponsored insurance by citizenship, five covariate specifications |
+| C. Robustness | Figure C4 | `specs_direct.R` | `output/figures/specs_direct.pdf`, `output/tables/specs_direct_estimates.csv` | Directly purchased insurance by citizenship, five covariate specifications |
+| D. Heterogeneity | Table D1 | `income_bands.R` | `output/tables/income_bands.tex`, `income_bands.docx`, `income_bands.csv` | Table 2 model at or below 100% and at 101-138% of poverty |
+
+All appendix programs are in `code/analysis/`. `placebo.R`, `robustness.R` and `income_bands.R`
+run their own list of samples, so they take no sample name.
 
 ## Known gaps
 
-- **Some definitions were reconstructed**, because the original code never defined them: the
-  control lists for Tables 7-8, `FBLEG` (Figure 2) and all of Figure 9. They were chosen because
-  they reproduced the earlier paper's numbers. See `CHANGES.md`.
-- **Table 4** in the earlier paper is internally inconsistent, and its code never reproduced it.
-  Check its output before using it.
+- **`FBLEG` was reconstructed**, because the original code never defined it; it was chosen
+  because it reproduced the earlier paper's numbers. See `CHANGES.md`.
 - **Sample:** Oregon (state FIPS 41) is in the main sample, although the earlier paper says it
   was excluded.
 - The old files `data/RAWACS*` and `data/CLNACS*` (from the earlier Census API download) are no
   longer used by any script.
 - The old `.gitmodules` pointed to an Overleaf submodule (`manuscripts/...`) that is not in the
-  repository; it is kept in `archive/gitmodules`.
+  repository; it is `archive/gitmodules` in git commit `21c7fe0`.
 - **TODO:** convert this README to PDF for a journal deposit.

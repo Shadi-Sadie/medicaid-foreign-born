@@ -44,21 +44,21 @@ rows <- tribble(
         "HINS4",      "Medicaid",                        "pct",  "Health insurance coverage",
         "HINS1",      "Employer-sponsored insurance",    "pct",  "Health insurance coverage",
         "HINS2",      "Direct purchase",                 "pct",  "Health insurance coverage",
-        "AGEP",       "Age, mean (SD)",                  "mean", "Demographics",
+        "AGEP",       "Age",                             "mean", "Demographics",
         "FEMALE",     "Female",                          "pct",  "Demographics",
         "RACE1",      "Race and ethnicity",              "cat",  "Demographics",
         "MARG",       "Married",                         "pct",  "Demographics",
         "DIS",        "Disability",                      "pct",  "Demographics",
         "SCHLG",      "Education",                       "cat",  "Socioeconomic status",
         "ESRG",       "Employment",                      "cat",  "Socioeconomic status",
-        "POVPIPG",    "Income as % of federal poverty level", "cat", "Socioeconomic status",
-        "YLIU_fb",    "Years in the US, mean (SD)",      "mean", "Immigrant characteristics",
-        "LTINU_fb",   "Lived >25% of life in the US",    "pct",  "Immigrant characteristics",
+        "POVPIPG",    "Income, % of poverty level",      "cat",  "Socioeconomic status",
+        "YLIU_fb",    "Years in the US",                 "mean", "Immigrant characteristics",
+        "LTINU_fb",   "Over 25% of life in the US",      "pct",  "Immigrant characteristics",
         "ENG_fb",     "English proficiency",             "cat",  "Immigrant characteristics",
         "CORIGIN_fb", "Region of birth",                 "cat",  "Immigrant characteristics",
-        "UnempR",     "State unemployment rate, mean (SD)", "mean", "State context",
-        "IPC",        "Immigrant Policy Climate, mean (SD)", "mean", "State context",
-        "ADA",        "ADA score, mean (SD)",            "mean", "State context"
+        "UnempR",     "Unemployment rate, %",            "mean", "State context",
+        "IPC",        "Immigrant Policy Climate",        "mean", "State context",
+        "ADA",        "ADA score",                       "mean", "State context"
 )
 
 
@@ -120,16 +120,18 @@ write.csv(cbind(Panel = row_panels, table1), file.path(table_dir, "table1.csv"),
 # uses, so that it can be read without the text
 title <- "Characteristics of low-income adults before Medicaid expansion by citizenship and state expansion status"
 note <- paste(
-        "Note: Data are from the American Community Survey (ACS), 2011 to 2013. The sample is adults aged 26 to 64",
-        "living in households, with family income at or below 138% of the federal poverty level. It excludes adults",
-        "with Medicare, US citizens born in the US territories or abroad to American parents, non-citizens in the US",
-        "fewer than 5 years, and Delaware, the District of Columbia, Massachusetts, New York and Vermont, which",
-        "covered low-income adults before 2014. Values are percentages, except where marked mean (SD), weighted with",
-        "ACS person weights; n is the unweighted number of respondents, and the number of states is in parentheses.",
-        "Any insurance follows the Census Bureau definition, which does not count Indian Health Service coverage alone.",
-        "Immigrant characteristics are shown for the foreign-born only. State context values are person-weighted means",
-        "of the state's annual unemployment rate (BLS), its Immigrant Policy Climate index without the health care",
-        "items (Samari), and the average ADA score (0 to 100) of its members of Congress.",
+        "Note: American Community Survey (ACS), 2011 to 2013. Adults aged 26 to 64 in households with family income",
+        "at or below 138% of the federal poverty level, excluding adults with Medicare, US citizens born in the US",
+        "territories or abroad to American parents, non-citizens in the US fewer than 5 years, the five states that",
+        "covered low-income adults before 2014 (Delaware, District of Columbia, Massachusetts, New York, Vermont),",
+        "and the six states that expanded coverage partly before 2014 (California, Colorado, Connecticut, Minnesota,",
+        "New Jersey, Washington). Values are percentages weighted with ACS person weights, except age, years in the",
+        "US and the state context rows, which are weighted means (SD); n is the unweighted number of respondents and",
+        "the number of states is in parentheses. Any insurance excludes Indian Health Service coverage alone",
+        "(Census Bureau definition). Immigrant characteristics are for the foreign-born",
+        "only. State context values are person-weighted means of the state's annual unemployment rate (BLS),",
+        "Immigrant Policy Climate index without its health care items (Samari) and mean ADA score (0 to 100) of its",
+        "members of Congress.",
         if (sample_name != "main") paste("Sensitivity sample:", sample_variants[[sample_name]]$why))
 abbreviations <- paste("Abbreviations: ACS, American Community Survey; ADA, Americans for Democratic Action;",
                        "BLS, Bureau of Labor Statistics; SD, standard deviation; US, United States.")
@@ -138,10 +140,10 @@ spanners  <- unique(sprintf("%s states (%d)", cols$state_group, n_states))
 level_rows <- grep("^    ", table1$Characteristic)
 panel_rows <- rle(row_panels)
 
-## LaTeX: on landscape pages (seven columns of long labels do not fit a portrait page without
-## wrapping), single-spaced even in a double-spaced manuscript, and a longtable that continues on
-## the next page with the headers repeated, so that it never runs off the page on letter paper
-## with 1-inch margins. Needs booktabs, longtable, makecell, threeparttablex and pdflscape (all
+## LaTeX: 8-point and single-spaced even in a double-spaced manuscript, and a longtable that
+## continues on the next page with the headers repeated, so that it never runs off a portrait
+## letter page with 1-inch margins. The label column is 1.65 inches wide; a label that wraps
+## continues with a hanging indent. Needs booktabs, longtable, makecell and threeparttablex (all
 ## in texts/preamble.tex).
 # Group names on up to two lines and n below, bottom-aligned so the n's line up
 tex_headers <- c("", sprintf("\\makecell[br]{%s\\\\n = %s}", sub(" ", "\\\\\\\\", cols$group), n_label))
@@ -153,32 +155,48 @@ tex <- kbl(tex_body, col.names = tex_headers, format = "latex", booktabs = TRUE,
            longtable = TRUE, align = c("l", rep("r", 6)), caption = title) %>%
         kable_styling(latex_options = "repeat_header", repeat_header_text = "\\textit{(continued)}") %>%
         add_header_above(setNames(c(1, 3, 3), c(" ", spanners))) %>%
-        add_indent(level_rows)
+        add_indent(level_rows) %>%
+        column_spec(1, latex_column_spec = ">{\\\\raggedright\\\\arraybackslash\\\\hangindent=3em\\\\hangafter=1}p{1.65in}")
 start <- 1
 for (k in seq_along(panel_rows$values)) {
         tex <- pack_rows(tex, panel_rows$values[k], start, start + panel_rows$lengths[k] - 1)
         start <- start + panel_rows$lengths[k]
 }
 tex <- footnote(tex, general = c(note, abbreviations), general_title = "", threeparttable = TRUE)
-writeLines(c("\\begin{landscape}",
-             "\\begingroup\\renewcommand{\\baselinestretch}{1}\\footnotesize\\setlength{\\LTcapwidth}{\\linewidth}",
-             tex, "\\endgroup", "\\end{landscape}"),
+writeLines(c(paste0("\\begingroup\\renewcommand{\\baselinestretch}{1}\\footnotesize",
+                    "\\setlength{\\tabcolsep}{3pt}\\setlength{\\LTcapwidth}{\\textwidth}"),
+             tex, "\\endgroup"),
            file.path(table_dir, "table1.tex"))
 
-## Word: the same table, for a Word manuscript
+## Word: the same table on a portrait letter page with 1-inch margins, Times New Roman 10 point,
+## horizontal rules only, and the header rows repeated when the table continues on the next page
+
+# One bold row per panel, then its rows; "kind" sets the indent of the label
+is_level <- seq_len(nrow(table1)) %in% level_rows
 docx_body <- table1
 docx_body$Characteristic <- trimws(docx_body$Characteristic)
-names(docx_body)[-1] <- paste0("c", seq_len(nrow(cols)))
-docx <- gt::gt(cbind(Panel = row_panels, docx_body), rowname_col = "Characteristic", groupname_col = "Panel") %>%
-        gt::tab_header(title = paste("Table 1.", title)) %>%
-        gt::tab_spanner(spanners[1], columns = c("c1", "c2", "c3")) %>%
-        gt::tab_spanner(spanners[2], columns = c("c4", "c5", "c6")) %>%
-        gt::cols_label(.list = setNames(lapply(sprintf("%s<br>n = %s", cols$group, n_label), gt::html),
-                                        names(docx_body)[-1])) %>%
-        gt::cols_align("right", columns = -c("Characteristic", "Panel")) %>%
-        gt::tab_stub_indent(rows = level_rows, indent = 2) %>%
-        gt::tab_source_note(note) %>%
-        gt::tab_source_note(abbreviations) %>%
-        gt::opt_table_font(font = "Times New Roman", size = gt::px(12)) %>%
-        gt::opt_align_table_header("left")
-gt::gtsave(docx, file.path(table_dir, "table1.docx"))
+names(docx_body) <- c("label", paste0("c", seq_len(nrow(cols))))
+blank <- docx_body[1, ]
+blank[] <- ""
+docx_body <- do.call(rbind, lapply(unique(row_panels), function(p) {
+        panel_row <- blank
+        panel_row$label <- p
+        rbind(panel_row, docx_body[row_panels == p, ])
+}))
+kind <- unlist(lapply(unique(row_panels), function(p)
+        c("panel", ifelse(is_level[row_panels == p], "level", "item"))))
+
+ft <- flextable::flextable(docx_body) %>%
+        flextable::set_header_labels(values = setNames(
+                as.list(c("", sprintf("%s\nn = %s", sub(" ", "\n", cols$group), n_label))), names(docx_body))) %>%
+        flextable::add_header_row(values = c("", spanners), colwidths = c(1, 3, 3)) %>%
+        flextable::add_footer_lines(c(note, abbreviations)) %>%
+        docx_style(spanner_cols = list(2:4, 5:7)) %>%
+        flextable::bold(i = which(kind == "panel"), j = 1) %>%
+        flextable::padding(i = which(kind == "item"), j = 1, padding.top = 1, padding.bottom = 1, padding.left = 10) %>%
+        flextable::padding(i = which(kind == "level"), j = 1, padding.top = 1, padding.bottom = 1, padding.left = 20) %>%
+        flextable::align(j = 2:7, align = "right", part = "all") %>%
+        flextable::align(i = 1, j = 2:7, align = "center", part = "header") %>%
+        flextable::width(j = 1, width = 1.8) %>%
+        flextable::width(j = 2:7, width = 0.78)
+save_docx_table(ft, 1, title, file.path(table_dir, "table1.docx"))

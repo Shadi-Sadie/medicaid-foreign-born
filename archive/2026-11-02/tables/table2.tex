@@ -1,0 +1,32 @@
+
+\begin{table}[htbp]
+   \centering
+   \normalsize
+   \begin{threeparttable}[b]
+      \caption{Difference-in-Differences Result With Controls}
+      \renewcommand*{\arraystretch}{1}
+      \begin{tabular}{lcccc}
+         \tabularnewline \midrule \midrule
+                                                   & Any Coverage  & Medicaid      & Employer-Sponsored & Directly Purchased \\   
+                                                   & [i]           & [ii]          & [iii]              & [iv]\\  
+         \midrule 
+         Medicaid Expansion                        & 0.099$^{***}$ & 0.158$^{***}$ & -0.022$^{***}$     & -0.031$^{***}$\\   
+                                                   & (0.010)       & (0.012)       & (0.004)            & (0.004)\\   
+         Medicaid Expansion $\times$ Foreign-Born  & -0.048$^{**}$ & -0.025$^{*}$  & 0.001              & -0.027\\   
+                                                   & (0.020)       & (0.015)       & (0.006)            & (0.018)\\   
+         \midrule 
+         Controls                                  & yes           & yes           & yes                & yes\\  
+         State-Foreign-Born FE                     & yes           & yes           & yes                & yes\\  
+         Year-Foreign-Born FE                      & yes           & yes           & yes                & yes\\  
+         \midrule 
+         Observations                              & 1,716,909     & 1,716,909     & 1,716,909          & 1,716,909\\  
+         R$^2$                                     & 0.16805       & 0.20045       & 0.10587            & 0.05929\\  
+         Within R$^2$                              & 0.07037       & 0.11759       & 0.09957            & 0.04934\\  
+         \midrule \midrule
+         \multicolumn{5}{l}{\emph{Clustered (State) standard-errors in parentheses}}\\
+         \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+      \end{tabular}
+   \end{threeparttable}
+\end{table}
+
+
