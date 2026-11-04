@@ -27,6 +27,7 @@ scripts <- c(
         "code/analysis/sunab_event.R",
         "code/analysis/specs_employer.R",
         "code/analysis/specs_direct.R",
+        "code/analysis/leave_one_out.R",
         # D. Heterogeneity
         "code/analysis/income_bands.R"
 )
