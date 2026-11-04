@@ -24,6 +24,7 @@ scripts <- c(
         "code/analysis/honest_did.R",
         # C. Robustness
         "code/analysis/robustness.R",
+        "code/analysis/wild_bootstrap.R",
         "code/analysis/sunab_event.R",
         "code/analysis/specs_employer.R",
         "code/analysis/specs_direct.R",

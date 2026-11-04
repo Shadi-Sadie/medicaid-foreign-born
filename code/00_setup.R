@@ -452,6 +452,7 @@ exhibits <- c(
         honest_did       = "Figure B3",   # honest_did.R
         robustness       = "Table C1",    # robustness.R (table and figure)
         robustness_plot  = "Figure C1",
+        wild_bootstrap   = "Table C2",    # wild_bootstrap.R
         sunab_event      = "Figure C2",   # sunab_event.R
         specs_employer   = "Figure C3",   # specs_employer.R
         specs_direct     = "Figure C4",   # specs_direct.R
