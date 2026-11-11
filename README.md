@@ -22,7 +22,8 @@ Items still to be completed are marked **TODO**.
 - The sample rules are written once, in `make_sample()` in `code/00_setup.R`, each with the
   reason for it. Sensitivity samples are named there too.
 - Each table or figure has its own script in `code/analysis/` (see the list below).
-- Running time: **TODO: fill in after the first full run** on a 24-core machine with 62 GB RAM.
+- Running time: `run_all.R` takes about 42 minutes on a 24-core machine with 62 GB RAM (11 Nov
+  2026); the data preparation is not included (see "Memory and runtime").
 
 ## Data availability and provenance statements
 
@@ -68,11 +69,13 @@ Variable descriptions for the ACS extract and the cleaning steps are in
 ### Memory and runtime
 
 - Memory: the cleaned file has 12,413,778 rows (everyone aged 18 and older with income up to
-  400% of poverty) and 106 columns; the main sample has 1,340,837 people. At least 24 GB of RAM
-  is recommended (`table2.R` peaks at about 21 GB).
+  400% of poverty) and 106 columns; the main sample has 1,340,837 people. At least 40 GB of RAM
+  is recommended: in the full run of 11 Nov 2026 the most demanding script peaked at about 36 GB
+  (`table2.R` alone peaks at about 21 GB).
 - Disk: about 10 GB for the Census zip files and the files built from them.
-- Running time: `01_get_data.R` takes about 15 minutes (peak memory about 5 GB). `02_merge.R`,
-  `03_clean.R` and `run_all.R`: **TODO** (see Overview).
+- Running time: `01_get_data.R` takes about 15 minutes (peak memory about 5 GB). `run_all.R` takes
+  about 42 minutes, longest `leave_one_out.R` (10 minutes) and `honest_did.R` (7 minutes).
+  `02_merge.R` and `03_clean.R`: **TODO**.
 
 ## Description of programs
 
