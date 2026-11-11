@@ -187,6 +187,9 @@ cat("\nBalance (%):\n")
 print(balance, digits = 3)
 
 ## State-cluster bootstrap: resample the 17 states with replacement
+# L'Ecuyer-CMRG gives each parallel worker its own reproducible random stream (mclapply's default
+# mc.set.seed = TRUE); with the default generator the draws would change from run to run
+RNGkind("L'Ecuyer-CMRG")
 set.seed(20141)
 B <- 199
 boot <- parallel::mclapply(seq_len(B), function(b) {
@@ -210,7 +213,18 @@ print(transform(point, value = round(value, 2), ci_low = round(ci_low, 2), ci_hi
 ## Figure: yearly coverage in non-expansion states
 ym_long$outcome <- factor(ym_long$outcome, levels = outcome_labels[outcome_vars])
 ym_long$series <- factor(ym_long$series, levels = unique(ym$series))
-fig <- ggplot(ym_long, aes(x = YEAR, y = percent, colour = series, shape = series, linetype = series)) +
+# The gaps for the caption, from `point` (so the note always matches this run)
+gap <- function(o, s) {
+        r <- point[point$outcome == outcome_labels[[o]] & point$stat == s, ]
+        sprintf("%.1f (%.1f, %.1f)", r$value, r$ci_low, r$ci_high)
+}
+gap_line <- function(o) {
+        sprintf("%s %s before reweighting, %s after (A), %s after (B)", tolower(outcome_labels[[o]]),
+                gap(o, "Gap: naturalized minus US-born"), gap(o, "Gap after reweighting (A)"), gap(o, "Gap after reweighting (B)"))
+}
+gap_note <- paste0("Naturalized citizens' change from 2011-2013 to 2014-2019 minus US-born adults' change, percentage points ",
+                   "(95% CI from 199 bootstrap samples of the states):\n", gap_line("HICOV"), ";\n", gap_line("HINS2"), ".")
+fig <-ggplot(ym_long, aes(x = YEAR, y = percent, colour = series, shape = series, linetype = series)) +
         geom_vline(xintercept = 2013.5, lty = "dashed", colour = "grey50") +
         geom_line() +
         geom_point(size = 1.8) +
@@ -224,9 +238,9 @@ fig <- ggplot(ym_long, aes(x = YEAR, y = percent, colour = series, shape = serie
              caption = paste("States that never expanded Medicaid. Weighted percentages (ACS person weights). US-born adults are",
                              "reweighted each year\n(DiNardo, Fortin and Lemieux 1996) to have the characteristics of naturalized",
                              "citizens: (A) age, sex, race and ethnicity, marital status,\neducation, disability, income band and",
-                             "employment status; (B) these and the state.")) +
+                             paste0("employment status; (B) these and the state.\n", gap_note))) +
         theme(panel.background = element_rect(fill = "white", colour = "grey50"),
               legend.position = "bottom", strip.background = element_blank(),
               strip.text = element_text(hjust = 0, face = "bold"), plot.caption = element_text(hjust = 0),
               axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(file.path(figure_dir, "marketplace_reweighting.pdf"), fig, width = 10, height = 7.5)
+ggsave(file.path(figure_dir, "marketplace_reweighting.pdf"), fig, width = 10, height = 8.2)
