@@ -150,6 +150,7 @@ so renumbering changes one line there (and the table below).
 | C. Robustness | Figure C4 | `specs_direct.R` | `output/figures/specs_direct.pdf`, `output/tables/specs_direct_estimates.csv` | Directly purchased insurance by citizenship, five covariate specifications |
 | C. Robustness | Figure C5 | `leave_one_out.R` | `output/figures/leave_one_out.pdf`, `output/tables/leave_one_out.csv` | Table 2 model re-estimated leaving out one state at a time (40 states), four outcomes, groups and naturalized minus US-born |
 | D. Heterogeneity | Table D1 | `income_bands.R` | `output/tables/income_bands.tex`, `income_bands.docx`, `income_bands.csv` | Table 2 model at or below 100% and at 101-138% of poverty |
+| D. Heterogeneity | Figure D1 | `marketplace_composition.R` | `output/figures/marketplace_reweighting.pdf`, `output/tables/marketplace_reweighting.csv`, `marketplace_reweighting_yearly.csv`, `marketplace_composition_changes.csv`, `marketplace_balance.csv` | Non-expansion states: coverage of naturalized citizens, US-born adults, and US-born adults reweighted (DiNardo-Fortin-Lemieux) to the naturalized citizens' characteristics and state; whether composition explains the naturalized citizens' larger gain after 2014 |
 
 All appendix programs are in `code/analysis/`. `comparison_samples.R`, `robustness.R` and `income_bands.R`
 run their own list of samples, so they take no sample name.

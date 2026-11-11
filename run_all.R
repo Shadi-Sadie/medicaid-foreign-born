@@ -30,7 +30,8 @@ scripts <- c(
         "code/analysis/specs_direct.R",
         "code/analysis/leave_one_out.R",
         # D. Heterogeneity
-        "code/analysis/income_bands.R"
+        "code/analysis/income_bands.R",
+        "code/analysis/marketplace_composition.R"
 )
 
 log_dir <- "output/logs"

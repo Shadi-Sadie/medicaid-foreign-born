@@ -457,7 +457,8 @@ exhibits <- c(
         specs_employer   = "Figure C3",   # specs_employer.R
         specs_direct     = "Figure C4",   # specs_direct.R
         leave_one_out    = "Figure C5",   # leave_one_out.R
-        income_bands     = "Table D1"     # income_bands.R
+        income_bands     = "Table D1",    # income_bands.R
+        marketplace_reweighting = "Figure D1"   # marketplace_composition.R
 )
 exhibit_number <- function(name) sub("^(Table|Figure) ", "", exhibits[[name]])   # e.g. "C1"
 
