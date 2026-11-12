@@ -42,7 +42,7 @@ Items still to be completed are marked **TODO**.
 | Data | Files | Source | Provided |
 |---|---|---|---|
 | American Community Survey (ACS) 1-year PUMS, person and housing records, 2011-2019 | `data/raw/census_files/` (the original Census zip files); `data/raw/acs_YYYY.rds`, `repwt_YYYY.rds` (read and filtered); `data/clean/acs_merged.rds`, `acs_clean.rds` (merged and cleaned, used by the analysis) | U.S. Census Bureau, national PUMS files from [www2.census.gov/programs-surveys/acs/data/pums/](https://www2.census.gov/programs-surveys/acs/data/pums/), downloaded by `code/data_prep/01_get_data.R`. File checksums and download dates are saved in `data/raw/download_log.csv`. | No: public, and re-downloaded by `01_get_data.R` (about 10 GB, not in the git repository). **TODO:** decide whether to also deposit the extract with a DOI (for example openICPSR or Zenodo). |
-| State unemployment rates | `data/raw/bls/la.data.2.AllStatesU` (downloaded by `code/data_prep/02_merge.R`; the annual averages are saved in `data/state_year.csv`) | Bureau of Labor Statistics, Local Area Unemployment Statistics, [bls.gov/lau](https://www.bls.gov/lau/), series LAUST<FIPS>0000000000003, annual average. The old `data/UnempR.xlsx` had errors and is no longer used (see CHANGES.md). | Yes |
+| State unemployment rates | `data/raw/bls/la.data.2.AllStatesU` (downloaded by `code/data_prep/02_merge.R`; the annual averages are saved in `data/state_year.csv`) | Bureau of Labor Statistics, Local Area Unemployment Statistics, [bls.gov/lau](https://www.bls.gov/lau/), series LAUST<FIPS>0000000000003, annual average. The old `data/UnempR.xlsx` had errors and was removed (see CHANGES.md; it is in the git history). | Yes |
 | Medicaid expansion status and dates | `data/expansion.csv` | KFF, [Status of State Medicaid Expansion Decisions](https://www.kff.org/medicaid/issue-brief/status-of-state-medicaid-expansion-decisions/) | Yes |
 | Immigration Policy Climate (IPC) index | `data/IPC.csv`, `data/IPC_Final.csv` | [IPC Index dataset](https://www.goleensamari.com/data) | **TODO: check redistribution terms** |
 | State political ideology (ADA scores) | `data/Pol.xlsx` | **TODO: source and citation** | **TODO: check redistribution terms** |
@@ -113,8 +113,8 @@ All commands run from the project root.
 
 A single item can be re-created by running its script on its own, for example
 `Rscript code/analysis/fig3.R`. To run it on a sensitivity sample, add the sample's name, for
-example `Rscript code/analysis/table2.R with_medicare`. The results then go to
-`output/tables_with_medicare/` and `output/figures_with_medicare/`, so they never overwrite the
+example `Rscript code/analysis/table2.R pov_100`. The results then go to
+`output/tables_pov_100/` and `output/figures_pov_100/`, so they never overwrite the
 main results. The sample names and the reason for each are in `sample_variants` in
 `code/00_setup.R`.
 

@@ -61,9 +61,6 @@ prior_full_states <- c("10", "11", "25", "36", "50")                 # DE, DC, M
 # years before expansion. Sommers et al. (2013, Medicare & Medicaid Research Review); Colorado's
 # 2012 waiver was capped at 10,000 people (Kaestner et al. 2017).
 early_option_states <- c("06", "08", "09", "27", "34", "53")         # CA, CO, CT, MN, NJ, WA
-# Simon, Soni and Cawley (2017, JPAM): every state with any coverage of childless adults before 2014
-simon_states <- c("04", "06", "09", "10", "11", "15", "19", "23", "25", "27", "33", "36", "50",
-                  "53", "55")         # AZ, CA, CT, DE, DC, HI, IA, ME, MA, MN, NH, NY, VT, WA, WI
 
 main_rules <- list(
         age = list(rule = quote(AGEP >= 26 & AGEP <= 64),
@@ -85,62 +82,20 @@ main_rules <- list(
 )
 
 sample_variants <- list(
-        all_states = list(drop = c("prior_full", "early_option"),
-                          why = "Keeps every state. DC has no ADA score, so models that control for ADA drop it."),
         keep_early_option = list(drop = "early_option",
                                  why = "Keeps the states that expanded partly before 2014 (CA, CO, CT, MN, NJ, WA), counted as 2014 expanders."),
-        keep_colorado = list(drop = "early_option", rule = quote(!ST %in% setdiff(early_option_states, "08")),
-                             why = "Keeps Colorado, whose 2012 waiver was capped at 10,000 people, counted as a 2014 expander."),
-        simon_states = list(drop = "prior_full", rule = quote(!ST %in% simon_states),
-                            why = "Excludes every state with any coverage of childless adults before 2014 (Simon, Soni and Cawley 2017), as well as the early expanders."),
-        drop_wisconsin = list(rule = quote(ST != "55"),
-                              why = "Excludes Wisconsin, which covered childless adults up to 100% of poverty through a waiver without adopting the ACA expansion."),
-        drop_midyear = list(rule = quote(!ST %in% c("02", "18", "22", "26", "33")),
-                            why = "Excludes states whose expansion started after January (AK, IN, LA, MI, NH; data/expansion.csv), so the expansion year is only partly treated. Maine's 10 January 2019 start counts as January."),
-        drop_late = list(rule = quote(Expan_STS != "Late Expansion"),
-                         why = "Excludes states that expanded in 2015-2019, leaving 2014 expanders and states that never expanded."),
-        drop_2019 = list(rule = quote(!ExpansionY %in% 2019),
-                         why = "Excludes Maine and Virginia, which expanded in 2019 and so have a single treated year."),
         pov_100 = list(drop = "income", rule = quote(POVPIP <= 100),
                        why = "Income at or below 100% of poverty. In non-expansion states these adults could not get subsidized Marketplace coverage, which starts at 100%."),
         pov_101_138 = list(drop = "income", rule = quote(POVPIP > 100 & POVPIP <= 138),
                            why = "Income from 101% to 138% of poverty. In non-expansion states these adults could get subsidized Marketplace coverage instead of Medicaid."),
-        drop_florida = list(rule = quote(ST != "12"),
-                            why = "Excludes Florida, which has 39% of the naturalized citizens in non-expansion states and very high Marketplace enrollment."),
-        drop_texas = list(rule = quote(ST != "48"),
-                          why = "Excludes Texas, which has 32% of the naturalized citizens and 44% of the non-citizens in non-expansion states."),
         edu_hs = list(drop = "income", rule = quote(SCHLG %in% c("Less than high school", "High school")),
                       why = "Adults with a high school education or less, at any income in the data (up to 400% of poverty), instead of the income limit. Expansion can change income but not the education of adults aged 26-64, so this sample cannot be selected by expansion."),
         pov_400 = list(drop = "income",
                        why = "All incomes in the data (up to 400% of poverty). Used to test whether expansion changed who has income at or below 138%."),
         pov_139_400 = list(drop = "income", rule = quote(POVPIP > 138 & POVPIP <= 400),
                            why = "Higher-income comparison sample: income from 139% to 400% of poverty, above the expansion limit and within the Marketplace subsidy range in every state. Not a placebo, since the rest of the ACA affects it."),
-        pov_200 = list(drop = "income", rule = quote(POVPIP <= 200),
-                       why = "Income at or below 200% of poverty."),
-        age_19_64 = list(drop = "age", rule = quote(AGEP >= 19 & AGEP <= 64),
-                         why = "All non-elderly adults aged 19-64, including those who could stay on a parent's plan."),
-        cit_abroad_as_native = list(drop = "cit_birth_abroad",
-                                    why = "Keeps US citizens born in the territories or abroad to American parents, counted as US-born."),
-        no_residency_rule = list(drop = "residency",
-                                 why = "Keeps non-citizens who have been in the US fewer than 5 years."),
         residency_10y = list(rule = quote(!(NonCit == 1 & YLIU < 10)),
-                             why = "Excludes non-citizens in the US fewer than 10 years."),
-        no_undoc = list(rule = quote(UNDOC == 0),
-                        why = "Excludes non-citizens flagged as likely undocumented, who are not eligible for federally funded Medicaid."),
-        undoc_benefits = list(edit = function(d) {
-                                      d$UNDOC <- d$UNDOC_BEN
-                                      d$FBLEG <- as.integer(d$ForeginBorn == 1 & d$UNDOC == 0)
-                                      d
-                              },
-                              why = "Uses the likely-undocumented flag that also counts receipt of Social Security, SSI, Medicare, TRICARE or VA coverage as a sign of legal status (Borjas and Cassidy 2019)."),
-        with_medicare = list(drop = "medicare",
-                             why = "Keeps adults under 65 with Medicare."),
-        drop_imputed_ins = list(rule = quote(hins_imputed == 0),
-                                why = "Excludes people whose Medicaid answer was imputed by the Census Bureau."),
-        drop_medicaid_edit = list(rule = quote(medicaid_edit == 0),
-                                  why = "Excludes people given Medicaid by the Census Bureau's coverage edit rather than by their own answer."),
-        drop_ipc_imputed = list(rule = quote(ipc_imputed == 0),
-                                why = "Excludes North Carolina 2016, whose Immigrant Policy Climate score is imputed.")
+                             why = "Excludes non-citizens in the US fewer than 10 years.")
 )
 
 # Returns the rows of Data in the named sample, with unused factor levels dropped (e.g. the
@@ -155,7 +110,6 @@ make_sample <- function(Data, name = "main") {
         keep <- rep(TRUE, nrow(Data))
         for (r in rules) keep <- keep & eval(r$rule, Data, environment())
         out <- Data[!is.na(keep) & keep, , drop = FALSE]
-        if (!is.null(variant$edit)) out <- variant$edit(out)
         out <- droplevels(out)
         cat("Sample:", name, "-", format(nrow(out), big.mark = ","), "people\n")
         out
@@ -173,12 +127,8 @@ local({
                                  "medicare", "early_option"))
         run <- function(name) { capture.output(s <- make_sample(d, name)); s$rule }
         stopifnot(identical(run("main"), "passes"),
-                  identical(run("with_medicare"), c("passes", "medicare")),
-                  identical(run("pov_200"), c("passes", "income")),
-                  identical(run("all_states"), c("passes", "prior_full", "early_option")),
+                  identical(run("pov_400"), c("passes", "income")),
                   identical(run("keep_early_option"), c("passes", "early_option")),
-                  identical(run("no_residency_rule"), c("passes", "residency")),
-                  identical(run("cit_abroad_as_native"), c("passes", "cit_birth_abroad")),
                   identical(run("pov_100"), "passes"),
                   inherits(try(make_sample(d, "typo"), silent = TRUE), "try-error"))
 })
@@ -478,7 +428,7 @@ effect_contrasts <- list(
 )
 
 # Estimates of the Table 2 model (static, specification E) for each check: a named vector of
-# sample names (sample_variants above), e.g. c("Without Texas" = "drop_texas"). The check named
+# sample names (sample_variants above), e.g. c("10+ years in the US" = "residency_10y"). The check named
 # "Sun and Abraham" changes the estimator instead (fit_sunab_models()). The data are read
 # again for each check, and each check's models dropped before the next, so that the full file and
 # several sets of models are never in memory together.

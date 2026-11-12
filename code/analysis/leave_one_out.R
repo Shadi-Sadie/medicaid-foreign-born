@@ -18,8 +18,8 @@ library(ggplot2)
 
 # The main sample before prep_event_data(): each state's sample is cut from it and prepared as
 # make_sample() and check_estimates() would prepare a sample without that state (droplevels(),
-# then prep_event_data()), so the estimates without Florida or Texas equal those of the
-# drop_florida and drop_texas samples
+# then prep_event_data()), so each state's estimates equal those of a sample that drops that
+# state by a sample rule
 Main <- make_sample(readRDS(data_file), "main")
 states <- sort(unique(Main$ST))
 
