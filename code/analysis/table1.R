@@ -144,7 +144,7 @@ panel_rows <- rle(row_panels)
 ## continues on the next page with the headers repeated, so that it never runs off a portrait
 ## letter page with 1-inch margins. The label column is 1.65 inches wide; a label that wraps
 ## continues with a hanging indent. Needs booktabs, longtable, makecell and threeparttablex (all
-## in texts/preamble.tex).
+## in the manuscript's preamble in Overleaf).
 # Group names on up to two lines and n below, bottom-aligned so the n's line up
 tex_headers <- c("", sprintf("\\makecell[br]{%s\\\\n = %s}", sub(" ", "\\\\\\\\", cols$group), n_label))
 # The headers hold LaTeX line breaks, so the body is escaped by hand; category rows are indented
